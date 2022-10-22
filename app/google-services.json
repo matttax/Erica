@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1016245597884",
+    "project_id": "erica-c18b9",
+    "storage_bucket": "erica-c18b9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016245597884:android:8f138eb16842d1ae44c2b9",
+        "android_client_info": {
+          "package_name": "com.matttax.erica"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016245597884-m6bhcnj62jcb7rr7sm26ck11kqlublsq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYUoyPg3w_7N7xvzLEpccWWpLCncK-lDk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016245597884-m6bhcnj62jcb7rr7sm26ck11kqlublsq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
