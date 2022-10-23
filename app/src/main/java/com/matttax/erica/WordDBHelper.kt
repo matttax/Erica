@@ -95,6 +95,11 @@ class WordDBHelper(context: Context?) :
         db.delete(WORDS_TABLE_NAME, null, null)
     }
 
+    fun deleteSet(setId: Int) {
+        this.writableDatabase.execSQL("DELETE FROM $SETS_TABLE_NAME WHERE id=$setId")
+        this.writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE set_id=$setId")
+    }
+
     companion object {
         const val DATABASE_NAME = "Erica.db"
         const val DATABASE_VERSION = 1

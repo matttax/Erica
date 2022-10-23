@@ -5,8 +5,8 @@
     android:layout_gravity="center"
     android:textAlignment="center"
     android:padding="5dp"
-    android:textColor="@color/white"
-    android:background="@color/teal_700"
+    android:textColor="@color/black_shade_1"
+    android:background="@color/light_grey"
     >
 
 

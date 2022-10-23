@@ -8,7 +8,6 @@
     android:layout_marginEnd="20dp"
     android:layout_marginTop="20dp"
     android:layout_gravity="center"
-    android:background="@drawable/border"
     android:id="@+id/setItem"
     >
 
@@ -31,38 +30,23 @@
                 android:layout_marginEnd="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:weightSum="6">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="42sp"
+                    android:textSize="30sp"
                     android:text="SetName"
                     android:layout_weight="5"
                     android:textStyle="bold"
                     android:id="@+id/setName"
                     />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:text="0 words"
-                    android:layout_weight="1"
-                    android:id="@+id/setWordsCount"
-                    />
             </LinearLayout>
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:layout_marginTop="10dp">
-                <com.google.android.material.button.MaterialButton
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Learn"
-                    android:layout_weight="1"
-                    />
                 <com.google.android.material.button.MaterialButton
                     android:layout_marginStart="10dp"
                     android:layout_marginEnd="10dp"
@@ -72,9 +56,31 @@
                     android:backgroundTint="@color/crimson"
                     android:layout_weight="1"
                     android:layout_marginBottom="10dp"
+                    android:id="@+id/deleteSet"
+                    />
+                <com.google.android.material.button.MaterialButton
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Learn"
+                    android:layout_weight="1"
+                    android:id="@+id/learnSet"
                     />
             </LinearLayout>
         </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="0"
+            android:layout_weight="1"
+            android:id="@+id/setWordsCount"
+            android:layout_gravity="end"
+            android:layout_marginTop="27dp"
+            android:layout_marginEnd="10dp"
+            />
 
     </com.google.android.material.card.MaterialCardView>
 

@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (setID == sets[parent!!.selectedItem.toString()]!!)
+                //if (setID == sets[parent!!.selectedItem.toString()]!!)
                     // goto set
                 setID = sets[parent!!.selectedItem.toString()]!!
                 println(setID)

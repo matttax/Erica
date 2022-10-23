@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
@@ -32,7 +33,7 @@ class WordsActivity : AppCompatActivity() {
         rv.adapter = adpt
         rv.layoutManager = LinearLayoutManager(this)
 
-        var lrn: Button = findViewById(R.id.startLearn)
+        var lrn: CardView = findViewById(R.id.startLearn)
         lrn.setOnClickListener {
             val i = Intent(this, LearnActivity::class.java)
             startActivity(i)
