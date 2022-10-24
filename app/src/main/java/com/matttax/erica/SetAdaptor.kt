@@ -1,5 +1,6 @@
 package com.matttax.erica
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -7,8 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 
 
 class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
@@ -56,8 +59,23 @@ class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
         }
 
         holder.deleteButton.setOnClickListener {
-            val db = WordDBHelper(context)
-            db.deleteSet(sets[position].id)
+            val bld = AlertDialog.Builder(context)
+            val vwy = (context as Activity).layoutInflater.inflate(R.layout.create_set_dialog, null)
+            bld.setView(vwy)
+            val dlg = bld.create()
+            dlg.show()
+
+            val ad: MaterialButton = vwy.findViewById(R.id.yesDeleteSet)
+            val dm: MaterialButton = vwy.findViewById(R.id.noDeleteSet)
+
+            ad.setOnClickListener {
+                val db = WordDBHelper(context)
+                db.deleteSet(sets[position].id)
+                dlg.dismiss()
+            }
+            dm.setOnClickListener {
+                dlg.dismiss()
+            }
         }
     }
 

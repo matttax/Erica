@@ -31,7 +31,8 @@ class QuizWord(val id: Int,
                val word: Word,
                val timesAsked: Int,
                val timesCorrect: Int,
-               val lastAsked: Date) {
+               val lastAsked: Date,
+               val setId: Int) {
 
     fun getCorrectPercentage() = timesCorrect.toDouble() / timesAsked
 }

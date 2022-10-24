@@ -10,9 +10,10 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 
-class WordAdaptor(var context: Context, var words: List<Word>) :
+class WordAdaptor(var context: Context, var words: List<QuizWord>) :
     RecyclerView.Adapter<WordAdaptor.WordViewHolder>() {
 
     class WordViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -48,7 +49,7 @@ class WordAdaptor(var context: Context, var words: List<Word>) :
     override fun getItemCount(): Int = words.size
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
-        holder.term.text = words[position].term
-        holder.definition.text = words[position].definition
+        holder.term.text = words[position].word.term
+        holder.definition.text = words[position].word.definition
     }
 }

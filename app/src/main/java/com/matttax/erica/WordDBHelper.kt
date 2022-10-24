@@ -5,7 +5,6 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.widget.Toast
 
 class WordDBHelper(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -96,8 +95,13 @@ class WordDBHelper(context: Context?) :
     }
 
     fun deleteSet(setId: Int) {
-        this.writableDatabase.execSQL("DELETE FROM $SETS_TABLE_NAME WHERE id=$setId")
-        this.writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE set_id=$setId")
+        writableDatabase.execSQL("DELETE FROM $SETS_TABLE_NAME WHERE id=$setId")
+        writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE set_id=$setId")
+    }
+
+    fun deleteWord(wordId: Int, setId: Int) {
+        writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE id=$wordId")
+        writableDatabase.execSQL("UPDATE sets SET words_count = words_count - 1 WHERE id=$setId")
     }
 
     companion object {
