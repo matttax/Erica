@@ -56,6 +56,7 @@ class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
 
         holder.learnButton.setOnClickListener {
             val i = Intent(context, LearnActivity::class.java)
+            i.putExtra("query", "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} WHERE set_id=${sets[position].id}")
             context.startActivity(i)
         }
 
@@ -73,6 +74,7 @@ class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
                 val db = WordDBHelper(context)
                 db.deleteSet(sets[position].id)
                 dlg.dismiss()
+                (context as SetsActivity).loadSets()
             }
             dm.setOnClickListener {
                 dlg.dismiss()

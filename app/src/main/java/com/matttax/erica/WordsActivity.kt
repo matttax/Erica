@@ -1,5 +1,6 @@
 package com.matttax.erica
 
+import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,6 +10,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import java.util.*
 
 class WordsActivity : AppCompatActivity() {
@@ -43,10 +45,26 @@ class WordsActivity : AppCompatActivity() {
                 return false
             }
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val db = WordDBHelper(this@WordsActivity)
-                db.deleteWord(words[viewHolder.adapterPosition].id, words[viewHolder.adapterPosition].setId)
-                words.removeAt(viewHolder.adapterPosition)
-                adpt.notifyItemRemoved(viewHolder.adapterPosition)
+                val bld = AlertDialog.Builder(this@WordsActivity)
+                val vwy = layoutInflater.inflate(R.layout.delete_word, null)
+                bld.setView(vwy)
+                val dlg = bld.create()
+                dlg.show()
+
+                val ad: MaterialButton = vwy.findViewById(R.id.yesDeleteWord)
+                val dm: MaterialButton = vwy.findViewById(R.id.noDeleteWord)
+
+                ad.setOnClickListener {
+                    val db = WordDBHelper(this@WordsActivity)
+                    db.deleteWord(words[viewHolder.adapterPosition].id, words[viewHolder.adapterPosition].setId)
+                    words.removeAt(viewHolder.adapterPosition)
+                    adpt.notifyItemRemoved(viewHolder.adapterPosition)
+                    dlg.dismiss()
+                }
+                dm.setOnClickListener {
+                    adpt.notifyDataSetChanged()
+                    dlg.dismiss()
+                }
             }
         }
         val itemTouchHelper = ItemTouchHelper(simpleCallback)
@@ -87,7 +105,6 @@ class WordsActivity : AppCompatActivity() {
                         "WHERE set_id=${intent.getIntExtra("setid", 3)} " +
                         "ORDER BY ${getOrderBy(prt.selectedItem.toString())}" +
                         "LIMIT ${npk.value} "
-                Toast.makeText(this, query, Toast.LENGTH_LONG).show()
                 i.putExtra("query", query)
                 dlg.dismiss()
                 startActivity(i)

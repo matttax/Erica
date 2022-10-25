@@ -58,25 +58,7 @@ class MainActivity : AppCompatActivity() {
         addWord = findViewById(R.id.addWord)
         dismissWord = findViewById(R.id.dismissWord)
 
-        val db = WordDBHelper(this)
-        val cursor = db.getSet()
-        if (cursor != null) {
-            if (cursor.count != 0) {
-                while (cursor.moveToNext()) {
-                    sets[cursor.getString(1)] = cursor.getInt(0)
-                }
-            }
-        }
-
-        if (sets.isEmpty()) {
-            val wdb = WordDBHelper(this).writableDatabase
-            val cv = ContentValues()
-            cv.put(WordDBHelper.COLUMN_NAME, "All Words")
-            cv.put(WordDBHelper.COLUMN_WORDS_COUNT, 0)
-            cv.put(WordDBHelper.COLUMN_SET_DESCRIPTION, "Unordered set of words")
-            wdb.insert(WordDBHelper.SETS_TABLE_NAME, null, cv)
-            sets["All Words"] = 1
-        }
+        loadSets()
         var setID = sets.values.first()
 
         setSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -86,17 +68,12 @@ class MainActivity : AppCompatActivity() {
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 //if (setID == sets[parent!!.selectedItem.toString()]!!)
-                    // goto set
+                // goto set
                 setID = sets[parent!!.selectedItem.toString()]!!
                 println(setID)
             }
 
         }
-
-
-        val setAdaptor = ArrayAdapter(this, R.layout.sets_spinner_item, sets.keys.toList())
-        setAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        setSpinner.adapter = setAdaptor
 
         translateOxford.setOnClickListener {
             translateText(termCode, defCode, termTextField.text.toString(), 0)
@@ -159,6 +136,39 @@ class MainActivity : AppCompatActivity() {
             1 -> translatedTV.loadUrl("https://dictionary.cambridge.org/dictionary/english-russian/${text.replace(' ', '-')}")
             2 -> translatedTV.loadUrl("https://ru.glosbe.com/словарь-английский-русский/${text.replace(" ", "%20")}")
         }
+    }
+
+    fun loadSets() {
+        sets.clear()
+        val db = WordDBHelper(this)
+        val cursor = db.getSet()
+        if (cursor != null) {
+            if (cursor.count != 0) {
+                while (cursor.moveToNext()) {
+                    sets[cursor.getString(1)] = cursor.getInt(0)
+                }
+            }
+        }
+
+        if (sets.isEmpty()) {
+            val wdb = WordDBHelper(this).writableDatabase
+            val cv = ContentValues()
+            cv.put(WordDBHelper.COLUMN_NAME, "All Words")
+            cv.put(WordDBHelper.COLUMN_WORDS_COUNT, 0)
+            cv.put(WordDBHelper.COLUMN_SET_DESCRIPTION, "Unordered set of words")
+            wdb.insert(WordDBHelper.SETS_TABLE_NAME, null, cv)
+            sets["All Words"] = 1
+        }
+
+
+        val setAdaptor = ArrayAdapter(this, R.layout.sets_spinner_item, sets.keys.toList())
+        setAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        setSpinner.adapter = setAdaptor
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadSets()
     }
 
 }
