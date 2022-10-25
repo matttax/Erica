@@ -3,9 +3,8 @@ package com.matttax.erica
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -56,7 +55,45 @@ class WordsActivity : AppCompatActivity() {
         var lrn: CardView = findViewById(R.id.startLearn)
         lrn.setOnClickListener {
             val i = Intent(this, LearnActivity::class.java)
-            startActivity(i)
+
+            val bld = AlertDialog.Builder(this)
+            val vwy = layoutInflater.inflate(R.layout.start_learn_dialog, null)
+            bld.setView(vwy)
+            val dlg = bld.create()
+            dlg.show()
+
+            val npk: NumberPicker = vwy.findViewById(R.id.wordsNumberPicker)
+            npk.maxValue = intent.getIntExtra("setwordcount", 0)
+            npk.minValue = 1
+            npk.value = intent.getIntExtra("setwordcount", 0)
+
+            val prt: Spinner = vwy.findViewById(R.id.priority)
+            val prtAdaptor = ArrayAdapter(this, R.layout.sets_spinner_item, listOf("Worst answered", "Least asked", "Long ago asked"))
+            prtAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            prt.adapter = prtAdaptor
+
+            val rgm: Spinner = vwy.findViewById(R.id.regime)
+            val rgmAdaptor = ArrayAdapter(this, R.layout.sets_spinner_item, listOf("Study", "Learn"))
+            rgmAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            rgm.adapter = rgmAdaptor
+
+            val no: Button = vwy.findViewById(R.id.noStartLearn)
+            val yes: Button = vwy.findViewById(R.id.yesStartLearn)
+            no.setOnClickListener {
+                dlg.dismiss()
+            }
+            yes.setOnClickListener {
+                val query = "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
+                        "WHERE set_id=${intent.getIntExtra("setid", 3)} " +
+                        "ORDER BY ${getOrderBy(prt.selectedItem.toString())}" +
+                        "LIMIT ${npk.value} "
+                Toast.makeText(this, query, Toast.LENGTH_LONG).show()
+                i.putExtra("query", query)
+                dlg.dismiss()
+                startActivity(i)
+
+            }
+
         }
     }
 
@@ -70,6 +107,14 @@ class WordsActivity : AppCompatActivity() {
                         Word(cursor.getString(3), cursor.getString(4)), cursor.getInt(5), cursor.getInt(6), Date(), cursor.getInt(8))
                 }
             }
+        }
+    }
+
+    fun getOrderBy(str: String): String {
+        return when(str) {
+            "Worst answered" -> "times_correct / CAST(times_asked as float) ASC "
+            "Least asked" -> "times_asked ASC "
+            else -> "last_asked ASC "
         }
     }
 }

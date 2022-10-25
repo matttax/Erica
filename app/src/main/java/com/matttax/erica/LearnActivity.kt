@@ -9,9 +9,10 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import java.util.*
 
 
-var words = mutableListOf<Word>()
+var words = mutableListOf<QuizWord>()
 
 class LearnActivity : AppCompatActivity() {
     lateinit var fld: EditText
@@ -39,17 +40,25 @@ class LearnActivity : AppCompatActivity() {
         getNext()
         fld.setOnKeyListener(View.OnKeyListener { view, i, keyEvent ->
             if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN) && (i == KeyEvent.KEYCODE_ENTER)) {
-                if (fld.text.toString() != words.first().definition) {
+                val write = WordDBHelper(this).writableDatabase
+                if (fld.text.toString() != words.first().word.definition) {
                     var w = words.first()
                     words.add(w)
+                    write.execSQL("UPDATE words SET times_asked = times_asked + 1, " +
+                            "last_asked = CURRENT_TIMESTAMP " +
+                            "WHERE id=${words.first().id}")
 
                     val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
-                    dlgAlert.setMessage(words.last().definition)
+                    dlgAlert.setMessage(words.last().word.definition)
                     dlgAlert.setTitle("Incorrect!")
                     dlgAlert.setCancelable(true)
                     dlgAlert.create().show()
 
                 } else {
+                    write.execSQL("UPDATE words SET times_asked = times_asked + 1, " +
+                            "last_asked = CURRENT_TIMESTAMP, " +
+                            "times_correct = times_correct + 1 " +
+                            "WHERE id=${words.first().id}")
                     progress++
                     pbr.incrementProgressBy(1)
                     ptx.text = "$progress/$total"
@@ -64,13 +73,24 @@ class LearnActivity : AppCompatActivity() {
 
     }
 
+    override fun onPause() {
+        super.onPause()
+        words.clear()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        words.clear()
+    }
+
     fun getWords() {
-        val db = WordDBHelper(this)
-        val cursor = db.getWords(3)
+        val cursor = WordDBHelper(this).writableDatabase.rawQuery(intent.getStringExtra("query"), null)
         if (cursor != null) {
             if (cursor.count != 0) {
                 while (cursor.moveToNext()) {
-                    words += Word(cursor.getString(3), cursor.getString(4))
+                    words += QuizWord(cursor.getInt(0), LanguagePair(cursor.getString(1), cursor.getString(2)),
+                        Word(cursor.getString(3), cursor.getString(4)), cursor.getInt(5), cursor.getInt(6),
+                        Date(cursor.getLong(7)*1000), cursor.getInt(8))
                 }
             }
         }
@@ -78,8 +98,8 @@ class LearnActivity : AppCompatActivity() {
 
     fun getNext() {
         if (!words.isEmpty()) {
-            wrd.text = words.first().term
-            currentWord = words.first().term
+            wrd.text = words.first().word.term
+            currentWord = words.first().word.term
         } else finish()
     }
 }

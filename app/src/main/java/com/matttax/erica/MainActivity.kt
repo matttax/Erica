@@ -117,15 +117,20 @@ class MainActivity : AppCompatActivity() {
 
         dismissWord.setOnClickListener {
             termTextField.text = SpannableStringBuilder("")
+
             defTextField.text = SpannableStringBuilder("")
             translatedTV.loadUrl("about:blank")
         }
 
         addWord.setOnClickListener {
+            val allWordsSetId = 3
             val db = WordDBHelper(this)
+            //db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), allWordsSetId)
             db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), setID)
+
             val write = db.writableDatabase
             write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$setID")
+            //write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$allWordsSetId")
 
             termTextField.text = SpannableStringBuilder("")
             defTextField.text = SpannableStringBuilder("")

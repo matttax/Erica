@@ -50,6 +50,7 @@ class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
             intent.putExtra("setid", sets[position].id)
             intent.putExtra("setname", sets[position].name)
             intent.putExtra("setdescr", sets[position].description)
+            intent.putExtra("setwordcount", sets[position].wordsCount)
             context.startActivity(intent)
         }
 
@@ -60,7 +61,7 @@ class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
 
         holder.deleteButton.setOnClickListener {
             val bld = AlertDialog.Builder(context)
-            val vwy = (context as Activity).layoutInflater.inflate(R.layout.create_set_dialog, null)
+            val vwy = (context as Activity).layoutInflater.inflate(R.layout.delete_set, null)
             bld.setView(vwy)
             val dlg = bld.create()
             dlg.show()
