@@ -1,17 +1,21 @@
-package com.matttax.erica
+package com.matttax.erica.adaptors
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.textfield.TextInputEditText
+import com.matttax.erica.R
+import com.matttax.erica.SetOfWords
+import com.matttax.erica.WordDBHelper
+import com.matttax.erica.activities.LearnActivity
+import com.matttax.erica.activities.WordsActivity
+import com.matttax.erica.dialogs.DeleteSetDialog
 
 
 class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
@@ -23,7 +27,7 @@ class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
         var setLayout: LinearLayout
 
         var learnButton: MaterialButton
-        var deleteButton: MaterialButton
+        var deleteButton: ImageButton
 
         init {
             setName = itemView.findViewById(R.id.setName)
@@ -61,24 +65,7 @@ class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
         }
 
         holder.deleteButton.setOnClickListener {
-            val bld = AlertDialog.Builder(context)
-            val vwy = (context as Activity).layoutInflater.inflate(R.layout.delete_set, null)
-            bld.setView(vwy)
-            val dlg = bld.create()
-            dlg.show()
-
-            val ad: MaterialButton = vwy.findViewById(R.id.yesDeleteSet)
-            val dm: MaterialButton = vwy.findViewById(R.id.noDeleteSet)
-
-            ad.setOnClickListener {
-                val db = WordDBHelper(context)
-                db.deleteSet(sets[position].id)
-                dlg.dismiss()
-                (context as SetsActivity).loadSets()
-            }
-            dm.setOnClickListener {
-                dlg.dismiss()
-            }
+            DeleteSetDialog(context, R.layout.delete_set, sets[position].id).showDialog()
         }
     }
 

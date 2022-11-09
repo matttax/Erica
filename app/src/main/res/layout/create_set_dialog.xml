@@ -1,104 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="30dp"
     android:layout_marginEnd="30dp"
-    android:layout_gravity="center">
-
-     <TextView
-         android:layout_marginTop="20dp"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="Create set"
-         android:layout_gravity="center"
-         android:textSize="20sp"
-         android:textStyle="bold"
-         />
-
-     <com.google.android.material.textfield.TextInputLayout
-         android:layout_width="match_parent"
-         android:layout_height="70dp"
-         android:layout_marginStart="20dp"
-         android:layout_marginEnd="20dp"
-         android:layout_marginTop="20dp"
-         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-         android:hint="Name"
-         android:padding="5dp"
-         android:textColorHint="@color/black_shade_1"
-         >
-          <com.google.android.material.textfield.TextInputEditText
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:id="@+id/setNameField"
-              android:ems="10"
-              android:importantForAutofill="no"
-              android:textColor="@color/black_shade_1"
-              android:textColorHint="@color/black_shade_1"
-              android:textSize="14sp"
-              android:maxLength="20"
-              android:inputType="text"
-              android:scrollHorizontally="true"
-              />
-     </com.google.android.material.textfield.TextInputLayout>
-
-
-
-     <com.google.android.material.textfield.TextInputLayout
-         android:layout_width="match_parent"
-         android:layout_height="150dp"
-         android:layout_marginStart="20dp"
-         android:layout_marginEnd="20dp"
-         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-         android:hint="Description"
-         android:padding="5dp"
-         android:textColorHint="@color/black_shade_1"
-         >
-          <com.google.android.material.textfield.TextInputEditText
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:id="@+id/setDescriptionField"
-              android:ems="10"
-              android:importantForAutofill="no"
-              android:textColor="@color/black_shade_1"
-              android:textColorHint="@color/black_shade_1"
-              android:textSize="14sp"
-              android:inputType="text"
-              android:scrollHorizontally="true"
-              android:maxLength="100"
-              />
-     </com.google.android.material.textfield.TextInputLayout>
+    android:layout_gravity="center"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:strokeColor="@color/blue"
+    app:strokeWidth="3dp"
+    app:cardCornerRadius="20dp"
+    android:background="@drawable/notification_form"
+    >
 
      <LinearLayout
          android:layout_width="match_parent"
          android:layout_height="wrap_content"
-         android:orientation="horizontal"
-         android:layout_marginStart="30dp"
-         android:layout_marginEnd="30dp"
-         android:layout_marginBottom="20dp"
-         >
-          <com.google.android.material.button.MaterialButton
+         android:orientation="vertical">
+          <TextView
+              android:layout_marginTop="20dp"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:text="Dismiss"
-              android:layout_marginTop="10dp"
-              android:layout_marginEnd="20dp"
-              android:backgroundTint="@color/crimson"
-              android:layout_weight="1"
-              android:id="@+id/dismissSet"
+              android:text="Create set"
+              android:layout_gravity="center"
+              android:textSize="20sp"
+              android:textStyle="bold"
               />
-          <com.google.android.material.button.MaterialButton
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Add"
-              android:layout_marginTop="10dp"
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:layout_width="match_parent"
+              android:layout_height="70dp"
               android:layout_marginStart="20dp"
-              android:backgroundTint="@color/purple_200"
-              android:layout_weight="1"
-              android:id="@+id/addSet"
-              />
+              android:layout_marginEnd="20dp"
+              android:layout_marginTop="20dp"
+              style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+              android:hint="Name"
+              android:padding="5dp"
+              android:textColorHint="@color/black_shade_1"
+              >
+               <com.google.android.material.textfield.TextInputEditText
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent"
+                   android:id="@+id/setNameField"
+                   android:ems="10"
+                   android:importantForAutofill="no"
+                   android:textColor="@color/black_shade_1"
+                   android:textColorHint="@color/black_shade_1"
+                   android:textSize="14sp"
+                   android:maxLength="20"
+                   android:inputType="text"
+                   android:scrollHorizontally="true"
+                   />
+          </com.google.android.material.textfield.TextInputLayout>
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:layout_width="match_parent"
+              android:layout_height="150dp"
+              android:layout_marginStart="20dp"
+              android:layout_marginEnd="20dp"
+              style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+              android:hint="Description"
+              android:padding="5dp"
+              android:textColorHint="@color/black_shade_1"
+              >
+               <com.google.android.material.textfield.TextInputEditText
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent"
+                   android:id="@+id/setDescriptionField"
+                   android:ems="10"
+                   android:importantForAutofill="no"
+                   android:textColor="@color/black_shade_1"
+                   android:textColorHint="@color/black_shade_1"
+                   android:textSize="14sp"
+                   android:inputType="textMultiLine"
+                   android:scrollHorizontally="true"
+                   android:maxLength="100"
+                   />
+          </com.google.android.material.textfield.TextInputLayout>
+
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:layout_marginStart="30dp"
+              android:layout_marginEnd="30dp"
+              android:layout_marginBottom="20dp"
+              >
+               <com.google.android.material.button.MaterialButton
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Dismiss"
+                   android:layout_marginTop="10dp"
+                   android:layout_marginEnd="20dp"
+                   android:backgroundTint="@color/crimson"
+                   android:layout_weight="1"
+                   android:id="@+id/dismissSet"
+                   />
+               <com.google.android.material.button.MaterialButton
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Add"
+                   android:layout_marginTop="10dp"
+                   android:layout_marginStart="20dp"
+                   android:backgroundTint="@color/green"
+                   android:layout_weight="1"
+                   android:id="@+id/addSet"
+                   />
+          </LinearLayout>
      </LinearLayout>
 
 
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,43 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="50dp"
     android:layout_marginEnd="50dp"
     android:layout_gravity="center"
     android:orientation="vertical"
+    android:id="@+id/notification_main_column_container"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:strokeColor="@color/blue"
+    app:strokeWidth="3dp"
+    app:cardCornerRadius="20dp"
+    android:background="@drawable/notification_form"
     >
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="50dp"
-        android:text="Correct"
-        android:textStyle="bold"
-        android:textSize="25sp"
-        android:textColor="@color/white"
-        android:background="@color/purple_500"
-        android:gravity="center"
-        android:id="@+id/answeredHeader"
-        />
-    <TextView
-        android:layout_marginTop="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Word"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:textColor="@color/black_shade_1"
-        android:id="@+id/answeredCorrectWord"
-        android:layout_marginStart="30dp"
-        />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/blue"
-        android:text="Next"
-        android:layout_gravity="end"
-        android:id="@+id/answerNext"
-        android:layout_marginEnd="30dp"
-        />
-</LinearLayout>
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="50dp"
+            android:text="Correct"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:textColor="@color/white"
+            android:background="@color/green"
+            android:gravity="center"
+            android:id="@+id/answeredHeader"
+            />
+        <TextView
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Word"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="@color/black_shade_1"
+            android:id="@+id/answeredCorrectWord"
+            android:layout_marginStart="30dp"
+            />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_marginStart="30dp"
+                android:layout_marginTop="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/blue"
+                android:text="I was correct"
+                android:textStyle="bold"
+                android:layout_weight="3"
+                android:textColor="@color/green"
+                android:id="@+id/notIncorrect"
+                />
+            <Button
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/blue"
+                android:text="Next"
+                android:id="@+id/answerNext"
+                android:layout_marginEnd="30dp"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

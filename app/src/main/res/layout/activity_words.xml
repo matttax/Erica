@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".WordsActivity"
+    tools:context=".activities.WordsActivity"
     android:orientation="vertical"
     android:id="@+id/words_table"
     android:background="@color/light_grey">
@@ -18,27 +18,28 @@
         android:id="@+id/startLearn">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="50dp"
             android:orientation="horizontal"
             android:background="@color/white">
 
             <ImageView
-                android:layout_marginTop="5dp"
-                android:layout_width="58dp"
-                android:layout_height="56dp"
+                android:layout_marginTop="7dp"
+                android:layout_width="38dp"
+                android:layout_height="36dp"
                 android:src="@drawable/ic_baseline_play_arrow_24"
                 />
 
             <TextView
                 android:textStyle="bold"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/setName"
                 android:text="Set Name"
-                android:textSize="30sp"
+                android:textSize="22sp"
                 android:textColor="@color/blue"
                 android:layout_weight="1"
+                android:layout_marginStart="5dp"
                 />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -60,6 +61,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/wordsList"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         />
 </LinearLayout>

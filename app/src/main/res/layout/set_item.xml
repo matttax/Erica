@@ -14,10 +14,10 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="8dp"
+        app:cardCornerRadius="10dp"
         app:cardElevation="2dp"
         app:strokeWidth="3dp"
-        app:strokeColor="@color/teal_700"
+        app:strokeColor="@color/blue"
         >
 
         <LinearLayout
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content">
             <LinearLayout
                 android:layout_marginTop="20dp"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="20dp"
                 android:layout_marginEnd="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:text="SetName"
                     android:layout_weight="5"
                     android:textStyle="bold"
@@ -46,25 +46,41 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:layout_marginTop="10dp">
-                <com.google.android.material.button.MaterialButton
-                    android:layout_marginStart="10dp"
+                android:layout_marginTop="20dp">
+                <ImageButton
+                    android:textAllCaps="false"
+                    android:layout_marginStart="25dp"
                     android:layout_marginEnd="10dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Delete"
+                    android:layout_width="wrap_content"
+                    android:minWidth="50dp"
+                    android:layout_height="40dp"
+                    android:textSize="12sp"
+                    android:src="@drawable/ic_baseline_delete_24"
                     android:backgroundTint="@color/crimson"
-                    android:layout_weight="1"
                     android:layout_marginBottom="10dp"
                     android:id="@+id/deleteSet"
                     />
-                <com.google.android.material.button.MaterialButton
-                    android:layout_marginStart="10dp"
+                <ImageButton
+                    android:textAllCaps="false"
                     android:layout_marginEnd="10dp"
+                    android:layout_width="wrap_content"
+                    android:minWidth="50dp"
+                    android:layout_height="40dp"
+                    android:textSize="12sp"
+                    android:src="@drawable/ic_baseline_edit_24"
+                    android:backgroundTint="@color/green"
+                    android:layout_marginBottom="10dp"
+                    android:paddingBottom="8dp"
+                    />
+                <Button
+                    android:textAllCaps="false"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="25dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Learn"
-                    android:layout_weight="1"
+                    android:layout_height="40dp"
+                    android:textSize="12sp"
+                    android:text="Study"
+                    android:backgroundTint="@color/blue"
                     android:id="@+id/learnSet"
                     />
             </LinearLayout>
@@ -78,8 +94,8 @@
             android:layout_weight="1"
             android:id="@+id/setWordsCount"
             android:layout_gravity="end"
-            android:layout_marginTop="27dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
             />
 
     </com.google.android.material.card.MaterialCardView>

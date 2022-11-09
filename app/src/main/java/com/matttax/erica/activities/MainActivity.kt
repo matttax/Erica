@@ -1,4 +1,4 @@
-package com.matttax.erica
+package com.matttax.erica.activities
 
 import android.content.ContentValues
 import android.content.Intent
@@ -16,9 +16,12 @@ import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditio
 import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage
 import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateLanguage
 import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOptions
+import com.matttax.erica.R
+import com.matttax.erica.WordDBHelper
 
 
 class MainActivity : AppCompatActivity() {
+    private val db: WordDBHelper = WordDBHelper(this)
 
     private lateinit var setSpinner: Spinner
     private lateinit var termTextField: TextInputEditText
@@ -34,7 +37,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dismissWord: MaterialButton
 
 
-    private val languages = listOf("From", "Russian", "English", "German")
     private var sets = mutableMapOf<String, Int>()
 
     private var termCode = 0
@@ -62,17 +64,11 @@ class MainActivity : AppCompatActivity() {
         var setID = sets.values.first()
 
         setSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                //if (setID == sets[parent!!.selectedItem.toString()]!!)
-                // goto set
                 setID = sets[parent!!.selectedItem.toString()]!!
-                println(setID)
             }
-
         }
 
         translateOxford.setOnClickListener {
@@ -88,8 +84,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         toSetsButton.setOnClickListener {
-            val i = Intent(this, SetsActivity::class.java)
-            startActivity(i)
+            val setsIntent = Intent(this, SetsActivity::class.java)
+            startActivity(setsIntent)
         }
 
         dismissWord.setOnClickListener {
@@ -139,15 +135,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadSets() {
-        sets.clear()
-        val db = WordDBHelper(this)
-        val cursor = db.getSet()
-        if (cursor != null) {
-            if (cursor.count != 0) {
-                while (cursor.moveToNext()) {
-                    sets[cursor.getString(1)] = cursor.getInt(0)
-                }
-            }
+        val allSets = db.getSets()
+        for (set in allSets) {
+            sets[set.name] = set.id
         }
 
         if (sets.isEmpty()) {

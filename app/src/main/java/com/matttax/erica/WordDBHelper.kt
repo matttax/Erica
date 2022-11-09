@@ -2,9 +2,9 @@ package com.matttax.erica
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.util.*
 
 class WordDBHelper(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -76,16 +76,39 @@ class WordDBHelper(context: Context?) :
 //        else Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
     }
 
-    fun getSet(): Cursor? {
+    fun getSets(): MutableList<SetOfWords> {
+        val currentSets = mutableListOf<SetOfWords>()
         val query = "SELECT * FROM $SETS_TABLE_NAME"
         val db = this.writableDatabase
-        return db.rawQuery(query, null)
+        val cursor = db.rawQuery(query, null)
+        if (cursor.count != 0) {
+            while (cursor.moveToNext()) {
+                currentSets += SetOfWords(cursor.getInt(0), cursor.getString(1), cursor.getString(3), cursor.getInt(2))
+            }
+        }
+        cursor.close()
+        return currentSets
     }
 
-    fun getWords(setId: Int): Cursor? {
-        val query = "SELECT * FROM $WORDS_TABLE_NAME WHERE set_id=$setId"
-        val db = this.writableDatabase
-        return db.rawQuery(query, null)
+    fun getWordsAt(ids: List<Int>) = getWords("SELECT * FROM $WORDS_TABLE_NAME " +
+                                                    "WHERE id IN ${ids.toString().replace('[','(').replace(']',')')}")
+
+    fun getWords(setId: Int): MutableList<QuizWord> = getWords("SELECT * FROM $WORDS_TABLE_NAME WHERE $COLUMN_SET_ID=$setId")
+
+    fun getWords(query: String?): MutableList<QuizWord> {
+        val currentWords = mutableListOf<QuizWord>()
+        if (query == null)
+            return currentWords
+        val cursor = writableDatabase.rawQuery(query, null)
+        if (cursor.count != 0) {
+            while (cursor.moveToNext()) {
+                currentWords += QuizWord(cursor.getInt(0), LanguagePair(cursor.getString(1), cursor.getString(2)),
+                    Word(cursor.getString(3), cursor.getString(4)), cursor.getInt(5), cursor.getInt(6),
+                    Date(cursor.getLong(7)*1000), cursor.getInt(8))
+            }
+        }
+        cursor.close()
+        return currentWords
     }
 
     fun deleteAll() {
@@ -101,7 +124,26 @@ class WordDBHelper(context: Context?) :
 
     fun deleteWord(wordId: Int, setId: Int) {
         writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE id=$wordId")
-        writableDatabase.execSQL("UPDATE sets SET words_count = words_count - 1 WHERE id=$setId")
+        writableDatabase.execSQL("UPDATE $SETS_TABLE_NAME SET $COLUMN_WORDS_COUNT=COLUMN_WORDS_COUNT-1 WHERE id=$setId")
+    }
+
+    fun incrementWordAskedColumn(wordId: Int) {
+        writableDatabase.execSQL("UPDATE $WORDS_TABLE_NAME " +
+                                      "SET $COLUMN_TIMES_CORRECT=$COLUMN_TIMES_CORRECT+1 " +
+                                      "WHERE id=$wordId")
+    }
+
+    fun wordAnsweredCorrectly(wordId: Int) {
+        writableDatabase.execSQL("UPDATE $WORDS_TABLE_NAME SET $COLUMN_TIMES_ASKED=$COLUMN_TIMES_ASKED+1, " +
+                                     "$COLUMN_LAST_ASKED = CURRENT_TIMESTAMP, " +
+                                     "$COLUMN_TIMES_CORRECT=$COLUMN_TIMES_CORRECT+1 " +
+                                     "WHERE id=$wordId")
+    }
+
+    fun wordAnsweredIncorrectly(wordId: Int) {
+        writableDatabase.execSQL("UPDATE $WORDS_TABLE_NAME SET $COLUMN_TIMES_ASKED=$COLUMN_TIMES_ASKED+1, " +
+                                     "$COLUMN_LAST_ASKED = CURRENT_TIMESTAMP " +
+                                     "WHERE id=$wordId")
     }
 
     companion object {
