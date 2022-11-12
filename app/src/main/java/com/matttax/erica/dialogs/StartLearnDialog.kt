@@ -27,6 +27,7 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
         studyPriority.adapter = getAdaptor(listOf("Worst answered", "Least asked", "Long ago asked"))
         studyMode.adapter = getAdaptor(listOf("Study", "Learn"))
         studyBatchSize.adapter = getAdaptor(listOf(3, 5, 7, 10, 12, 15))
+        studyBatchSize.setSelection(2)
 
         initDismissButton(R.id.noStartLearn)
         initActionButton(R.id.yesStartLearn) {
@@ -35,6 +36,7 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
                         "ORDER BY ${getOrderBy(studyPriority.selectedItem.toString())}" +
                         "LIMIT ${wordsToBeStudied.value} "
             learnIntent.putExtra("query", query)
+            learnIntent.putExtra("batch_size", studyBatchSize.selectedItem.toString().toInt())
             dialog.dismiss()
             context.startActivity(learnIntent)
         }

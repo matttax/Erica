@@ -20,7 +20,7 @@ class WordsActivity : AppCompatActivity() {
     lateinit var head: TextView
     lateinit var subhead: TextView
 
-    lateinit var set: SetOfWords
+    lateinit var set: WordSet
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,11 +49,11 @@ class WordsActivity : AppCompatActivity() {
         rv.adapter = WordAdaptor(this, words, ContextCompat.getColor(this, R.color.blue))
     }
 
-    private fun getSetFromIntents(): SetOfWords {
+    private fun getSetFromIntents(): WordSet {
         val setId = intent.getIntExtra("setid", 1)
         val setName = intent.getStringExtra("setname").toString()
         val setDescription = intent.getStringExtra("setdescr").toString()
         val wordsCount = intent.getIntExtra("setwordcount", 0)
-        return SetOfWords(setId, setName, setDescription, wordsCount)
+        return WordSet(setId, setName, setDescription, wordsCount)
     }
 }

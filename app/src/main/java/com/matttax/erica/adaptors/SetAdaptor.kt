@@ -11,14 +11,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.R
-import com.matttax.erica.SetOfWords
+import com.matttax.erica.WordSet
 import com.matttax.erica.WordDBHelper
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.activities.WordsActivity
 import com.matttax.erica.dialogs.DeleteSetDialog
 
 
-class SetAdaptor(var context: Context, var sets: List<SetOfWords>) :
+class SetAdaptor(var context: Context, var sets: List<WordSet>) :
     RecyclerView.Adapter<SetAdaptor.SetViewHolder>() {
 
     class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

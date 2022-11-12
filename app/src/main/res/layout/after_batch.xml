@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_marginStart="30dp"
     android:layout_marginEnd="30dp"
-    android:layout_gravity="center"
+    android:layout_marginBottom="20dp"
+    android:layout_marginTop="20dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:strokeColor="@color/blue"
     app:strokeWidth="3dp"
@@ -14,9 +15,12 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginBottom="70dp"
+        >
         <TextView
+            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Results"
@@ -29,19 +33,22 @@
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/light_grey"
             android:id="@+id/answered"
             />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:backgroundTint="@color/blue"
-            android:text="Next"
-            android:id="@+id/toNextBatch"
-            />
-    </LinearLayout>
 
+    </LinearLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_marginBottom="10dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:backgroundTint="@color/blue"
+        android:text="Next"
+        android:id="@+id/toNextBatch"
+        android:layout_gravity="center|bottom"
+        />
 
 
 </com.google.android.material.card.MaterialCardView>

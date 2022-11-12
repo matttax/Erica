@@ -7,14 +7,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.matttax.erica.R
 import com.matttax.erica.adaptors.SetAdaptor
-import com.matttax.erica.SetOfWords
+import com.matttax.erica.WordSet
 import com.matttax.erica.WordDBHelper
 import com.matttax.erica.dialogs.CreateSetDialog
 
 
 class SetsActivity : AppCompatActivity() {
 
-    var sets = mutableListOf<SetOfWords>()
+    var sets = mutableListOf<WordSet>()
     val db = WordDBHelper(this)
 
     private lateinit var setsListRecyclerView: RecyclerView

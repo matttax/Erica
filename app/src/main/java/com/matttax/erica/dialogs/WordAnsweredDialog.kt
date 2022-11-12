@@ -2,6 +2,7 @@ package com.matttax.erica.dialogs
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -22,7 +23,7 @@ class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val 
 
     init {
         initDismissButton(R.id.answerNext)
-
+        incr(1)
         answeredCorrectWord.text = answer.definition
         dialog.setOnDismissListener {
             if (context.words.size == 1) {
@@ -34,7 +35,6 @@ class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val 
                 a.showDialog()
             } else {
                 kill()
-                incr(1)
             }
 
         }
@@ -72,12 +72,16 @@ class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val 
 
     fun kill() {
         context.updateQuestion()
-        context.words.first().spellTerm(context)
+        if (context.words.isEmpty()) {
+            context.finish()
+        } else {
+            context.words.peek().spellTerm(context)
+        }
     }
 
     fun incr(answered: Int) {
         context.answered += answered
         context.answeredProgressBar.incrementProgressBy(answered)
-        context.answeredTextInfo.text = "${context.answered}/${context.total}"
+        context.answeredTextInfo.text = "${context.answered}/${context.studying.nextBatchStart}"
     }
 }

@@ -76,14 +76,14 @@ class WordDBHelper(context: Context?) :
 //        else Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
     }
 
-    fun getSets(): MutableList<SetOfWords> {
-        val currentSets = mutableListOf<SetOfWords>()
+    fun getSets(): MutableList<WordSet> {
+        val currentSets = mutableListOf<WordSet>()
         val query = "SELECT * FROM $SETS_TABLE_NAME"
         val db = this.writableDatabase
         val cursor = db.rawQuery(query, null)
         if (cursor.count != 0) {
             while (cursor.moveToNext()) {
-                currentSets += SetOfWords(cursor.getInt(0), cursor.getString(1), cursor.getString(3), cursor.getInt(2))
+                currentSets += WordSet(cursor.getInt(0), cursor.getString(1), cursor.getString(3), cursor.getInt(2))
             }
         }
         cursor.close()

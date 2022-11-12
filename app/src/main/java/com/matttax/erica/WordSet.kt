@@ -4,11 +4,12 @@ import android.content.Context
 import android.graphics.Color
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.util.Log
 import android.widget.ImageView
 import java.util.*
 import kotlin.math.min
 
-class SetOfWords(val id: Int, val name: String, val description: String, val wordsCount: Int)
+class WordSet(val id: Int, val name: String, val description: String, val wordsCount: Int)
 
 class WordGroup(var words: MutableList<QuizWord>, private val batchSize: Int) {
     var nextBatchStart = 0
@@ -17,18 +18,16 @@ class WordGroup(var words: MutableList<QuizWord>, private val batchSize: Int) {
         words.shuffle()
     }
 
-    fun updateBatches(incorrectWords: MutableList<QuizWord>) {
-        words = words.drop(nextBatchStart) as MutableList<QuizWord>
-        nextBatchStart = min(batchSize, words.size)
+    fun getNextBatch(incorrectWords:MutableList<QuizWord>): Stack<QuizWord> {
+        words = ArrayList(words.drop(nextBatchStart))
         words.addAll(incorrectWords)
         words.shuffle()
-    }
-
-    fun completed() = nextBatchStart == words.size
-
-    fun getNextBatch(incorrectWords:MutableList<QuizWord>): List<QuizWord> {
-        updateBatches(incorrectWords)
-        return words.slice(0 until nextBatchStart)
+        nextBatchStart = min(batchSize, words.size)
+        val batch = Stack<QuizWord>()
+        for (i in 0 until nextBatchStart) {
+            batch.push(words[i])
+        }
+        return batch
     }
 
 }

@@ -2,6 +2,7 @@ package com.matttax.erica.dialogs
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,11 +21,9 @@ class AfterBatchDialog(context: Context, resource: Int, incorrectWords: List<Qui
     init {
         initDismissButton(R.id.toNextBatch)
 
-        Toast.makeText(context, incorrectWords.toString(), Toast.LENGTH_LONG).show()
-
         val incorrectRecyclerViewer: RecyclerView = dialogView.findViewById(R.id.answered)
         incorrectRecyclerViewer.adapter = WordAdaptor(context,
-            db.getWordsAt(incorrectWords.map { it.id }.toList() + correctWords.map { it.id }.toList()),
+            db.getWordsAt(incorrectWords.map { it.id }) + db.getWordsAt(correctWords.map { it.id }),
             ContextCompat.getColor(context, R.color.crimson), incorrectWords.size)
         incorrectRecyclerViewer.layoutManager = LinearLayoutManager(context)
     }
