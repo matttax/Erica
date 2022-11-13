@@ -56,7 +56,7 @@ class WordAdaptor(var context: Context, var words: List<QuizWord>, var color: In
             words[position].spell(context, holder.play)
         }
         holder.item.strokeColor = if (position < lastIncorrect) color else ContextCompat.getColor(context, R.color.green)
-        if (position != Int.MAX_VALUE) {
+        if (lastIncorrect != Int.MAX_VALUE) {
             holder.edit.isInvisible = true
             holder.delete.isInvisible = true
         }

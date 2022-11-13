@@ -16,17 +16,33 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <TextView
-            android:layout_marginTop="20dp"
-            android:layout_width="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/light_grey">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="4dp">
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Parameters"
-            android:textSize="25sp"
-            android:layout_gravity="center"
-            android:fontFamily="@font/gihun"
-            android:textStyle="bold"
-            />
+            android:orientation="vertical"
+            android:background="@color/white"
+            android:layout_marginBottom="15dp">
+            <TextView
+                android:layout_marginTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Parameters"
+                android:textSize="25sp"
+                android:fontFamily="@font/nunito_bold"
+                android:textStyle="bold"
+                android:layout_gravity="center"
+                />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -36,14 +52,14 @@
             android:layout_marginEnd="30dp"
             android:layout_marginTop="40dp"
             android:layout_marginBottom="40dp"
-            android:background="@color/light_grey"
             android:id="@+id/select_num_of_words"
+            android:background="?android:attr/selectableItemBackground"
             >
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Words to learn"
-                android:fontFamily="@font/gihun"
+                android:fontFamily="@font/nunito_bold"
                 android:textSize="20sp"
                 android:layout_weight="5"
                 />
@@ -52,9 +68,10 @@
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:layout_weight="1"
-                android:fontFamily="@font/gihun"
+                android:fontFamily="@font/nunito_bold"
                 android:textSize="15dp"
                 android:id="@+id/number_of_words_text"
+                android:layout_marginStart="7dp"
                 />
         </LinearLayout>
 
@@ -65,14 +82,14 @@
             android:layout_marginStart="30dp"
             android:layout_marginEnd="30dp"
             android:id="@+id/select_words_in_batch"
-            android:background="@color/light_grey"
+            android:background="?android:attr/selectableItemBackground"
             >
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Words in batch"
                 android:textSize="20sp"
-                android:fontFamily="@font/gihun"
+                android:fontFamily="@font/nunito_bold"
                 android:layout_weight="5"
                 />
 
@@ -81,57 +98,61 @@
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:layout_weight="1"
-                android:fontFamily="@font/gihun"
+                android:fontFamily="@font/nunito_bold"
                 android:textSize="15dp"
                 android:id="@+id/words_in_batch_text"
+                android:layout_marginStart="7dp"
                 />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:layout_marginStart="30dp"
             android:layout_marginEnd="30dp"
             android:layout_marginTop="50dp"
             >
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Mode"
                 android:textSize="20sp"
-                android:fontFamily="@font/gihun"
+                android:fontFamily="@font/nunito_bold"
+                android:layout_weight="1"
                 />
 
             <Spinner
                 android:id="@+id/mode"
-                android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="?android:attr/selectableItemBackground"
                 />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:layout_marginStart="30dp"
             android:layout_marginEnd="30dp"
             android:layout_marginTop="30dp"
             >
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Priority"
-                android:fontFamily="@font/gihun"
+                android:fontFamily="@font/nunito_bold"
                 android:textSize="20sp"
+                android:layout_weight="1"
                 />
             <Spinner
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:id="@+id/priority"
-
+                android:layout_weight="1"
+                android:background="?android:attr/selectableItemBackground"
                 />
         </LinearLayout>
 

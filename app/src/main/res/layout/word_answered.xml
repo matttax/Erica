@@ -29,6 +29,7 @@
             android:background="@color/green"
             android:gravity="center"
             android:id="@+id/answeredHeader"
+            android:fontFamily="@font/nunito_bold"
             />
         <TextView
             android:layout_marginTop="15dp"
@@ -41,6 +42,7 @@
             android:textColor="@color/black_shade_1"
             android:id="@+id/answeredCorrectWord"
             android:layout_marginStart="30dp"
+            android:fontFamily="@font/nunito_regular"
             />
         <LinearLayout
             android:layout_width="match_parent"
@@ -57,6 +59,9 @@
                 android:layout_weight="3"
                 android:textColor="@color/green"
                 android:id="@+id/notIncorrect"
+                android:fontFamily="@font/nunito_regular"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_marginEnd="70dp"
                 />
             <Button
                 android:layout_weight="1"
@@ -66,6 +71,8 @@
                 android:text="Next"
                 android:id="@+id/answerNext"
                 android:layout_marginEnd="30dp"
+                android:textSize="15sp"
+                android:fontFamily="@font/organo"
                 />
         </LinearLayout>
     </LinearLayout>

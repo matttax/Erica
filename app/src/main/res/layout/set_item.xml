@@ -40,6 +40,7 @@
                     android:layout_weight="5"
                     android:textStyle="bold"
                     android:id="@+id/setName"
+                    android:fontFamily="@font/nunito_regular"
                     />
             </LinearLayout>
             <LinearLayout
@@ -82,6 +83,7 @@
                     android:text="Study"
                     android:backgroundTint="@color/blue"
                     android:id="@+id/learnSet"
+                    android:fontFamily="@font/organo"
                     />
             </LinearLayout>
         </LinearLayout>

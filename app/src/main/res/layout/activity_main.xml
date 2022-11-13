@@ -43,8 +43,10 @@
                 android:layout_marginEnd="20dp"
                 android:text="To sets"
                 android:id="@+id/toset"
-                android:backgroundTint="@color/teal_700"
+                android:backgroundTint="@color/teal_700_transparent"
                 android:layout_weight="1"
+                android:textColor="@color/black_shade_1"
+                android:fontFamily="@font/nunito_bold"
                 />
         </LinearLayout>
 
@@ -74,6 +76,7 @@
             android:maxLines="1"
             android:inputType="text"
             android:scrollHorizontally="true"
+            android:fontFamily="@font/nunito_regular"
             />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -92,6 +95,7 @@
             android:backgroundTint="@color/blue"
             android:layout_weight="1"
             android:textSize="12sp"
+            android:fontFamily="@font/nunito_bold"
             />
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
@@ -104,6 +108,7 @@
             android:backgroundTint="@color/blue"
             android:layout_weight="1"
             android:textSize="12sp"
+            android:fontFamily="@font/nunito_bold"
             />
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
@@ -116,7 +121,7 @@
             android:backgroundTint="@color/blue"
             android:layout_weight="1"
             android:textSize="12sp"
-
+            android:fontFamily="@font/nunito_bold"
             />
     </LinearLayout>
 
@@ -144,6 +149,7 @@
             android:inputType="text"
             android:scrollHorizontally="true"
             android:id="@+id/defText"
+            android:fontFamily="@font/nunito_regular"
             />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -162,6 +168,8 @@
             android:backgroundTint="@color/crimson"
             android:layout_weight="1"
             android:id="@+id/dismissWord"
+            android:fontFamily="@font/nunito_bold"
+            android:textSize="15dp"
             />
         <com.google.android.material.button.MaterialButton
             android:layout_width="wrap_content"
@@ -173,6 +181,8 @@
             android:backgroundTint="@color/green"
             android:layout_weight="1"
             android:id="@+id/addWord"
+            android:fontFamily="@font/nunito_bold"
+            android:textSize="15dp"
             />
     </LinearLayout>
 

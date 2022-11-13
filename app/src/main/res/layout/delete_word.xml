@@ -19,7 +19,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="10dp"
         android:layout_gravity="center"
         >
         <TextView
@@ -28,15 +28,17 @@
             android:layout_height="wrap_content"
             android:text="Remove?"
             android:layout_gravity="center"
-            android:textSize="20sp"
+            android:textSize="25sp"
             android:textStyle="bold"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
+            android:fontFamily="@font/nunito_bold"
             />
 
         <com.google.android.material.button.MaterialButton
-            android:textSize="10dp"
+            android:fontFamily="@font/organo"
+            android:textSize="15dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Yes"
@@ -47,13 +49,14 @@
             />
 
         <com.google.android.material.button.MaterialButton
-            android:textSize="10dp"
+            android:textSize="15dp"
+            android:fontFamily="@font/organo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="No"
+            android:backgroundTint="@color/crimson"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
-            android:backgroundTint="@color/crimson"
             android:id="@+id/noDeleteWord"
             />
     </LinearLayout>

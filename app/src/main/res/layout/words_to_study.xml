@@ -22,7 +22,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="15dp"
             android:textSize="20sp"
-            android:fontFamily="@font/gihun"
+            android:fontFamily="@font/nunito_bold"
             android:textStyle="bold"
             android:id="@+id/words_text"
             />

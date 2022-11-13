@@ -24,10 +24,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Results"
-            android:textSize="30dp"
+            android:textSize="25dp"
             android:gravity="center"
             android:textStyle="bold"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="30dp"
+            android:fontFamily="@font/nunito_bold"
             />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -48,6 +49,8 @@
         android:text="Next"
         android:id="@+id/toNextBatch"
         android:layout_gravity="center|bottom"
+        android:fontFamily="@font/organo"
+        android:textSize="15dp"
         />
 
 

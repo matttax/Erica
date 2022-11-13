@@ -21,6 +21,7 @@
             android:layout_marginTop="12dp"
             android:layout_marginStart="10dp"
             android:id="@+id/closeLearn"
+            android:background="?android:attr/selectableItemBackground"
             />
         <ProgressBar
             android:layout_marginStart="15dp"
@@ -44,6 +45,7 @@
             android:text="4/7"
             android:layout_marginEnd="15dp"
             android:id="@+id/studyProgressInfo"
+            android:fontFamily="@font/nunito_regular"
             />
     </LinearLayout>
 
@@ -57,6 +59,7 @@
         android:text="Word"
         android:layout_weight="1"
         android:id="@+id/wordAsked"
+        android:fontFamily="@font/nunito_light"
         />
 
     <LinearLayout
@@ -78,6 +81,7 @@
                 android:id="@+id/wordInput"
                 android:inputType="text"
                 android:maxLines="1"
+                android:fontFamily="@font/nunito_regular"
                 />
         </com.google.android.material.textfield.TextInputLayout>
         <TextView
@@ -90,6 +94,8 @@
             android:textColor="@color/crimson"
             android:layout_marginEnd="15dp"
             android:id="@+id/doNotKnowWord"
+            android:fontFamily="@font/nunito_regular"
+            android:background="?android:attr/selectableItemBackground"
             />
     </LinearLayout>
 
