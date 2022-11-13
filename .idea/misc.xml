@@ -12,6 +12,7 @@
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/ic_baseline_edit_24.xml" value="0.2135" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.2135" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/ic_baseline_surround_sound_24.xml" value="0.178" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/ic_baseline_volume_down_24.xml" value="0.2135" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/ic_mic.xml" value="0.178" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/notification_form.xml" value="0.2135" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_learn.xml" value="0.24139492753623187" />
@@ -22,6 +23,7 @@
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/create_set_dialog.xml" value="0.24139492753623187" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/delete_set.xml" value="0.24139492753623187" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/delete_word.xml" value="0.24139492753623187" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/m.xml" value="0.24139492753623187" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/set_item.xml" value="0.24547101449275363" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/sets_spinner_item.xml" value="0.24547101449275363" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/shitty_rv.xml" value="0.24139492753623187" />
@@ -30,6 +32,8 @@
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/start_learn_dialog.xml" value="0.24139492753623187" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/term_item.xml" value="0.24547101449275363" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/word_answered.xml" value="0.24139492753623187" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/words_to_study.xml" value="0.24139492753623187" />
+        <entry key="..\:/Users/1661322/AppData/Local/Android/Sdk/platforms/android-32/data/res/layout/simple_spinner_dropdown_item.xml" value="0.24139492753623187" />
       </map>
     </option>
   </component>

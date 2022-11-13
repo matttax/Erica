@@ -7,6 +7,7 @@
     android:padding="5dp"
     android:textColor="@color/black_shade_1"
     android:background="@color/light_grey"
+    android:fontFamily="@font/gihun"
     >
 
 
