@@ -10,6 +10,9 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.isInvisible
+import androidx.core.widget.doOnTextChanged
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions
@@ -27,11 +30,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var termTextField: TextInputEditText
     private lateinit var defTextField: TextInputEditText
     private lateinit var toSetsButton: MaterialButton
-    private lateinit var translatedTV: WebView
-
-    private lateinit var translateOxford: MaterialButton
-    private lateinit var translateCambridge: MaterialButton
-    private lateinit var translateGlobse: MaterialButton
 
     private lateinit var addWord: MaterialButton
     private lateinit var dismissWord: MaterialButton
@@ -48,17 +46,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         termTextField = findViewById(R.id.editSource)
-        translatedTV = findViewById(R.id.translatedText)
+        //translatedTV = findViewById(R.id.translatedText)
         toSetsButton = findViewById(R.id.toset)
         setSpinner = findViewById(R.id.setsSpinner)
         defTextField = findViewById(R.id.defText)
 
-        translateOxford = findViewById(R.id.translateOxford)
-        translateCambridge = findViewById(R.id.translateCambridge)
-        translateGlobse = findViewById(R.id.translateGlobse)
-
         addWord = findViewById(R.id.addWord)
         dismissWord = findViewById(R.id.dismissWord)
+
+        dismissWord.isInvisible = true
+
+        termTextField.doOnTextChanged { text, start, before, count ->
+            if (addWord.text.toString().lowercase() == "add") {
+                addWord.text = "translate"
+                addWord.background.setTint(ContextCompat.getColor(this, R.color.blue))
+                dismissWord.isInvisible = true
+            }
+        }
 
         loadSets()
         var setID = sets.values.first()
@@ -71,18 +75,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        translateOxford.setOnClickListener {
-            translateText(termCode, defCode, termTextField.text.toString(), 0)
-        }
-
-        translateCambridge.setOnClickListener {
-            translateText(termCode, defCode, termTextField.text.toString(), 1)
-        }
-
-        translateGlobse.setOnClickListener {
-            translateText(termCode, defCode, termTextField.text.toString(), 2)
-        }
-
         toSetsButton.setOnClickListener {
             val setsIntent = Intent(this, SetsActivity::class.java)
             startActivity(setsIntent)
@@ -90,13 +82,16 @@ class MainActivity : AppCompatActivity() {
 
         dismissWord.setOnClickListener {
             termTextField.text = SpannableStringBuilder("")
-
             defTextField.text = SpannableStringBuilder("")
-            translatedTV.loadUrl("about:blank")
         }
 
         addWord.setOnClickListener {
-            val allWordsSetId = 3
+            if (addWord.text.toString().lowercase() == "translate") {
+                addWord.text = "add"
+                addWord.background.setTint(ContextCompat.getColor(this, R.color.green))
+                dismissWord.isInvisible = false
+            }
+
             val db = WordDBHelper(this)
             //db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), allWordsSetId)
             db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), setID)
@@ -105,9 +100,8 @@ class MainActivity : AppCompatActivity() {
             write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$setID")
             //write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$allWordsSetId")
 
-            termTextField.text = SpannableStringBuilder("")
-            defTextField.text = SpannableStringBuilder("")
-            translatedTV.loadUrl("about:blank")
+//            termTextField.text = SpannableStringBuilder("")
+//            defTextField.text = SpannableStringBuilder("")
         }
     }
 
@@ -121,16 +115,6 @@ class MainActivity : AppCompatActivity() {
             translator.translate(text).addOnSuccessListener {
                 defTextField.text = SpannableStringBuilder(it)
             }
-        }
-
-        translatedTV.webViewClient = WebViewClient()
-        CookieManager.getInstance().setAcceptCookie(true)
-        val webSettings = translatedTV.settings
-        webSettings.javaScriptEnabled = true
-        when (siteCode) {
-            0 -> translatedTV.loadUrl("https://www.oxfordlearnersdictionaries.com/definition/english/${text.replace(' ', '-')}")
-            1 -> translatedTV.loadUrl("https://dictionary.cambridge.org/dictionary/english-russian/${text.replace(' ', '-')}")
-            2 -> translatedTV.loadUrl("https://ru.glosbe.com/словарь-английский-русский/${text.replace(" ", "%20")}")
         }
     }
 

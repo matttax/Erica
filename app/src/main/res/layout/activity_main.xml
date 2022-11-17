@@ -23,6 +23,11 @@
             android:background="@color/white"
             android:orientation="horizontal"
             >
+            <ImageView
+                android:layout_width="58dp"
+                android:layout_height="51dp"
+                android:layout_marginTop="7dp"
+                android:src="@drawable/ic_baseline_play_arrow_24" />
             <Spinner
                 android:id="@+id/setsSpinner"
                 android:layout_width="wrap_content"
@@ -31,9 +36,9 @@
                 android:layout_gravity="center"
                 android:padding="3dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginStart="20dp"
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="10dp"
+                android:backgroundTint="@color/teal_700_transparent"
                 />
 
             <com.google.android.material.button.MaterialButton
@@ -80,51 +85,6 @@
             />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Oxford"
-            android:layout_marginTop="5dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="2dp"
-            android:id="@+id/translateOxford"
-            android:backgroundTint="@color/blue"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            android:fontFamily="@font/nunito_bold"
-            />
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cambridge"
-            android:layout_marginTop="5dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginEnd="2dp"
-            android:id="@+id/translateCambridge"
-            android:backgroundTint="@color/blue"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            android:fontFamily="@font/nunito_bold"
-            />
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Globse"
-            android:layout_marginTop="5dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginEnd="20dp"
-            android:id="@+id/translateGlobse"
-            android:backgroundTint="@color/blue"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            android:fontFamily="@font/nunito_bold"
-            />
-    </LinearLayout>
-
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
@@ -168,31 +128,62 @@
             android:backgroundTint="@color/crimson"
             android:layout_weight="1"
             android:id="@+id/dismissWord"
-            android:fontFamily="@font/nunito_bold"
+            android:fontFamily="@font/organo"
             android:textSize="15dp"
             />
         <com.google.android.material.button.MaterialButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add"
+            android:text="translate"
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:backgroundTint="@color/green"
+            android:backgroundTint="@color/blue"
             android:layout_weight="1"
             android:id="@+id/addWord"
-            android:fontFamily="@font/nunito_bold"
+            android:fontFamily="@font/organo"
             android:textSize="15dp"
             />
     </LinearLayout>
 
-    <WebView
-        android:id="@+id/translatedText"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
+        android:orientation="vertical">
 
+        <LinearLayout
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            />
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/sliding_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabSelectedTextColor="@color/white"
+            app:tabIndicatorColor="@color/blue"
+            app:tabBackground="@drawable/tab_style"
+            app:tabTextAppearance="@style/RoundedTabLayoutStyle"
+            >
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:text="Translations"
+                />
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:text="Definitions"
+                />
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:text="Examples"
+                />
+        </com.google.android.material.tabs.TabLayout>
 
-
+    </LinearLayout>
 </LinearLayout>

@@ -124,7 +124,7 @@ class WordDBHelper(context: Context?) :
 
     fun deleteWord(wordId: Int, setId: Int) {
         writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE id=$wordId")
-        writableDatabase.execSQL("UPDATE $SETS_TABLE_NAME SET $COLUMN_WORDS_COUNT=COLUMN_WORDS_COUNT-1 WHERE id=$setId")
+        writableDatabase.execSQL("UPDATE $SETS_TABLE_NAME SET $COLUMN_WORDS_COUNT=$COLUMN_WORDS_COUNT-1 WHERE id=$setId")
     }
 
     fun incrementWordAskedColumn(wordId: Int) {
