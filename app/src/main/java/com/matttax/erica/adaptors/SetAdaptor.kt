@@ -17,28 +17,15 @@ import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.activities.WordsActivity
 import com.matttax.erica.dialogs.DeleteSetDialog
 
+class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val setName: TextView = itemView.findViewById(R.id.setName)
+    val wordsCount: TextView = itemView.findViewById(R.id.setWordsCount)
+    val setLayout: LinearLayout = itemView.findViewById(R.id.setItem)
+    val learnButton: MaterialButton = itemView.findViewById(R.id.learnSet)
+    val deleteButton: ImageButton = itemView.findViewById(R.id.deleteSet)
+}
 
-class SetAdaptor(var context: Context, var sets: List<WordSet>) :
-    RecyclerView.Adapter<SetAdaptor.SetViewHolder>() {
-
-    class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var setName: TextView
-        var wordsCount: TextView
-        var setLayout: LinearLayout
-
-        var learnButton: MaterialButton
-        var deleteButton: ImageButton
-
-        init {
-            setName = itemView.findViewById(R.id.setName)
-            wordsCount = itemView.findViewById(R.id.setWordsCount)
-            setLayout = itemView.findViewById(R.id.setItem)
-
-            learnButton = itemView.findViewById(R.id.learnSet)
-            deleteButton = itemView.findViewById(R.id.deleteSet)
-        }
-
-    }
+class SetAdaptor(var context: Context, var sets: List<WordSet>) : RecyclerView.Adapter<SetViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SetViewHolder {
         val inflater = LayoutInflater.from(context)
@@ -60,7 +47,8 @@ class SetAdaptor(var context: Context, var sets: List<WordSet>) :
 
         holder.learnButton.setOnClickListener {
             val i = Intent(context, LearnActivity::class.java)
-            i.putExtra("query", "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} WHERE set_id=${sets[position].id}")
+            i.putExtra("query", "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
+                    "WHERE ${WordDBHelper.COLUMN_SET_ID}=${sets[position].id}")
             context.startActivity(i)
         }
 

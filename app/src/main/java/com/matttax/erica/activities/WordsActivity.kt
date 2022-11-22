@@ -1,26 +1,39 @@
 package com.matttax.erica.activities
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
+import android.view.ContextThemeWrapper
+import android.view.Gravity
+import android.view.View
 import android.widget.*
-import androidx.cardview.widget.CardView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.matttax.erica.*
 import com.matttax.erica.adaptors.WordAdaptor
-import com.matttax.erica.WordDBHelper
 import com.matttax.erica.dialogs.StartLearnDialog
 
 class WordsActivity : AppCompatActivity() {
     private val db: WordDBHelper = WordDBHelper(this)
     var words = mutableListOf<QuizWord>()
+    var selected = mutableListOf<QuizWord>()
 
     lateinit var rv: RecyclerView
     lateinit var head: TextView
     lateinit var subhead: TextView
 
     lateinit var set: WordSet
+
+    lateinit var lrn: LinearLayout
+    lateinit var strt: ImageView
+
+    lateinit var studyButton: MaterialButton
+    lateinit var deleteButton: MaterialButton
+    lateinit var moveButton: MaterialButton
+
+    var shitSelected: Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,16 +50,31 @@ class WordsActivity : AppCompatActivity() {
         head.text = set.name
         subhead.text = set.description
 
-
-        val lrn: CardView = findViewById(R.id.startLearn)
+        strt = findViewById(R.id.startLearnImage)
+        lrn = findViewById(R.id.startLearn)
         lrn.setOnClickListener {
             StartLearnDialog(this, R.layout.start_learn_dialog, set.wordsCount, set.id).showDialog()
         }
+
+        initButtons()
     }
 
     fun loadWords() {
         words = db.getWords(intent.getIntExtra("setid", 1))
-        rv.adapter = WordAdaptor(this, words, ContextCompat.getColor(this, R.color.blue))
+        rv.adapter = WordAdaptor(this, words, ContextCompat.getColor(this, R.color.blue)) {
+            if (shitSelected == selected.isNotEmpty())
+                return@WordAdaptor
+            shitSelected = selected.isNotEmpty()
+            lrn.removeAllViews()
+            if (shitSelected) {
+                lrn.addView(moveButton)
+                lrn.addView(studyButton)
+                lrn.addView(deleteButton)
+            } else {
+                lrn.addView(strt)
+                lrn.addView(head)
+            }
+        }
     }
 
     private fun getSetFromIntents(): WordSet {
@@ -55,5 +83,51 @@ class WordsActivity : AppCompatActivity() {
         val setDescription = intent.getStringExtra("setdescr").toString()
         val wordsCount = intent.getIntExtra("setwordcount", 0)
         return WordSet(setId, setName, setDescription, wordsCount)
+    }
+
+    private fun initButtons() {
+        val moveLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT,1f)
+        moveLP.setMargins(50, 20, 20, 0)
+        moveButton = getButton(moveLP, "Move", R.color.blue) {
+
+        }
+
+        val studyLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        studyLP.setMargins(20, 20, 20, 0)
+        studyButton = getButton(studyLP, "Study", R.color.green) {
+            val learnIntent = Intent(this, LearnActivity::class.java)
+            val query = "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
+                    "WHERE ${WordDBHelper.COLUMN_WORD_ID} IN ${selected.map { it.id }.toString().replace("[", "(").replace("]", ")")}"
+            learnIntent.putExtra("query", query)
+            learnIntent.putExtra("batch_size", 7)
+            startActivity(learnIntent)
+            selected.clear()
+            loadWords()
+            lrn.removeAllViews()
+            lrn.addView(strt)
+            lrn.addView(head)
+        }
+
+        val deleteLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        deleteLP.setMargins(20, 20, 50, 0)
+        deleteButton = getButton(deleteLP, "Delete", R.color.crimson) {
+            for (i in selected) {
+                db.deleteWord(i.id, i.setId)
+                words.remove(i)
+            }
+            selected.clear()
+            rv.adapter!!.notifyDataSetChanged()
+            //add dialog
+        }
+    }
+
+    fun getButton(layoutParams: LinearLayout.LayoutParams, text: String, color: Int, onClick: View.OnClickListener): MaterialButton {
+        val button = MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button)
+        button.layoutParams = layoutParams
+        button.text = text
+        button.gravity = Gravity.CENTER
+        button.setBackgroundColor(ContextCompat.getColor(this, color))
+        button.setOnClickListener(onClick)
+        return button
     }
 }

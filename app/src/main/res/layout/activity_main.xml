@@ -38,7 +38,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="10dp"
-                android:backgroundTint="@color/teal_700_transparent"
+                android:backgroundTint="@color/transparent"
                 />
 
             <com.google.android.material.button.MaterialButton
@@ -48,7 +48,7 @@
                 android:layout_marginEnd="20dp"
                 android:text="To sets"
                 android:id="@+id/toset"
-                android:backgroundTint="@color/teal_700_transparent"
+                android:backgroundTint="@color/transparent"
                 android:layout_weight="1"
                 android:textColor="@color/black_shade_1"
                 android:fontFamily="@font/nunito_bold"
@@ -154,10 +154,17 @@
         <LinearLayout
             android:id="@+id/viewpager"
             android:layout_width="match_parent"
-            android:orientation="horizontal"
             android:layout_height="0dp"
             android:layout_weight="1"
-            />
+            android:orientation="horizontal" >
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_marginTop="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/translations"/>
+        </LinearLayout>
+
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/sliding_tabs"
@@ -183,6 +190,7 @@
                 android:layout_width="match_parent"
                 android:text="Examples"
                 />
+
         </com.google.android.material.tabs.TabLayout>
 
     </LinearLayout>

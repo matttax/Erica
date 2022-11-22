@@ -34,10 +34,20 @@ class WordGroup(var words: MutableList<QuizWord>, private val batchSize: Int) {
 
 class Word(val term: String?, val definition: String)
 
-class LanguagePair(private val termLanguage: String, private val definitionLanguage: String) {
+class LanguagePair(val termLanguage: String, val definitionLanguage: String) {
+
     fun getTermLocale(): Locale = getLocale(termLanguage)
 
     fun getDefinitionLocale(): Locale = getLocale(definitionLanguage)
+
+    fun getTermFullName() = getFullName(termLanguage)
+
+    fun getDefinitionFullName() = getFullName(definitionLanguage)
+
+    private fun getFullName(language: String) = when(language) {
+        "ru" -> "russian"
+        else -> "english"
+    }
 
     private fun getLocale(language: String) = when(language) {
         "ru" -> Locale("ru", "RU")
@@ -48,15 +58,10 @@ class LanguagePair(private val termLanguage: String, private val definitionLangu
 class QuizWord(val id: Int,
                val langPair: LanguagePair,
                val word: Word,
-               val timesAsked: Int,
-               val timesCorrect: Int,
-               val lastAsked: Date,
                val setId: Int) {
 
     private lateinit var termSpeech: TextToSpeech
     private lateinit var definitionSpeech: TextToSpeech
-
-    fun getCorrectPercentage() = timesCorrect.toDouble() / timesAsked
 
     fun spell(context: Context, play:ImageView?=null) {
         spellTerm(context, play)

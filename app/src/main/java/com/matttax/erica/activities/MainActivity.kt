@@ -5,22 +5,24 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.view.View
-import android.webkit.CookieManager
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions
 import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage
 import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateLanguage
 import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOptions
-import com.matttax.erica.R
-import com.matttax.erica.WordDBHelper
+import com.matttax.erica.*
+import com.matttax.erica.adaptors.TranslationAdaptor
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,12 +36,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var addWord: MaterialButton
     private lateinit var dismissWord: MaterialButton
 
+    private lateinit var tr: RecyclerView
 
+    private lateinit var translator: Translator
+
+    private lateinit var tabs: TabLayout
     private var sets = mutableMapOf<String, Int>()
-
-    private var termCode = 0
-    private var defCode = 0
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +55,9 @@ class MainActivity : AppCompatActivity() {
 
         addWord = findViewById(R.id.addWord)
         dismissWord = findViewById(R.id.dismissWord)
+        tabs = findViewById(R.id.sliding_tabs)
+
+        tr = findViewById(R.id.translations)
 
         dismissWord.isInvisible = true
 
@@ -87,22 +92,57 @@ class MainActivity : AppCompatActivity() {
 
         addWord.setOnClickListener {
             if (addWord.text.toString().lowercase() == "translate") {
+                translator = Translator(this, termTextField.text.toString(),
+                    LanguagePair("en", "ru"), tabs.selectedTabPosition)
+                tr.adapter = translator.getLoadedAdaptor()
+                when (tabs.selectedTabPosition) {
+                    0 -> tr.layoutManager = FlexboxLayoutManager(this@MainActivity)
+                    else -> tr.layoutManager = LinearLayoutManager(this@MainActivity)
+                }
+
                 addWord.text = "add"
                 addWord.background.setTint(ContextCompat.getColor(this, R.color.green))
                 dismissWord.isInvisible = false
-            }
 
-            val db = WordDBHelper(this)
-            //db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), allWordsSetId)
-            db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), setID)
+            } else {
 
-            val write = db.writableDatabase
-            write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$setID")
-            //write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$allWordsSetId")
+                val db = WordDBHelper(this)
+                //db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), allWordsSetId)
+                db.addWord(
+                    "en",
+                    "ru",
+                    termTextField.text.toString(),
+                    defTextField.text.toString(),
+                    setID
+                )
+
+                val write = db.writableDatabase
+                write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$setID")
+                //write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$allWordsSetId")
 
 //            termTextField.text = SpannableStringBuilder("")
 //            defTextField.text = SpannableStringBuilder("")
+            }
         }
+
+        tabs.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                if (termTextField.text.toString() == "")
+                    return
+                tr.adapter = translator.getAdaptorAtPosition(tab!!.position)
+
+                when (tab.position) {
+                    0 -> tr.layoutManager = FlexboxLayoutManager(this@MainActivity)
+                    else -> tr.layoutManager = LinearLayoutManager(this@MainActivity)
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
     }
 
     private fun translateText(termCode: Int, defCode: Int, text: String, siteCode: Int) {
@@ -145,4 +185,7 @@ class MainActivity : AppCompatActivity() {
         loadSets()
     }
 
+
+
 }
+

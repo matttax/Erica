@@ -103,8 +103,7 @@ class WordDBHelper(context: Context?) :
         if (cursor.count != 0) {
             while (cursor.moveToNext()) {
                 currentWords += QuizWord(cursor.getInt(0), LanguagePair(cursor.getString(1), cursor.getString(2)),
-                    Word(cursor.getString(3), cursor.getString(4)), cursor.getInt(5), cursor.getInt(6),
-                    Date(cursor.getLong(7)*1000), cursor.getInt(8))
+                    Word(cursor.getString(3), cursor.getString(4)), cursor.getInt(8))
             }
         }
         cursor.close()

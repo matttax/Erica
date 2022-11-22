@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginStart="20dp"
     android:layout_marginEnd="20dp"
@@ -9,30 +10,20 @@
     android:layout_gravity="center"
     app:cardCornerRadius="40dp"
     app:cardElevation="3dp"
-    app:strokeWidth="2dp"
+    app:strokeWidth="1dp"
     app:strokeColor="@color/blue"
-    android:id="@+id/item"
     >
-
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/cardBackground">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_volume_down_24"
-            android:layout_marginTop="25dp"
-            android:layout_marginStart="20dp"
-            android:id="@+id/playSound"
-            />
+        android:orientation="horizontal">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:layout_marginStart="20dp">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -40,54 +31,43 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="20dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:hint="Term"
+                android:hint="Example"
                 android:textStyle="bold"
                 android:inputType="none"
                 android:padding="5dp"
-                android:textSize="15sp"
+                android:textSize="17sp"
                 android:textColorHint="@color/black_shade_1"
                 app:hintTextColor="@color/black_shade_1"
-                android:id="@+id/wordTerm"
                 android:fontFamily="@font/nunito_bold"
                 >
             </TextView>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginStart="15dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:hint="Definition"
+                android:hint="Translation"
                 android:inputType="none"
                 android:padding="5dp"
-                android:textSize="12sp"
+                android:textSize="15sp"
                 android:textColorHint="@color/black_shade_1"
                 app:hintTextColor="@color/black_shade_1"
                 android:layout_weight="4"
                 android:id="@+id/wordDef"
-                android:fontFamily="@font/nunito_regular"
+                android:fontFamily="@font/nunito_light"
                 >
             </TextView>
         </LinearLayout>
         <ImageView
-            android:layout_width="20dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_volume_down_24"
+            android:layout_marginTop="25dp"
             android:layout_marginEnd="20dp"
-            android:src="@drawable/ic_baseline_edit_24"
-            android:layout_gravity="center"
-            app:tint="@color/green"
-            android:id="@+id/editWord"
-            />
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
-            android:src="@drawable/ic_baseline_delete_24"
-            android:layout_gravity="center"
-            app:tint="@color/crimson"
-            android:id="@+id/deleteWord"
             />
     </LinearLayout>
+
 
 </com.google.android.material.card.MaterialCardView>
