@@ -102,3 +102,5 @@ class QuizWord(val id: Int,
         }
     }
 }
+
+class Definitions(val partOfSpeech: String, val description: String, val definition: List<String>)

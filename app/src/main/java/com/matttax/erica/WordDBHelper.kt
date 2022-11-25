@@ -76,6 +76,17 @@ class WordDBHelper(context: Context?) :
 //        else Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
     }
 
+    fun getLastSetAdded(): Int {
+        val cursor = writableDatabase.rawQuery("SELECT max(set_id) " +
+                                     "FROM words " +
+                                     "GROUP BY set_id " +
+                                     "ORDER BY max(id)", null)
+        if (cursor.count > 0)
+            if (cursor.moveToLast())
+                return cursor.getInt(0)
+        return -1
+    }
+
     fun getSets(): MutableList<WordSet> {
         val currentSets = mutableListOf<WordSet>()
         val query = "SELECT * FROM $SETS_TABLE_NAME"

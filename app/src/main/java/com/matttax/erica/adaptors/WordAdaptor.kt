@@ -52,8 +52,8 @@ class WordAdaptor(
         }
         holder.item.strokeColor = if (position < lastIncorrect) color else ContextCompat.getColor(context, R.color.green)
         if (lastIncorrect != Int.MAX_VALUE) {
-            holder.edit.isInvisible = true
-            holder.delete.isInvisible = true
+            holder.cardBackground.removeView(holder.edit)
+            holder.cardBackground.removeView(holder.delete)
         } else {
             val currentWord = words[holder.adapterPosition]
             holder.itemView.setOnClickListener {

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableStringBuilder
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -43,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tabs: TabLayout
     private var sets = mutableMapOf<String, Int>()
 
+    var selected = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +80,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 setID = sets[parent!!.selectedItem.toString()]!!
+                selected = position
             }
         }
 
@@ -160,6 +164,8 @@ class MainActivity : AppCompatActivity() {
 
     fun loadSets() {
         val allSets = db.getSets()
+        sets.clear()
+        Log.i("sets", allSets.map { it.id.toString() }.toString())
         for (set in allSets) {
             sets[set.name] = set.id
         }
@@ -174,10 +180,24 @@ class MainActivity : AppCompatActivity() {
             sets["All Words"] = 1
         }
 
+        val s = db.getLastSetAdded()
+        var cnt = 0
+        if (s != -1) {
+            for (i in sets) {
+                if (i.value == s)
+                    selected = cnt
+                cnt += 1
+            }
+        }
+
+        if (sets.size - 1 < selected)
+            selected = 0
+
 
         val setAdaptor = ArrayAdapter(this, R.layout.sets_spinner_item, sets.keys.toList())
         setAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         setSpinner.adapter = setAdaptor
+        setSpinner.setSelection(selected)
     }
 
     override fun onResume() {

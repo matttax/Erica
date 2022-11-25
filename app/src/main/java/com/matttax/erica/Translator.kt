@@ -4,13 +4,14 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import com.matttax.erica.adaptors.PartOfSpeechAdaptor
 import com.matttax.erica.adaptors.TranslationAdaptor
 import com.matttax.erica.adaptors.WordAdaptor
 
 class Translator(val context: Context, val word: String, private val languagePair: LanguagePair, private val position: Int) {
     private var translations: List<String> = emptyList()
     private var examples: List<QuizWord> = emptyList()
-    private var definitions: List<QuizWord> = emptyList()
+    private var definitions: List<Definitions> = emptyList()
 
     init {
         translations = loadTranslations()
@@ -19,7 +20,7 @@ class Translator(val context: Context, val word: String, private val languagePai
     }
 
     fun getAdaptorAtPosition(currentPosition: Int) = when (currentPosition) {
-        1 -> WordAdaptor(context, definitions, ContextCompat.getColor(context, R.color.blue), Int.MAX_VALUE-1)
+        1 -> PartOfSpeechAdaptor(context, definitions)
         2 -> WordAdaptor(context, examples, ContextCompat.getColor(context, R.color.blue), Int.MAX_VALUE-1)
         else -> TranslationAdaptor(context, translations, "en")
     }
@@ -48,18 +49,14 @@ class Translator(val context: Context, val word: String, private val languagePai
         return exampleCards
     }
 
-    private fun loadDefinitions(): List<QuizWord> {
+    private fun loadDefinitions(): List<Definitions> {
         if (!Python.isStarted())
             Python.start(AndroidPlatform(context))
         val p = Python.getInstance()
         val f = p.getModule("Translate")
-        val definitionsAsWords = f.callAttr("getDefinitions", word, languagePair.getTermFullName()).asMap()
-            .mapKeys { it.key.toString() + "\n" + it.value.asList()[0] }
-            .mapValues { it.value.asList().subList(1, it.value.asList().size-1).joinToString(separator = "\n\n") }
-            .map { Word(it.key, it.value) }
-        val definitionCards = mutableListOf<QuizWord>()
-        for(example in definitionsAsWords)
-            definitionCards += QuizWord(Int.MAX_VALUE, languagePair, example, Int.MAX_VALUE)
-        return definitionCards
+        return f.callAttr("getDefinitions", word, languagePair.getTermFullName()).asMap()
+                .map { it ->
+                Definitions(it.key.toString(), it.value.asList()[0].toString(),
+                it.value.asList().subList(1, it.value.asList().size-1).map { it.toString() }) }
     }
 }
