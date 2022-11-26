@@ -5,12 +5,13 @@ import androidx.core.content.ContextCompat
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.matttax.erica.adaptors.PartOfSpeechAdaptor
+import com.matttax.erica.adaptors.TRANSLATION
 import com.matttax.erica.adaptors.TranslationAdaptor
 import com.matttax.erica.adaptors.WordAdaptor
 
 class Translator(val context: Context, val word: String, private val languagePair: LanguagePair, private val position: Int) {
     private var translations: List<String> = emptyList()
-    private var examples: List<QuizWord> = emptyList()
+    private var examples: List<StudyCard> = emptyList()
     private var definitions: List<Definitions> = emptyList()
 
     init {
@@ -22,7 +23,7 @@ class Translator(val context: Context, val word: String, private val languagePai
     fun getAdaptorAtPosition(currentPosition: Int) = when (currentPosition) {
         1 -> PartOfSpeechAdaptor(context, definitions)
         2 -> WordAdaptor(context, examples, ContextCompat.getColor(context, R.color.blue), Int.MAX_VALUE-1)
-        else -> TranslationAdaptor(context, translations, "en")
+        else -> TranslationAdaptor(context, translations, "en", TRANSLATION.WORD)
     }
 
     fun getLoadedAdaptor() = getAdaptorAtPosition(position)
@@ -36,16 +37,16 @@ class Translator(val context: Context, val word: String, private val languagePai
             .map { it.toString() }
     }
 
-    private fun loadExamples(): List<QuizWord> {
+    private fun loadExamples(): List<StudyCard> {
         if (!Python.isStarted())
             Python.start(AndroidPlatform(context))
         val p = Python.getInstance()
         val f = p.getModule("Translate")
         val examplesAsWords = f.callAttr("getExamples", word, languagePair.termLanguage, languagePair.definitionLanguage).asMap()
-            .map { Word(it.key.toString(), it.value.toString().trimEnd()) }
-        val exampleCards = mutableListOf<QuizWord>()
+            .map { StudyItem(it.key.toString(), it.value.toString().trimEnd()) }
+        val exampleCards = mutableListOf<StudyCard>()
         for(example in examplesAsWords)
-            exampleCards += QuizWord(Int.MAX_VALUE, languagePair, example, Int.MAX_VALUE)
+            exampleCards += StudyCard(Int.MAX_VALUE, languagePair, example, Int.MAX_VALUE)
         return exampleCards
     }
 

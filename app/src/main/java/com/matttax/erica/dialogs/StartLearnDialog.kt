@@ -13,6 +13,7 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
 
     private val studyPriority: Spinner = dialogView.findViewById(R.id.priority)
     private val studyMode: Spinner = dialogView.findViewById(R.id.mode)
+    private val askWith: Spinner = dialogView.findViewById(R.id.termDef)
 
     private val spinner: LinearLayout = dialogView.findViewById(R.id.select_num_of_words)
     private val wbspinner: LinearLayout = dialogView.findViewById(R.id.select_words_in_batch)
@@ -51,8 +52,9 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
             }
         }
 
-        studyPriority.adapter = getAdaptor(listOf("Worst answered", "Least asked", "Long ago asked"))
-        studyMode.adapter = getAdaptor(listOf("Study", "Learn"))
+        studyPriority.adapter = getAdaptor(listOf("Worst answered", "Least answered", "Long ago asked", "Recently asked", "Random"))
+        studyMode.adapter = getAdaptor(listOf("Study", "Learn", "Test", "Flashcards"))
+        askWith.adapter = getAdaptor(listOf("Translation", "Word", "Both"))
 
         initDismissButton(R.id.noStartLearn)
         initActionButton(R.id.yesStartLearn) {
@@ -62,13 +64,14 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
                         "LIMIT $woirt "
             learnIntent.putExtra("query", query)
             learnIntent.putExtra("batch_size", nadab)
+            learnIntent.putExtra("ask", askWith.selectedItem.toString())
             dialog.dismiss()
             context.startActivity(learnIntent)
         }
     }
 
     private fun <T> getAdaptor(elements: List<T>): ArrayAdapter<T> {
-        val adaptor = ArrayAdapter(context, R.layout.sets_spinner_item, elements)
+        val adaptor = ArrayAdapter(context, R.layout.params_spinner_item, elements)
         adaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         return adaptor
     }

@@ -1,11 +1,8 @@
 package com.matttax.erica.activities
 
-import android.app.Dialog
-import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
@@ -13,11 +10,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.matttax.erica.*
-import com.matttax.erica.adaptors.WordAdaptor
-import com.matttax.erica.dialogs.AfterBatchDialog
 import com.matttax.erica.dialogs.WordAnsweredDialog
 import java.util.*
 
@@ -26,12 +19,12 @@ class LearnActivity : AppCompatActivity() {
     private val db: WordDBHelper = WordDBHelper(this)
 
     lateinit var studying: WordGroup
-    lateinit var words: Stack<QuizWord>
-    var incorrectWords = mutableListOf<QuizWord>()
-    var correctWords = mutableListOf<QuizWord>()
+    lateinit var words: Stack<StudyCard>
+    var incorrectWords = mutableListOf<StudyCard>()
+    var correctWords = mutableListOf<StudyCard>()
 
-//    var allIncorrectWords = mutableListOf<QuizWord>()
-//    var allCorrectWords = mutableListOf<QuizWord>()
+    var allIncorrectWords = mutableListOf<StudyCard>()
+    var allCorrectWords = mutableListOf<StudyCard>()
 
     lateinit var definitionInputField: EditText
     lateinit var termAskedField: TextView
@@ -46,7 +39,8 @@ class LearnActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_learn)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        studying = WordGroup(db.getWords(intent.getStringExtra("query")), intent.getIntExtra("batch_size", 7))
+        studying = WordGroup(db.getWords(intent.getStringExtra("query")), intent.getIntExtra("batch_size", 7),
+                                intent.getStringExtra("ask") ?: "Translation")
 
         definitionInputField = findViewById(R.id.wordInput)
         termAskedField = findViewById(R.id.wordAsked)
@@ -90,7 +84,7 @@ class LearnActivity : AppCompatActivity() {
 
     fun getNext() {
         if (words.isNotEmpty()) {
-            termAskedField.text = words.peek().word.term
+            termAskedField.text = words.peek().word.word
         } else if (studying.words.isNotEmpty()) {
             words = studying.getNextBatch(incorrectWords)
             if (studying.words.isEmpty()) {
@@ -99,9 +93,11 @@ class LearnActivity : AppCompatActivity() {
                 total = words.size
                 answeredProgressBar.max = total
                 answered = 0
+                allIncorrectWords.addAll(incorrectWords)
+                allCorrectWords.addAll(correctWords)
                 incorrectWords.clear()
                 correctWords.clear()
-                termAskedField.text = words.peek().word.term
+                termAskedField.text = words.peek().word.word
                 answeredProgressBar.progress = 0
             }
         } else {
@@ -112,9 +108,9 @@ class LearnActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.N)
     private fun readWord(unknownWord:Boolean=false) {
         words.peek().spellDefinition(this)
-        val answer: String? = if (unknownWord) null else definitionInputField.text.toString()
+        val answer: String? = if (unknownWord || definitionInputField.text.isEmpty()) null else definitionInputField.text.toString()
         WordAnsweredDialog(this,
-            R.layout.word_answered, Word(answer, words.peek().word.definition), words.peek().id, words.peek()).showDialog()
+            R.layout.word_answered, StudyItem(answer, words.peek().word.translation), words.peek().id, words.peek()).showDialog()
     }
 
     fun updateQuestion() {
@@ -122,4 +118,5 @@ class LearnActivity : AppCompatActivity() {
         getNext()
         definitionInputField.text.clear()
     }
+
 }

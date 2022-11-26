@@ -1,20 +1,18 @@
 package com.matttax.erica.dialogs
 
-import android.content.Context
 import android.os.Build
-import android.util.Log
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import com.google.android.material.card.MaterialCardView
-import com.matttax.erica.QuizWord
+import com.matttax.erica.StudyCard
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.R
-import com.matttax.erica.Word
+import com.matttax.erica.StudyItem
 
 @RequiresApi(Build.VERSION_CODES.N)
-class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val answer: Word, private val wordId: Int, private val asked: QuizWord): Dialog(context, resource) {
+class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val answer: StudyItem, private val wordId: Int, private val asked: StudyCard): Dialog(context, resource) {
 
     private val answeredHeader: TextView = dialogView.findViewById(R.id.answeredHeader)
     private val answeredCorrectWord: TextView = dialogView.findViewById(R.id.answeredCorrectWord)
@@ -24,7 +22,7 @@ class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val 
     init {
         initDismissButton(R.id.answerNext)
         incr(1)
-        answeredCorrectWord.text = answer.definition
+        answeredCorrectWord.text = answer.translation
         dialog.setOnDismissListener {
             if (context.words.size == 1) {
                 val a = AfterBatchDialog(context, R.layout.after_batch, context.incorrectWords, context.correctWords)
@@ -44,7 +42,7 @@ class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val 
     }
 
     private fun setHeader() {
-        if (answer.term != answer.definition) {
+        if (answer.word != answer.translation) {
             answeredHeader.setBackgroundColor(ContextCompat.getColor(context, R.color.crimson))
             answeredHeader.text = "Incorrect"
             dialogCard.strokeColor = ContextCompat.getColor(context, R.color.crimson)
@@ -58,9 +56,9 @@ class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val 
     }
 
     private fun setNotIncorrectListener() {
-        if (answer.term == null || answer.term == answer.definition) {
+        if (answer.word == null || answer.word == answer.translation) {
             notIncorrectButton.isInvisible = true
-        } else if (answer.term != answer.definition) {
+        } else if (answer.word != answer.translation) {
             notIncorrectButton.setOnClickListener {
                 context.incorrectWords.remove(asked)
                 context.correctWords.add(asked)

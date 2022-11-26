@@ -13,12 +13,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.*
 import com.matttax.erica.adaptors.WordAdaptor
+import com.matttax.erica.dialogs.DeleteWordDialog
+import com.matttax.erica.dialogs.MoveDialog
 import com.matttax.erica.dialogs.StartLearnDialog
 
 class WordsActivity : AppCompatActivity() {
     private val db: WordDBHelper = WordDBHelper(this)
-    var words = mutableListOf<QuizWord>()
-    var selected = mutableListOf<QuizWord>()
+    var words = mutableListOf<StudyCard>()
+    var selected = mutableListOf<StudyCard>()
 
     lateinit var rv: RecyclerView
     lateinit var head: TextView
@@ -61,20 +63,7 @@ class WordsActivity : AppCompatActivity() {
 
     fun loadWords() {
         words = db.getWords(intent.getIntExtra("setid", 1))
-        rv.adapter = WordAdaptor(this, words, ContextCompat.getColor(this, R.color.blue)) {
-            if (shitSelected == selected.isNotEmpty())
-                return@WordAdaptor
-            shitSelected = selected.isNotEmpty()
-            lrn.removeAllViews()
-            if (shitSelected) {
-                lrn.addView(moveButton)
-                lrn.addView(studyButton)
-                lrn.addView(deleteButton)
-            } else {
-                lrn.addView(strt)
-                lrn.addView(head)
-            }
-        }
+        rv.adapter = WordAdaptor(this, words, ContextCompat.getColor(this, R.color.blue))
     }
 
     private fun getSetFromIntents(): WordSet {
@@ -89,7 +78,11 @@ class WordsActivity : AppCompatActivity() {
         val moveLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT,1f)
         moveLP.setMargins(50, 20, 20, 0)
         moveButton = getButton(moveLP, "Move", R.color.blue) {
-
+            MoveDialog(this, R.layout.move_dialog, set.id, selected.map { it.id }).showDialog()
+            words.removeAll { selected.contains(it) }
+            selected.clear()
+            updateHead()
+            rv.adapter!!.notifyDataSetChanged()
         }
 
         val studyLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
@@ -111,13 +104,7 @@ class WordsActivity : AppCompatActivity() {
         val deleteLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         deleteLP.setMargins(20, 20, 50, 0)
         deleteButton = getButton(deleteLP, "Delete", R.color.crimson) {
-            for (i in selected) {
-                db.deleteWord(i.id, i.setId)
-                words.remove(i)
-            }
-            selected.clear()
-            rv.adapter!!.notifyDataSetChanged()
-            //add dialog
+            DeleteWordDialog(this, R.layout.delete_word, *selected.toTypedArray()).showDialog()
         }
     }
 
@@ -129,5 +116,31 @@ class WordsActivity : AppCompatActivity() {
         button.setBackgroundColor(ContextCompat.getColor(this, color))
         button.setOnClickListener(onClick)
         return button
+    }
+
+    fun updateHead()  {
+        if (shitSelected == selected.isNotEmpty())
+            return
+        shitSelected = selected.isNotEmpty()
+        lrn.removeAllViews()
+        if (shitSelected) {
+            lrn.addView(moveButton)
+            lrn.addView(studyButton)
+            lrn.addView(deleteButton)
+        } else {
+            lrn.addView(strt)
+            lrn.addView(head)
+
+        }
+    }
+
+    override fun onBackPressed() {
+        if (selected.isEmpty())
+            super.onBackPressed()
+        else {
+            selected.clear()
+            rv.adapter!!.notifyDataSetChanged()
+            updateHead()
+        }
     }
 }

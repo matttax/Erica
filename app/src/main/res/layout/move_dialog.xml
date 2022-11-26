@@ -22,20 +22,34 @@
         android:layout_marginBottom="10dp"
         android:layout_gravity="center"
         >
-        <TextView
-            android:layout_marginTop="20dp"
-            android:layout_width="wrap_content"
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Remove?"
-            android:layout_gravity="center"
-            android:textSize="25sp"
-            android:textStyle="bold"
+            android:orientation="vertical"
+            android:layout_marginTop="20dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
-            android:fontFamily="@font/nunito_bold"
-            android:id="@+id/actionText"
-            />
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Move to"
+                android:layout_gravity="center"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/nunito_bold"
+                />
+            <Spinner
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/setsToMove"
+                android:background="?android:attr/selectableItemBackground"
+                />
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:fontFamily="@font/organo"
@@ -46,7 +60,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:backgroundTint="@color/green"
-            android:id="@+id/yesDeleteWord"
+            android:id="@+id/yesMove"
             />
 
         <com.google.android.material.button.MaterialButton
@@ -58,7 +72,7 @@
             android:backgroundTint="@color/crimson"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
-            android:id="@+id/noDeleteWord"
+            android:id="@+id/noMove"
             />
     </LinearLayout>
 

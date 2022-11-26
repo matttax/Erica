@@ -9,10 +9,9 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
-import com.matttax.erica.QuizWord
+import com.matttax.erica.StudyCard
 import com.matttax.erica.R
 import com.matttax.erica.activities.WordsActivity
 import com.matttax.erica.dialogs.DeleteWordDialog
@@ -29,8 +28,8 @@ class WordViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
 
 class WordAdaptor(
-    var context: Context, var words: List<QuizWord>, var color: Int,
-    var lastIncorrect:Int=Int.MAX_VALUE, val whenClick: (() -> Unit)? = null) :
+    var context: Context, var words: List<StudyCard>, var color: Int,
+    var lastIncorrect:Int=Int.MAX_VALUE) :
     RecyclerView.Adapter<WordViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
@@ -42,8 +41,8 @@ class WordAdaptor(
     override fun getItemCount(): Int = words.size
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
-        holder.term.text = words[position].word.term
-        holder.definition.text = words[position].word.definition
+        holder.term.text = words[position].word.word
+        holder.definition.text = words[position].word.translation
         holder.delete.setOnClickListener {
             DeleteWordDialog(context, R.layout.delete_word, words[position]).showDialog()
         }
@@ -61,7 +60,7 @@ class WordAdaptor(
                     (context as WordsActivity).selected.remove(words[position])
                 } else (context as WordsActivity).selected.add(words[position])
                 Log.i("select", (context as WordsActivity).selected.toString())
-                whenClick?.let { it1 -> it1() }
+                (context as WordsActivity).updateHead()
                 notifyDataSetChanged()
             }
             holder.cardBackground.setBackgroundColor(

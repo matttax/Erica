@@ -4,26 +4,32 @@ import android.content.Context
 import android.graphics.Color
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import android.util.Log
 import android.widget.ImageView
 import java.util.*
 import kotlin.math.min
 
 class WordSet(val id: Int, val name: String, val description: String, val wordsCount: Int)
 
-class WordGroup(var words: MutableList<QuizWord>, private val batchSize: Int) {
+class WordGroup(var words: MutableList<StudyCard>, private val batchSize: Int, ask: String) {
     var nextBatchStart = 0
 
     init {
         words.shuffle()
+        val w = mutableListOf<StudyCard>()
+        if (ask != "Word")
+            words.forEach { w.add(it.getInvert()) }
+        if (ask == "Translation")
+            words = w
+        else if (ask == "Both")
+            words.addAll(w)
     }
 
-    fun getNextBatch(incorrectWords:MutableList<QuizWord>): Stack<QuizWord> {
+    fun getNextBatch(incorrectWords:MutableList<StudyCard>): Stack<StudyCard> {
         words = ArrayList(words.drop(nextBatchStart))
         words.addAll(incorrectWords)
         words.shuffle()
         nextBatchStart = min(batchSize, words.size)
-        val batch = Stack<QuizWord>()
+        val batch = Stack<StudyCard>()
         for (i in 0 until nextBatchStart) {
             batch.push(words[i])
         }
@@ -32,7 +38,7 @@ class WordGroup(var words: MutableList<QuizWord>, private val batchSize: Int) {
 
 }
 
-class Word(val term: String?, val definition: String)
+class StudyItem(val word: String?, val translation: String)
 
 class LanguagePair(val termLanguage: String, val definitionLanguage: String) {
 
@@ -55,10 +61,7 @@ class LanguagePair(val termLanguage: String, val definitionLanguage: String) {
     }
 }
 
-class QuizWord(val id: Int,
-               val langPair: LanguagePair,
-               val word: Word,
-               val setId: Int) {
+class StudyCard(val id: Int, private val langPair: LanguagePair, val word: StudyItem, val setId: Int) {
 
     private lateinit var termSpeech: TextToSpeech
     private lateinit var definitionSpeech: TextToSpeech
@@ -73,7 +76,7 @@ class QuizWord(val id: Int,
     }
 
     override fun toString(): String {
-        return "${word.term} ${word.definition}"
+        return "${word.word} ${word.translation}"
     }
 
     fun spellTerm(context: Context, play:ImageView?=null) {
@@ -81,7 +84,7 @@ class QuizWord(val id: Int,
             if (it == TextToSpeech.SUCCESS) {
                 play?.setColorFilter(Color.argb(255, 255, 165, 0))
                 termSpeech.language = langPair.getTermLocale()
-                termSpeech.speak(word.term, TextToSpeech.QUEUE_FLUSH, null,"")
+                termSpeech.speak(word.word, TextToSpeech.QUEUE_FLUSH, null,"")
             }
         }
     }
@@ -90,7 +93,7 @@ class QuizWord(val id: Int,
         definitionSpeech = TextToSpeech(context) {
             if (it == TextToSpeech.SUCCESS) {
                 definitionSpeech.language = langPair.getDefinitionLocale()
-                definitionSpeech.speak(word.definition, TextToSpeech.QUEUE_FLUSH, null, "")
+                definitionSpeech.speak(word.translation, TextToSpeech.QUEUE_FLUSH, null, "")
                 definitionSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(p0: String?) {}
                     override fun onError(p0: String?) {}
@@ -101,6 +104,9 @@ class QuizWord(val id: Int,
             }
         }
     }
+
+    fun getInvert() = StudyCard(id, LanguagePair(langPair.definitionLanguage, langPair.termLanguage),
+                                StudyItem(word.translation, word.word?:""), setId)
 }
 
 class Definitions(val partOfSpeech: String, val description: String, val definition: List<String>)

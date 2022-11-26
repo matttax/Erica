@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var setSpinner: Spinner
     private lateinit var termTextField: TextInputEditText
-    private lateinit var defTextField: TextInputEditText
+    lateinit var defTextField: TextInputEditText
     private lateinit var toSetsButton: MaterialButton
 
     private lateinit var addWord: MaterialButton
@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         dismissWord.setOnClickListener {
             termTextField.text = SpannableStringBuilder("")
             defTextField.text = SpannableStringBuilder("")
+            tr.adapter = null
         }
 
         addWord.setOnClickListener {
@@ -122,6 +123,8 @@ class MainActivity : AppCompatActivity() {
 
                 val write = db.writableDatabase
                 write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$setID")
+                dismissWord.callOnClick()
+
                 //write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$allWordsSetId")
 
 //            termTextField.text = SpannableStringBuilder("")
