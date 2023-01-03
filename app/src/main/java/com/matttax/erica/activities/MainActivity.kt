@@ -13,17 +13,16 @@ import androidx.core.view.isInvisible
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions
-import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage
-import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateLanguage
-import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOptions
 import com.matttax.erica.*
+import com.matttax.erica.adaptors.PartOfSpeechAdaptor
+import com.matttax.erica.adaptors.TRANSLATION
 import com.matttax.erica.adaptors.TranslationAdaptor
+import com.matttax.erica.adaptors.WordAdaptor
+import kotlinx.coroutines.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,10 +38,22 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var tr: RecyclerView
 
-    private lateinit var translator: Translator
+    private var translator: Translator? = null
+
+    private lateinit var fromSpinner: Spinner
+    private lateinit var toSpinner: Spinner
+    private lateinit var swapButton: ImageView
 
     private lateinit var tabs: TabLayout
     private var sets = mutableMapOf<String, Int>()
+
+    private lateinit var lp: LanguagePair
+
+    val languages = listOf("English", "Russian", "German")
+
+    val scope = CoroutineScope(SupervisorJob() +
+            CoroutineExceptionHandler { _, t -> Log.i("Coroutine ex", t.message.toString())})
+    var job: Job? = null
 
     var selected = 0
 
@@ -64,12 +75,23 @@ class MainActivity : AppCompatActivity() {
 
         dismissWord.isInvisible = true
 
+        fromSpinner = findViewById(R.id.fromLanguage)
+        toSpinner = findViewById(R.id.toLanguage)
+        swapButton = findViewById(R.id.swapLanguages)
+
+        swapButton.setOnClickListener {
+            val fr = fromSpinner.selectedItemPosition
+            fromSpinner.setSelection(toSpinner.selectedItemPosition)
+            toSpinner.setSelection(fr)
+        }
+
+        fromSpinner.adapter = ArrayAdapter(this, R.layout.sets_spinner_item, languages)
+        toSpinner.adapter = ArrayAdapter(this, R.layout.sets_spinner_item, languages)
+
+        toSpinner.setSelection(1)
+
         termTextField.doOnTextChanged { text, start, before, count ->
-            if (addWord.text.toString().lowercase() == "add") {
-                addWord.text = "translate"
-                addWord.background.setTint(ContextCompat.getColor(this, R.color.blue))
-                dismissWord.isInvisible = true
-            }
+            switchButtons()
         }
 
         loadSets()
@@ -81,6 +103,22 @@ class MainActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 setID = sets[parent!!.selectedItem.toString()]!!
                 selected = position
+            }
+        }
+
+        fromSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                switchButtons()
+            }
+        }
+
+        toSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                switchButtons()
             }
         }
 
@@ -97,72 +135,37 @@ class MainActivity : AppCompatActivity() {
 
         addWord.setOnClickListener {
             if (addWord.text.toString().lowercase() == "translate") {
-                translator = Translator(this, termTextField.text.toString(),
-                    LanguagePair("en", "ru"), tabs.selectedTabPosition)
-                tr.adapter = translator.getLoadedAdaptor()
-                when (tabs.selectedTabPosition) {
-                    0 -> tr.layoutManager = FlexboxLayoutManager(this@MainActivity)
-                    else -> tr.layoutManager = LinearLayoutManager(this@MainActivity)
-                }
-
                 addWord.text = "add"
                 addWord.background.setTint(ContextCompat.getColor(this, R.color.green))
                 dismissWord.isInvisible = false
-
+                translator = null
+                tr.adapter = null
+                translateClicked()
             } else {
-
-                val db = WordDBHelper(this)
-                //db.addWord("en", "ru", termTextField.text.toString(), defTextField.text.toString(), allWordsSetId)
                 db.addWord(
-                    "en",
-                    "ru",
+                    getLang(fromSpinner.selectedItem.toString()),
+                    getLang(toSpinner.selectedItem.toString()),
                     termTextField.text.toString(),
                     defTextField.text.toString(),
                     setID
                 )
-
                 val write = db.writableDatabase
                 write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$setID")
                 dismissWord.callOnClick()
-
-                //write.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$allWordsSetId")
-
-//            termTextField.text = SpannableStringBuilder("")
-//            defTextField.text = SpannableStringBuilder("")
             }
         }
 
         tabs.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                if (termTextField.text.toString() == "")
+                if (termTextField.text.toString() == "" || tab == null)
                     return
-                tr.adapter = translator.getAdaptorAtPosition(tab!!.position)
-
-                when (tab.position) {
-                    0 -> tr.layoutManager = FlexboxLayoutManager(this@MainActivity)
-                    else -> tr.layoutManager = LinearLayoutManager(this@MainActivity)
-                }
+                updateAdaptor(translator)
             }
 
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
 
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-            }
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
-    }
-
-    private fun translateText(termCode: Int, defCode: Int, text: String, siteCode: Int) {
-        val options = FirebaseTranslatorOptions.Builder().setSourceLanguage(FirebaseTranslateLanguage.EN).
-                                                          setTargetLanguage(FirebaseTranslateLanguage.RU).
-                                                          build()
-        val translator = FirebaseNaturalLanguage.getInstance().getTranslator(options)
-        val conditions = FirebaseModelDownloadConditions.Builder().build()
-        translator.downloadModelIfNeeded(conditions).addOnSuccessListener {
-            translator.translate(text).addOnSuccessListener {
-                defTextField.text = SpannableStringBuilder(it)
-            }
-        }
     }
 
     fun loadSets() {
@@ -198,7 +201,7 @@ class MainActivity : AppCompatActivity() {
 
 
         val setAdaptor = ArrayAdapter(this, R.layout.sets_spinner_item, sets.keys.toList())
-        setAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        //setAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         setSpinner.adapter = setAdaptor
         setSpinner.setSelection(selected)
     }
@@ -208,7 +211,56 @@ class MainActivity : AppCompatActivity() {
         loadSets()
     }
 
+    fun switchButtons() {
+        if (addWord.text.toString().lowercase() == "add") {
+            addWord.text = "translate"
+            addWord.background.setTint(ContextCompat.getColor(this, R.color.blue))
+            dismissWord.isInvisible = true
+        }
+    }
 
+    fun translateClicked() {
+        job?.cancel()
+        job = scope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.IO) {
+                translator = getTranslator()
+            }
+            updateAdaptor(translator)
+        }
+    }
 
+    fun getTranslator() = Translator(this, termTextField.text.toString(),
+                                            LanguagePair(
+                                                getLang(fromSpinner.selectedItem.toString()),
+                                                getLang(toSpinner.selectedItem.toString())))
+
+    fun updateAdaptor(translator: Translator?) {
+        Log.i("adaptor", "update_entered")
+        if (translator == null)
+            return
+        when (tabs.selectedTabPosition) {
+            0 -> {
+                tr.layoutManager = FlexboxLayoutManager(this)
+                tr.adapter = TranslationAdaptor(this, translator.translations, TRANSLATION.WORD)
+            }
+            1 -> {
+                tr.layoutManager = LinearLayoutManager(this)
+                tr.adapter = PartOfSpeechAdaptor(this, translator.definitions)
+            }
+            else -> {
+                tr.layoutManager = LinearLayoutManager(this)
+                tr.adapter = WordAdaptor(this, translator.examples,
+                    ContextCompat.getColor(this, R.color.blue), Int.MAX_VALUE-1)
+            }
+        }
+        Log.i("adaptor", "updated")
+    }
+
+}
+
+fun getLang(l: String) = when(l) {
+    "Russian" -> "ru"
+    "German" -> "de"
+    else -> "en"
 }
 

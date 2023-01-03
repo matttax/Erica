@@ -1,4 +1,4 @@
-import itertools
+import time
 import requests
 from reverso_context_api import Client
 from wiktionaryparser import WiktionaryParser
@@ -20,19 +20,24 @@ def getDefinitions(word, lang):
         return dictionary
     definitions = []
     if len(res) > 0:
-        dats = res[0]
-        if len(dats) > 0:
-            definitions = dats['definitions']
-    for defn in definitions:
-        dictionary[defn['partOfSpeech']] = list(defn['text'])
+        for dats, i in zip(res, range(len(res))):
+            if len(dats) > 0:
+                definitions = dats['definitions']
+            for defn in definitions:
+                dictionary[str(i + 1) + ". " + defn['partOfSpeech']] = list(defn['text'])
     return dictionary
 
 
 def getTranslations(word, from_lang, to_lang):
     client = Client(from_lang, to_lang)
     data = []
+    timeout = time.time() + 2
+    limit = 50
     try:
-        data = list(itertools.islice(client.get_translations(word), 50))
+        for i, j in zip(client.get_translations(word), range(limit)):
+            if j == limit or time.time() > timeout:
+                break
+            data.append(i)
     except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
         return data
     except requests.exceptions.HTTPError:
@@ -43,8 +48,13 @@ def getTranslations(word, from_lang, to_lang):
 def getExamples(word, from_lang, to_lang):
     client = Client(from_lang, to_lang)
     data = {}
+    timeout = time.time() + 2
+    limit = 100
     try:
-        data = dict(list(itertools.islice(client.get_translation_samples(word), 100)))
+        for i, j in zip(client.get_translation_samples(word), range(limit)):
+            if j == limit or time.time() > timeout:
+                break
+            data[i[0]] = i[1]
     except requests.exceptions.HTTPError:
         data['@HttpError@'] = 'No examples are found'
     except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:

@@ -35,12 +35,33 @@ class WordsActivity : AppCompatActivity() {
     lateinit var deleteButton: MaterialButton
     lateinit var moveButton: MaterialButton
 
+    lateinit var sortBySpinner: Spinner
+
     var shitSelected: Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_words)
+
+        sortBySpinner = findViewById(R.id.sortByWords)
+        sortBySpinner.adapter = ArrayAdapter(this, R.layout.params_spinner_item, listOf("Last changed first", "Last answered first", "Most accurate first", "Least accurate first"))
+        sortBySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                when (position) {
+                    0 -> loadWords()
+                    1 -> loadWords("last_asked")
+                    2 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) DESC ")
+                    3 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) ASC ")
+                }
+                rv.adapter!!.notifyDataSetChanged()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+        }
 
         rv = findViewById(R.id.wordsList)
         rv.layoutManager = LinearLayoutManager(this)
@@ -52,6 +73,10 @@ class WordsActivity : AppCompatActivity() {
         head.text = set.name
         subhead.text = set.description
 
+        val l: LinearLayout = findViewById(R.id.descrLayout)
+        if (set.description.isEmpty())
+            l.removeAllViews()
+
         strt = findViewById(R.id.startLearnImage)
         lrn = findViewById(R.id.startLearn)
         lrn.setOnClickListener {
@@ -61,8 +86,8 @@ class WordsActivity : AppCompatActivity() {
         initButtons()
     }
 
-    fun loadWords() {
-        words = db.getWords(intent.getIntExtra("setid", 1))
+    fun loadWords(order: String = "id") {
+        words = db.getWords(intent.getIntExtra("setid", 1), order)
         rv.adapter = WordAdaptor(this, words, ContextCompat.getColor(this, R.color.blue))
     }
 

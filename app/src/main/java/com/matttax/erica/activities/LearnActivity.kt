@@ -3,6 +3,8 @@ package com.matttax.erica.activities
 import android.graphics.PorterDuff
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.ContextThemeWrapper
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
@@ -10,6 +12,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 import com.matttax.erica.*
 import com.matttax.erica.dialogs.WordAnsweredDialog
 import java.util.*
@@ -85,6 +88,15 @@ class LearnActivity : AppCompatActivity() {
     fun getNext() {
         if (words.isNotEmpty()) {
             termAskedField.text = words.peek().word.word
+//            Log.i("test", words.peek().word.word.toString())
+//            if (words.peek().word.translation == "gait") {
+//                val f: LinearLayout = findViewById(R.id.wordField)
+//                f.removeAllViews()
+//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
+//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
+//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
+//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
+//            }
         } else if (studying.words.isNotEmpty()) {
             words = studying.getNextBatch(incorrectWords)
             if (studying.words.isEmpty()) {

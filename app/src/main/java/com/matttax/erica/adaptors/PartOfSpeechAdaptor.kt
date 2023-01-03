@@ -28,7 +28,7 @@ class PartOfSpeechAdaptor(var context: Context, private var definitions: List<De
         holder.partOfSpeech.text = definitions[position].partOfSpeech
         holder.description.text = definitions[position].description
 
-        holder.definitionsRV.adapter = TranslationAdaptor(context, definitions[position].definition, "en", TRANSLATION.DEFINITION)
+        holder.definitionsRV.adapter = TranslationAdaptor(context, definitions[position].definition, TRANSLATION.DEFINITION)
         holder.definitionsRV.layoutManager = LinearLayoutManager(context)
     }
 

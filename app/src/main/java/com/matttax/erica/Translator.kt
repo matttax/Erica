@@ -9,10 +9,10 @@ import com.matttax.erica.adaptors.TRANSLATION
 import com.matttax.erica.adaptors.TranslationAdaptor
 import com.matttax.erica.adaptors.WordAdaptor
 
-class Translator(val context: Context, val word: String, private val languagePair: LanguagePair, private val position: Int) {
-    private var translations: List<String> = emptyList()
-    private var examples: List<StudyCard> = emptyList()
-    private var definitions: List<Definitions> = emptyList()
+class Translator(val context: Context, var word: String, private val languagePair: LanguagePair) {
+    var translations: List<String> = emptyList()
+    var examples: List<StudyCard> = emptyList()
+    var definitions: List<Definitions> = emptyList()
 
     init {
         translations = loadTranslations()
@@ -23,10 +23,12 @@ class Translator(val context: Context, val word: String, private val languagePai
     fun getAdaptorAtPosition(currentPosition: Int) = when (currentPosition) {
         1 -> PartOfSpeechAdaptor(context, definitions)
         2 -> WordAdaptor(context, examples, ContextCompat.getColor(context, R.color.blue), Int.MAX_VALUE-1)
-        else -> TranslationAdaptor(context, translations, "en", TRANSLATION.WORD)
+        else -> TranslationAdaptor(context, translations, TRANSLATION.WORD)
     }
 
-    fun getLoadedAdaptor() = getAdaptorAtPosition(position)
+//    fun getTranslation() = translations
+//    fun getExamples() = examples
+//    fun getDefinitions() = definitions
 
     private fun loadTranslations(): List<String> {
         if (!Python.isStarted())
@@ -51,6 +53,10 @@ class Translator(val context: Context, val word: String, private val languagePai
     }
 
     private fun loadDefinitions(): List<Definitions> {
+        if (languagePair.termLanguage == "de") {
+            if (word.lowercase().matches("(der |die |das ).*".toRegex()))
+                word = word.substring(4)
+        }
         if (!Python.isStarted())
             Python.start(AndroidPlatform(context))
         val p = Python.getInstance()
@@ -58,6 +64,6 @@ class Translator(val context: Context, val word: String, private val languagePai
         return f.callAttr("getDefinitions", word, languagePair.getTermFullName()).asMap()
                 .map { it ->
                 Definitions(it.key.toString(), it.value.asList()[0].toString(),
-                it.value.asList().subList(1, it.value.asList().size-1).map { it.toString() }) }
+                it.value.asList().subList(1, it.value.asList().size).map { it.toString() }) }
     }
 }

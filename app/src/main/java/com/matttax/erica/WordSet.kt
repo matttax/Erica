@@ -8,7 +8,11 @@ import android.widget.ImageView
 import java.util.*
 import kotlin.math.min
 
-class WordSet(val id: Int, val name: String, val description: String, val wordsCount: Int)
+class WordSet(val id: Int, val name: String, val description: String, val wordsCount: Int) {
+    override fun toString(): String {
+        return name
+    }
+}
 
 class WordGroup(var words: MutableList<StudyCard>, private val batchSize: Int, ask: String) {
     var nextBatchStart = 0
@@ -52,11 +56,13 @@ class LanguagePair(val termLanguage: String, val definitionLanguage: String) {
 
     private fun getFullName(language: String) = when(language) {
         "ru" -> "russian"
+        "de" -> "german"
         else -> "english"
     }
 
     private fun getLocale(language: String) = when(language) {
         "ru" -> Locale("ru", "RU")
+        "de" -> Locale.GERMAN
         else -> Locale.US
     }
 }

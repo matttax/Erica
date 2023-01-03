@@ -52,14 +52,14 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
             }
         }
 
-        studyPriority.adapter = getAdaptor(listOf("Worst answered", "Least answered", "Long ago asked", "Recently asked", "Random"))
+        studyPriority.adapter = getAdaptor(listOf("Worst answered", "Least answered", "Long ago asked", "Recently asked", "Last added", "First added", "Random"))
         studyMode.adapter = getAdaptor(listOf("Study", "Learn", "Test", "Flashcards"))
         askWith.adapter = getAdaptor(listOf("Translation", "Word", "Both"))
 
         initDismissButton(R.id.noStartLearn)
         initActionButton(R.id.yesStartLearn) {
             val query = "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
-                        "WHERE ${WordDBHelper.COLUMN_SET_ID}=$setId " +
+                        "WHERE ${WordDBHelper.COLUMN_SET_ID}=$setId AND ${WordDBHelper.COLUMN_TERM_LANGUAGE}<>\"null\" " +
                         "ORDER BY ${getOrderBy(studyPriority.selectedItem.toString())}" +
                         "LIMIT $woirt "
             learnIntent.putExtra("query", query)
@@ -72,14 +72,17 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
 
     private fun <T> getAdaptor(elements: List<T>): ArrayAdapter<T> {
         val adaptor = ArrayAdapter(context, R.layout.params_spinner_item, elements)
-        adaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         return adaptor
     }
 
     private fun getOrderBy(str: String) = when(str) {
-            "Worst answered" -> "times_correct / CAST(times_asked as float) ASC "
-            "Least asked" -> "times_asked ASC "
-            else -> "last_asked ASC "
+            "Worst answered" -> "${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) ASC "
+            "Least asked" -> "${WordDBHelper.COLUMN_TIMES_ASKED} ASC "
+            "Long ago asked" -> "${WordDBHelper.COLUMN_LAST_ASKED} ASC "
+            "Random" -> "RANDOM() "
+            "Last added" -> "${WordDBHelper.COLUMN_WORD_ID} DESC "
+            "First added" -> "${WordDBHelper.COLUMN_WORD_ID} ASC "
+            else -> "${WordDBHelper.COLUMN_LAST_ASKED} DESC "
     }
 
 }

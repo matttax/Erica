@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import android.widget.Toast
 
 class WordDBHelper(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -71,6 +72,9 @@ class WordDBHelper(context: Context?) :
         cv.put(COLUMN_SET_DESCRIPTION, description)
 
         val result = db.insert(SETS_TABLE_NAME, null, cv)
+        addWord("null", "null", "", "", result.toInt())
+
+        Log.i("addset", result.toString())
 //        if (result == -1L)
 //            Toast.makeText(context, "Failed to add", Toast.LENGTH_SHORT).show()
 //        else Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
@@ -89,9 +93,11 @@ class WordDBHelper(context: Context?) :
 
     fun getSets(): MutableList<WordSet> {
         val currentSets = mutableListOf<WordSet>()
-        val query = "SELECT * FROM $SETS_TABLE_NAME"
-        val db = this.writableDatabase
-        val cursor = db.rawQuery(query, null)
+        val cursor = writableDatabase.rawQuery("SELECT set_id, name, words_count, set_description " +
+                "FROM words " +
+                "JOIN sets ON words.set_id=sets.id " +
+                "GROUP BY set_id " +
+                "ORDER BY max(words.id) DESC", null)
         if (cursor.count != 0) {
             while (cursor.moveToNext()) {
                 currentSets += WordSet(cursor.getInt(0), cursor.getString(1), cursor.getString(3), cursor.getInt(2))
@@ -104,7 +110,10 @@ class WordDBHelper(context: Context?) :
     fun getWordsAt(ids: List<Int>) = getWords("SELECT * FROM $WORDS_TABLE_NAME " +
                                                     "WHERE id IN ${ids.toString().replace('[','(').replace(']',')')}")
 
-    fun getWords(setId: Int): MutableList<StudyCard> = getWords("SELECT * FROM $WORDS_TABLE_NAME WHERE $COLUMN_SET_ID=$setId")
+    fun getWords(setId: Int, order:String="id"): MutableList<StudyCard> =
+        getWords("SELECT * FROM $WORDS_TABLE_NAME " +
+                       "WHERE $COLUMN_SET_ID=$setId AND $COLUMN_TERM_LANGUAGE<>\"null\"" +
+                       "ORDER BY $order")
 
     fun getWords(query: String?): MutableList<StudyCard> {
         val currentWords = mutableListOf<StudyCard>()

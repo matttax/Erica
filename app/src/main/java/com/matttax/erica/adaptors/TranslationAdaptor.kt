@@ -20,7 +20,7 @@ class TranslationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
 }
 
 
-class TranslationAdaptor(var context: Context, var translations: List<String>, var language: String, private val translation: TRANSLATION) :
+class TranslationAdaptor(var context: Context, var translations: List<String>, private val translation: TRANSLATION) :
     RecyclerView.Adapter<TranslationViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TranslationViewHolder {
