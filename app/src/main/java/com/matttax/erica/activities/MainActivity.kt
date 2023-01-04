@@ -49,11 +49,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var lp: LanguagePair
 
-    val languages = listOf("English", "Russian", "German")
+    val languages = listOf("English", "Russian", "German", "Polish", "Turkish")
 
     val scope = CoroutineScope(SupervisorJob() +
             CoroutineExceptionHandler { _, t -> Log.i("Coroutine ex", t.message.toString())})
     var job: Job? = null
+    var loadingJob: Job? = null
 
     var selected = 0
 
@@ -91,6 +92,8 @@ class MainActivity : AppCompatActivity() {
         toSpinner.setSelection(1)
 
         termTextField.doOnTextChanged { text, start, before, count ->
+            job?.cancel()
+            loadingJob?.cancel()
             switchButtons()
         }
 
@@ -135,9 +138,6 @@ class MainActivity : AppCompatActivity() {
 
         addWord.setOnClickListener {
             if (addWord.text.toString().lowercase() == "translate") {
-                addWord.text = "add"
-                addWord.background.setTint(ContextCompat.getColor(this, R.color.green))
-                dismissWord.isInvisible = false
                 translator = null
                 tr.adapter = null
                 translateClicked()
@@ -212,7 +212,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun switchButtons() {
-        if (addWord.text.toString().lowercase() == "add") {
+        if (addWord.text.toString().lowercase() == "add" || addWord.text.toString().isEmpty() || addWord.text.toString().contains(".")) {
+            addWord.textSize = 15F
             addWord.text = "translate"
             addWord.background.setTint(ContextCompat.getColor(this, R.color.blue))
             dismissWord.isInvisible = true
@@ -221,6 +222,20 @@ class MainActivity : AppCompatActivity() {
 
     fun translateClicked() {
         job?.cancel()
+        loadingJob = scope.launch(Dispatchers.Main) {
+            for (i in 1..100) {
+                if (translator != null) {
+                    addWord.textSize = 15F
+                    addWord.text = "add"
+                    addWord.background.setTint(ContextCompat.getColor(this@MainActivity, R.color.green))
+                    dismissWord.isInvisible = false
+                    break
+                }
+                addWord.textSize = 30F
+                addWord.text = ".".repeat(i % 4)
+                delay(400)
+            }
+        }
         job = scope.launch(Dispatchers.Main) {
             withContext(Dispatchers.IO) {
                 translator = getTranslator()
@@ -261,6 +276,8 @@ class MainActivity : AppCompatActivity() {
 fun getLang(l: String) = when(l) {
     "Russian" -> "ru"
     "German" -> "de"
+    "Polish" -> "pl"
+    "Turkish" -> "tr"
     else -> "en"
 }
 
