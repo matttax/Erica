@@ -34,7 +34,7 @@ class TranslationAdaptor(var context: Context, var translations: List<String>, p
 
         if (translation == TRANSLATION.WORD)
         holder.back.setOnClickListener {
-            (context as MainActivity).defTextField.setText(holder.text.text, TextView.BufferType.EDITABLE)
+            (context as MainActivity).setDefText(holder.text.text)
         }
     }
 

@@ -57,16 +57,18 @@ class LanguagePair(val termLanguage: String, val definitionLanguage: String) {
     private fun getFullName(language: String) = when(language) {
         "ru" -> "russian"
         "de" -> "german"
-        "pl" -> "polish"
-        "tr" -> "turkish"
+        "fr" -> "french"
+        "es" -> "spanish"
+        "it" -> "italian"
         else -> "english"
     }
 
     private fun getLocale(language: String) = when(language) {
-        "ru" -> Locale("ru", "RU")
+        "ru" -> Locale("ru", "")
         "de" -> Locale.GERMAN
-        "pl" -> Locale("pl", "PL")
-        "tr" -> Locale("tr", "TR")
+        "fr" -> Locale.FRENCH
+        "es" -> Locale("es", "")
+        "it" -> Locale.ITALIAN
         else -> Locale.US
     }
 }

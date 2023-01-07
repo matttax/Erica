@@ -57,13 +57,10 @@ class WordDBHelper(context: Context?) :
         cv.put(COLUMN_LAST_ASKED, "1970-01-01")
         cv.put(COLUMN_SET_ID, setId)
 
-        val result = db.insert(WORDS_TABLE_NAME, null, cv)
-//        if (result == -1L)
-//            Toast.makeText(context, "Failed to add", Toast.LENGTH_SHORT).show()
-//        else Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
+        db.insert(WORDS_TABLE_NAME, null, cv)
     }
 
-    fun addSet(name: String, description: String) {
+    fun addSet(name: String, description: String): Long {
         val db = this.writableDatabase
         val cv = ContentValues()
 
@@ -73,11 +70,7 @@ class WordDBHelper(context: Context?) :
 
         val result = db.insert(SETS_TABLE_NAME, null, cv)
         addWord("null", "null", "", "", result.toInt())
-
-        Log.i("addset", result.toString())
-//        if (result == -1L)
-//            Toast.makeText(context, "Failed to add", Toast.LENGTH_SHORT).show()
-//        else Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
+        return result
     }
 
     fun getLastSetAdded(): Int {

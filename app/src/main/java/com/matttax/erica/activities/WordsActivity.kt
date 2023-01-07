@@ -1,5 +1,6 @@
 package com.matttax.erica.activities
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.ContextThemeWrapper
@@ -43,24 +44,28 @@ class WordsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_words)
+        val preferences = getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
 
-        sortBySpinner = findViewById(R.id.sortByWords)
-        sortBySpinner.adapter = ArrayAdapter(this, R.layout.params_spinner_item, listOf("Last changed first", "Last answered first", "Most accurate first", "Least accurate first"))
-        sortBySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                when (position) {
-                    0 -> loadWords()
-                    1 -> loadWords("last_asked")
-                    2 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) DESC ")
-                    3 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) ASC ")
+        sortBySpinner = findViewById<Spinner?>(R.id.sortByWords).apply {
+            adapter = ArrayAdapter(this@WordsActivity, R.layout.params_spinner_item,
+                listOf("Last changed first", "First changed first",
+                    "Last answered first", "Most accurate first", "Least accurate first"))
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    when (position) {
+                        0 -> loadWords("id DESC")
+                        1 -> loadWords()
+                        2 -> loadWords("last_asked DESC")
+                        3 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) DESC ")
+                        4 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) ASC ")
+                    }
+                    rv.adapter!!.notifyDataSetChanged()
+                    val editor = preferences.edit()
+                    editor.putInt("ORDER_POS", position).apply()
                 }
-                rv.adapter!!.notifyDataSetChanged()
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
+            setSelection(preferences.getInt("ORDER_POS", 0))
         }
 
         rv = findViewById(R.id.wordsList)

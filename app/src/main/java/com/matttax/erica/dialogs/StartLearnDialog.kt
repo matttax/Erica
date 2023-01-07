@@ -26,6 +26,8 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
     var nadab = 7
 
     init {
+        val preferences = context.getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
+
         nmwrdText.text = wordsCount.toString()
         wnbText.text = nadab.toString()
 
@@ -56,8 +58,12 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
         studyMode.adapter = getAdaptor(listOf("Study", "Learn", "Test", "Flashcards"))
         askWith.adapter = getAdaptor(listOf("Translation", "Word", "Both"))
 
+        studyPriority.setSelection(preferences.getInt("STUDY_POS", 0))
+
         initDismissButton(R.id.noStartLearn)
         initActionButton(R.id.yesStartLearn) {
+            val editor = preferences.edit()
+            editor.putInt("STUDY_POS", studyPriority.selectedItemPosition).apply()
             val query = "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
                         "WHERE ${WordDBHelper.COLUMN_SET_ID}=$setId AND ${WordDBHelper.COLUMN_TERM_LANGUAGE}<>\"null\" " +
                         "ORDER BY ${getOrderBy(studyPriority.selectedItem.toString())}" +
