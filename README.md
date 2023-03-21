@@ -6,7 +6,7 @@
 
 <p float="left">
   <img src="https://user-images.githubusercontent.com/67387151/226593147-95baefcf-ec9c-4073-bdef-7a4e2c867379.jpg" alt="drawing" style="width:200px;"/>
+  <img src="https://user-images.githubusercontent.com/67387151/226594959-f5beaace-2336-4444-902f-08016fb7beeb.jpg" alt="drawing" style="width:200px;"/>
   <img src="https://user-images.githubusercontent.com/67387151/226593155-40799024-76b5-48be-935e-8afc272813cd.jpg" alt="drawing" style="width:200px;"/>
   <img src="https://user-images.githubusercontent.com/67387151/226593162-996a8dd9-e4ee-4e7e-8775-3bfc02678635.jpg" alt="drawing" style="width:200px;"/>
 </p>
-
