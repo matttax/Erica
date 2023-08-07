@@ -4,7 +4,6 @@ import android.content.Context
 import com.matttax.erica.StudyCard
 import com.matttax.erica.R
 import com.matttax.erica.activities.WordsActivity
-import com.matttax.erica.adaptors.WordAdaptor
 
 class DeleteWordDialog(context: Context, resource: Int, vararg words: StudyCard): ActionDialog(context, resource) {
     init {
@@ -17,7 +16,7 @@ class DeleteWordDialog(context: Context, resource: Int, vararg words: StudyCard)
             context.selected.removeAll(words.toSet())
             if (context.selected.isEmpty())
                 context.updateHead()
-            context.rv.adapter!!.notifyDataSetChanged()
+            context.binding.wordsList.adapter!!.notifyDataSetChanged()
         }
     }
 }

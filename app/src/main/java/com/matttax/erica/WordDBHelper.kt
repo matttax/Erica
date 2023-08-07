@@ -9,7 +9,7 @@ import android.widget.Toast
 
 class WordDBHelper(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-    private val context: Context? = null
+
     override fun onCreate(sqLiteDatabase: SQLiteDatabase) {
         val createWordsTableQuery = "CREATE TABLE $WORDS_TABLE_NAME " +
                 "($COLUMN_WORD_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +

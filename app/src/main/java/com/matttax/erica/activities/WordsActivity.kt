@@ -14,39 +14,34 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.*
 import com.matttax.erica.adaptors.WordAdaptor
+import com.matttax.erica.databinding.ActivityWordsBinding
 import com.matttax.erica.dialogs.DeleteWordDialog
 import com.matttax.erica.dialogs.MoveDialog
 import com.matttax.erica.dialogs.StartLearnDialog
+import com.matttax.erica.domain.model.Language
+import com.matttax.erica.presentation.model.translate.TextCardState
+import com.matttax.erica.presentation.model.translate.TranslatedText
+import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 
 class WordsActivity : AppCompatActivity() {
     private val db: WordDBHelper = WordDBHelper(this)
+    public lateinit var binding: ActivityWordsBinding
     var words = mutableListOf<StudyCard>()
     var selected = mutableListOf<StudyCard>()
-
-    lateinit var rv: RecyclerView
-    lateinit var head: TextView
-    lateinit var subhead: TextView
-
     lateinit var set: WordSet
-
-    lateinit var lrn: LinearLayout
-    lateinit var strt: ImageView
+    var shitSelected: Boolean = false
 
     lateinit var studyButton: MaterialButton
     lateinit var deleteButton: MaterialButton
     lateinit var moveButton: MaterialButton
 
-    lateinit var sortBySpinner: Spinner
-
-    var shitSelected: Boolean = false
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_words)
+        binding = ActivityWordsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val preferences = getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
 
-        sortBySpinner = findViewById<Spinner?>(R.id.sortByWords).apply {
+        binding.sortByWords.apply {
             adapter = ArrayAdapter(this@WordsActivity, R.layout.params_spinner_item,
                 listOf("Last changed first", "First changed first",
                     "Last answered first", "Most accurate first", "Least accurate first"))
@@ -59,7 +54,7 @@ class WordsActivity : AppCompatActivity() {
                         3 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) DESC ")
                         4 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) ASC ")
                     }
-                    rv.adapter!!.notifyDataSetChanged()
+                    binding.wordsList.adapter!!.notifyDataSetChanged()
                     val editor = preferences.edit()
                     editor.putInt("ORDER_POS", position).apply()
                 }
@@ -68,24 +63,18 @@ class WordsActivity : AppCompatActivity() {
             setSelection(preferences.getInt("ORDER_POS", 0))
         }
 
-        rv = findViewById(R.id.wordsList)
-        rv.layoutManager = LinearLayoutManager(this)
+        binding.wordsList.layoutManager = LinearLayoutManager(this@WordsActivity)
         loadWords()
         set = getSetFromIntents()
 
-        head = findViewById(R.id.setName)
-        subhead = findViewById(R.id.setDescr)
-        head.text = set.name
-        subhead.text = set.description
+        binding.setName.text = set.name
+        binding.setDescr.text = set.description
 
-        val l: LinearLayout = findViewById(R.id.descrLayout)
         if (set.description.isEmpty())
-            l.removeAllViews()
+            binding.descrLayout.removeAllViews()
 
-        strt = findViewById(R.id.startLearnImage)
-        lrn = findViewById(R.id.startLearn)
-        lrn.setOnClickListener {
-            StartLearnDialog(this, R.layout.start_learn_dialog, set.wordsCount, set.id).showDialog()
+        binding.startLearn.setOnClickListener {
+                StartLearnDialog(this@WordsActivity, R.layout.start_learn_dialog, set.wordsCount, set.id).showDialog()
         }
 
         initButtons()
@@ -93,7 +82,19 @@ class WordsActivity : AppCompatActivity() {
 
     fun loadWords(order: String = "id") {
         words = db.getWords(intent.getIntExtra("setid", 1), order)
-        rv.adapter = WordAdaptor(this, words, ContextCompat.getColor(this, R.color.blue))
+        binding.wordsList.adapter = WordAdaptor(this, words.map {
+            TranslatedTextCard(
+                translatedText = TranslatedText(
+                    it.word.word ?: "",
+                    it.word.translation,
+                    Language(it.langPair.termLanguage),
+                    Language(it.langPair.definitionLanguage),
+                ),
+                isEditable = true,
+                isSelected = false,
+                state = TextCardState.DEFAULT
+            )
+        })
     }
 
     private fun getSetFromIntents(): WordSet {
@@ -105,63 +106,72 @@ class WordsActivity : AppCompatActivity() {
     }
 
     private fun initButtons() {
-        val moveLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT,1f)
+        val moveLP = LinearLayout.LayoutParams(binding.startLearn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT,1f)
         moveLP.setMargins(50, 20, 20, 0)
         moveButton = getButton(moveLP, "Move", R.color.blue) {
             MoveDialog(this, R.layout.move_dialog, set.id, selected.map { it.id }).showDialog()
             words.removeAll { selected.contains(it) }
             selected.clear()
             updateHead()
-            rv.adapter!!.notifyDataSetChanged()
+            binding.wordsList.adapter!!.notifyDataSetChanged()
         }
 
-        val studyLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        val studyLP = LinearLayout.LayoutParams(binding.startLearn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         studyLP.setMargins(20, 20, 20, 0)
         studyButton = getButton(studyLP, "Study", R.color.green) {
-            val learnIntent = Intent(this, LearnActivity::class.java)
             val query = "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
-                    "WHERE ${WordDBHelper.COLUMN_WORD_ID} IN ${selected.map { it.id }.toString().replace("[", "(").replace("]", ")")}"
-            learnIntent.putExtra("query", query)
-            learnIntent.putExtra("batch_size", 7)
+                    "WHERE ${WordDBHelper.COLUMN_WORD_ID} IN " +
+                    selected.map { it.id }.toString().replace("[", "(")
+                        .replace("]", ")")
+            val learnIntent = Intent(this, LearnActivity::class.java).apply {
+                putExtra("query", query)
+                putExtra("batch_size", 7)
+            }
             startActivity(learnIntent)
             selected.clear()
             loadWords()
-            lrn.removeAllViews()
-            lrn.addView(strt)
-            lrn.addView(head)
+            binding.startLearn.apply {
+                removeAllViews()
+                addView(binding.startLearnImage)
+                addView(binding.setName)
+            }
         }
 
-        val deleteLP = LinearLayout.LayoutParams(lrn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        val deleteLP = LinearLayout.LayoutParams(binding.startLearn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         deleteLP.setMargins(20, 20, 50, 0)
         deleteButton = getButton(deleteLP, "Delete", R.color.crimson) {
             DeleteWordDialog(this, R.layout.delete_word, *selected.toTypedArray()).showDialog()
         }
     }
 
-    fun getButton(layoutParams: LinearLayout.LayoutParams, text: String, color: Int, onClick: View.OnClickListener): MaterialButton {
-        val button = MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button)
-        button.layoutParams = layoutParams
-        button.text = text
-        button.gravity = Gravity.CENTER
-        button.setBackgroundColor(ContextCompat.getColor(this, color))
-        button.setOnClickListener(onClick)
-        return button
-    }
+    fun getButton(layoutParams: LinearLayout.LayoutParams,
+                  text: String,
+                  color: Int,
+                  onClick: View.OnClickListener) = MaterialButton(ContextThemeWrapper(this,
+        R.style.AppTheme_Button),
+        null, R.style.AppTheme_Button).apply {
+            setLayoutParams(layoutParams)
+            setText(text)
+            gravity = Gravity.CENTER
+            setBackgroundColor(ContextCompat.getColor(this@WordsActivity, color))
+            setOnClickListener(onClick)
+        }
 
     fun updateHead()  {
         if (shitSelected == selected.isNotEmpty())
             return
         shitSelected = selected.isNotEmpty()
-        lrn.removeAllViews()
-        if (shitSelected) {
-            lrn.addView(moveButton)
-            lrn.addView(studyButton)
-            lrn.addView(deleteButton)
-        } else {
-            lrn.addView(strt)
-            lrn.addView(head)
-
-        }
+        binding.startLearn.removeAllViews()
+        if (shitSelected)
+            binding.startLearn.apply {
+                addView(moveButton)
+                addView(studyButton)
+                addView(deleteButton)
+            }
+        else binding.startLearn.apply {
+                addView(binding.startLearnImage)
+                addView(binding.setName)
+            }
     }
 
     override fun onBackPressed() {
@@ -169,7 +179,7 @@ class WordsActivity : AppCompatActivity() {
             super.onBackPressed()
         else {
             selected.clear()
-            rv.adapter!!.notifyDataSetChanged()
+            binding.wordsList.adapter!!.notifyDataSetChanged()
             updateHead()
         }
     }

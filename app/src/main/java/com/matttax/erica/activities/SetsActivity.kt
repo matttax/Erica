@@ -1,7 +1,6 @@
 package com.matttax.erica.activities
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,6 +9,8 @@ import com.matttax.erica.R
 import com.matttax.erica.adaptors.SetAdaptor
 import com.matttax.erica.WordSet
 import com.matttax.erica.WordDBHelper
+import com.matttax.erica.databinding.ActivityLearnBinding
+import com.matttax.erica.databinding.ActivitySetsBinding
 import com.matttax.erica.dialogs.CreateSetDialog
 
 
@@ -17,31 +18,27 @@ class SetsActivity : AppCompatActivity() {
 
     var sets = mutableListOf<WordSet>()
     val db = WordDBHelper(this)
-
-    private lateinit var setsListRecyclerView: RecyclerView
-    lateinit var add: CardView
+    lateinit var binding: ActivitySetsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sets)
-
-        setsListRecyclerView = findViewById(R.id.list)
-        add = findViewById(R.id.addNewSet)
-        add.setOnClickListener {
+        binding = ActivitySetsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.addNewSet.setOnClickListener {
             CreateSetDialog(this, R.layout.create_set_dialog).showDialog()
         }
 
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         loadSets()
     }
 
     fun loadSets() {
         sets = db.getSets()
-        setsListRecyclerView.adapter = SetAdaptor(this, sets)
-        setsListRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.setsListRecyclerView.adapter = SetAdaptor(this, sets)
+        binding.setsListRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
 }

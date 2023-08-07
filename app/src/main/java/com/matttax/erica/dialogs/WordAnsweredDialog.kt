@@ -11,13 +11,12 @@ import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.R
 import com.matttax.erica.StudyItem
 
-@RequiresApi(Build.VERSION_CODES.N)
 class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val answer: StudyItem, private val wordId: Int, private val asked: StudyCard): Dialog(context, resource) {
 
     private val answeredHeader: TextView = dialogView.findViewById(R.id.answeredHeader)
     private val answeredCorrectWord: TextView = dialogView.findViewById(R.id.answeredCorrectWord)
     private val notIncorrectButton: TextView = dialogView.findViewById(R.id.notIncorrect)
-    private val dialogCard: MaterialCardView = dialogView.findViewById(androidx.core.R.id.notification_main_column_container)
+    private val dialogCard: MaterialCardView = dialogView.findViewById(R.id.notification_main_column_container)
 
     init {
         initDismissButton(R.id.answerNext)
@@ -79,7 +78,7 @@ class WordAnsweredDialog(val context: LearnActivity, resource: Int, private val 
 
     fun incr(answered: Int) {
         context.answered += answered
-        context.answeredProgressBar.incrementProgressBy(answered)
-        context.answeredTextInfo.text = "${context.answered}/${context.studying.nextBatchStart}"
+        context.binding.answeredProgressBar.incrementProgressBy(answered)
+        context.binding.answeredTextInfo.text = "${context.answered}/${context.studying.nextBatchStart}"
     }
 }

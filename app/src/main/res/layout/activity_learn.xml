@@ -20,7 +20,7 @@
             android:src="@drawable/ic_baseline_close_24"
             android:layout_marginTop="12dp"
             android:layout_marginStart="10dp"
-            android:id="@+id/closeLearn"
+            android:id="@+id/close"
             android:background="?android:attr/selectableItemBackground"
             />
         <ProgressBar
@@ -33,7 +33,7 @@
             android:progress="0"
             android:indeterminate="false"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:id="@+id/studyProgressBar"
+            android:id="@+id/answeredProgressBar"
 
             />
         <TextView
@@ -44,7 +44,7 @@
             android:textSize="15sp"
             android:text="4/7"
             android:layout_marginEnd="15dp"
-            android:id="@+id/studyProgressInfo"
+            android:id="@+id/answeredTextInfo"
             android:fontFamily="@font/nunito_regular"
             />
     </LinearLayout>
@@ -58,7 +58,7 @@
         android:textSize="40sp"
         android:text="Word"
         android:layout_weight="1"
-        android:id="@+id/wordAsked"
+        android:id="@+id/termAskedField"
         android:fontFamily="@font/nunito_light"
         />
 
@@ -80,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
                 android:hint="Translation"
-                android:id="@+id/wordInput"
+                android:id="@+id/definitionInputField"
                 android:inputType="text"
                 android:maxLines="1"
                 android:fontFamily="@font/nunito_regular"
@@ -95,7 +95,7 @@
             android:text="No idea"
             android:textColor="@color/crimson"
             android:layout_marginEnd="15dp"
-            android:id="@+id/doNotKnowWord"
+            android:id="@+id/doNotKnow"
             android:fontFamily="@font/nunito_regular"
             android:background="?android:attr/selectableItemBackground"
             />

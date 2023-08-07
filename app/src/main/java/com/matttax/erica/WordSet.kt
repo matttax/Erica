@@ -73,7 +73,7 @@ class LanguagePair(val termLanguage: String, val definitionLanguage: String) {
     }
 }
 
-class StudyCard(val id: Int, private val langPair: LanguagePair, val word: StudyItem, val setId: Int) {
+class StudyCard(val id: Int, val langPair: LanguagePair, val word: StudyItem, val setId: Int) {
 
     private lateinit var termSpeech: TextToSpeech
     private lateinit var definitionSpeech: TextToSpeech

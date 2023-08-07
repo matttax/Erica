@@ -15,6 +15,7 @@ import com.matttax.erica.WordSet
 import com.matttax.erica.WordDBHelper
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.activities.WordsActivity
+import com.matttax.erica.dialogs.ActionDialog
 import com.matttax.erica.dialogs.DeleteSetDialog
 
 class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -37,11 +38,12 @@ class SetAdaptor(var context: Context, var sets: List<WordSet>) : RecyclerView.A
         holder.setName.text = sets[position].name
         holder.wordsCount.text = sets[position].wordsCount.toString()
         holder.setLayout.setOnClickListener {
-            val intent = Intent(context, WordsActivity::class.java)
-            intent.putExtra("setid", sets[position].id)
-            intent.putExtra("setname", sets[position].name)
-            intent.putExtra("setdescr", sets[position].description)
-            intent.putExtra("setwordcount", sets[position].wordsCount)
+            val intent = Intent(context, WordsActivity::class.java).apply {
+                putExtra("setid", sets[position].id)
+                putExtra("setname", sets[position].name)
+                putExtra("setdescr", sets[position].description)
+                putExtra("setwordcount", sets[position].wordsCount)
+            }
             context.startActivity(intent)
         }
 
