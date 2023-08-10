@@ -18,15 +18,13 @@ import com.matttax.erica.activities.WordsActivity
 import com.matttax.erica.dialogs.ActionDialog
 import com.matttax.erica.dialogs.DeleteSetDialog
 
-class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val setName: TextView = itemView.findViewById(R.id.setName)
-    val wordsCount: TextView = itemView.findViewById(R.id.setWordsCount)
-    val setLayout: LinearLayout = itemView.findViewById(R.id.setItem)
-    val learnButton: MaterialButton = itemView.findViewById(R.id.learnSet)
-    val deleteButton: ImageButton = itemView.findViewById(R.id.deleteSet)
-}
-
-class SetAdaptor(var context: Context, var sets: List<WordSet>) : RecyclerView.Adapter<SetViewHolder>() {
+class SetAdaptor(
+    private val context: Context,
+    private val sets: List<WordSet>,
+    private val onClick: (Int) -> Unit = {},
+    private val onLearnClick: (Int) -> Unit = {},
+    private val onDeleteClick: (Int) -> Unit = {},
+) : RecyclerView.Adapter<SetAdaptor.SetViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SetViewHolder {
         val inflater = LayoutInflater.from(context)
@@ -38,26 +36,23 @@ class SetAdaptor(var context: Context, var sets: List<WordSet>) : RecyclerView.A
         holder.setName.text = sets[position].name
         holder.wordsCount.text = sets[position].wordsCount.toString()
         holder.setLayout.setOnClickListener {
-            val intent = Intent(context, WordsActivity::class.java).apply {
-                putExtra("setid", sets[position].id)
-                putExtra("setname", sets[position].name)
-                putExtra("setdescr", sets[position].description)
-                putExtra("setwordcount", sets[position].wordsCount)
-            }
-            context.startActivity(intent)
+            onClick(position)
         }
-
         holder.learnButton.setOnClickListener {
-            val i = Intent(context, LearnActivity::class.java)
-            i.putExtra("query", "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
-                    "WHERE ${WordDBHelper.COLUMN_SET_ID}=${sets[position].id}")
-            context.startActivity(i)
+            onLearnClick(sets[position].id)
         }
-
         holder.deleteButton.setOnClickListener {
-            DeleteSetDialog(context, R.layout.delete_set, sets[position].id).showDialog()
+            onDeleteClick(sets[position].id)
         }
     }
 
     override fun getItemCount(): Int = sets.size
+
+    class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val setName: TextView = itemView.findViewById(R.id.setName)
+        val wordsCount: TextView = itemView.findViewById(R.id.setWordsCount)
+        val setLayout: LinearLayout = itemView.findViewById(R.id.setItem)
+        val learnButton: MaterialButton = itemView.findViewById(R.id.learnSet)
+        val deleteButton: ImageButton = itemView.findViewById(R.id.deleteSet)
+    }
 }

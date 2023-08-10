@@ -43,8 +43,7 @@ class WordDBHelper(context: Context?) :
         onCreate(sqLiteDatabase)
     }
 
-    fun addWord(termLanguage: String, defLanguage: String,
-                term: String, def: String, setId: Int) {
+    fun addWord(termLanguage: String, defLanguage: String, term: String, def: String, setId: Int) {
         val db = this.writableDatabase
         val cv = ContentValues()
 
@@ -58,46 +57,7 @@ class WordDBHelper(context: Context?) :
         cv.put(COLUMN_SET_ID, setId)
 
         db.insert(WORDS_TABLE_NAME, null, cv)
-    }
-
-    fun addSet(name: String, description: String): Long {
-        val db = this.writableDatabase
-        val cv = ContentValues()
-
-        cv.put(COLUMN_NAME, name)
-        cv.put(COLUMN_WORDS_COUNT, 0)
-        cv.put(COLUMN_SET_DESCRIPTION, description)
-
-        val result = db.insert(SETS_TABLE_NAME, null, cv)
-        addWord("null", "null", "", "", result.toInt())
-        return result
-    }
-
-    fun getLastSetAdded(): Int {
-        val cursor = writableDatabase.rawQuery("SELECT max(set_id) " +
-                                     "FROM words " +
-                                     "GROUP BY set_id " +
-                                     "ORDER BY max(id)", null)
-        if (cursor.count > 0)
-            if (cursor.moveToLast())
-                return cursor.getInt(0)
-        return -1
-    }
-
-    fun getSets(): MutableList<WordSet> {
-        val currentSets = mutableListOf<WordSet>()
-        val cursor = writableDatabase.rawQuery("SELECT set_id, name, words_count, set_description " +
-                "FROM words " +
-                "JOIN sets ON words.set_id=sets.id " +
-                "GROUP BY set_id " +
-                "ORDER BY max(words.id) DESC", null)
-        if (cursor.count != 0) {
-            while (cursor.moveToNext()) {
-                currentSets += WordSet(cursor.getInt(0), cursor.getString(1), cursor.getString(3), cursor.getInt(2))
-            }
-        }
-        cursor.close()
-        return currentSets
+        writableDatabase.execSQL("UPDATE sets SET words_count = words_count + 1 WHERE id=$setId")
     }
 
     fun getWordsAt(ids: List<Int>) = getWords("SELECT * FROM $WORDS_TABLE_NAME " +
@@ -121,17 +81,6 @@ class WordDBHelper(context: Context?) :
         }
         cursor.close()
         return currentWords
-    }
-
-    fun deleteAll() {
-        val db = this.writableDatabase
-        db.delete(SETS_TABLE_NAME, null, null)
-        db.delete(WORDS_TABLE_NAME, null, null)
-    }
-
-    fun deleteSet(setId: Int) {
-        writableDatabase.execSQL("DELETE FROM $SETS_TABLE_NAME WHERE id=$setId")
-        writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE set_id=$setId")
     }
 
     fun deleteWord(wordId: Int, setId: Int) {
@@ -167,6 +116,71 @@ class WordDBHelper(context: Context?) :
                 "WHERE id=$fromSet")
         writableDatabase.execSQL("UPDATE $SETS_TABLE_NAME SET $COLUMN_WORDS_COUNT=$COLUMN_WORDS_COUNT+${toMove.size} " +
                 "WHERE id=$toSet")
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    fun addSet(name: String, description: String): Long {
+        val db = this.writableDatabase
+        val cv = ContentValues()
+
+        cv.put(COLUMN_NAME, name)
+        cv.put(COLUMN_WORDS_COUNT, 0)
+        cv.put(COLUMN_SET_DESCRIPTION, description)
+
+        val result = db.insert(SETS_TABLE_NAME, null, cv)
+        addWord("null", "null", "", "", result.toInt())
+        return result
+    }
+
+    fun getLastSetAdded(): Int {
+        val cursor = writableDatabase.rawQuery("SELECT max(set_id) " +
+                "FROM words " +
+                "GROUP BY set_id " +
+                "ORDER BY max(id)", null)
+        if (cursor.count > 0)
+            if (cursor.moveToLast())
+                return cursor.getInt(0)
+        return -1
+    }
+
+    fun getSets(): MutableList<WordSet> {
+        val currentSets = mutableListOf<WordSet>()
+        val cursor = writableDatabase.rawQuery("SELECT set_id, name, words_count, set_description " +
+                "FROM words " +
+                "JOIN sets ON words.set_id=sets.id " +
+                "GROUP BY set_id " +
+                "ORDER BY max(words.id) DESC", null)
+        if (cursor.count != 0) {
+            while (cursor.moveToNext()) {
+                currentSets += WordSet(cursor.getInt(0), cursor.getString(1), cursor.getString(3), cursor.getInt(2))
+            }
+        }
+        cursor.close()
+        return currentSets
+    }
+
+    fun deleteSet(setId: Int) {
+        writableDatabase.execSQL("DELETE FROM $SETS_TABLE_NAME WHERE id=$setId")
+        writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE set_id=$setId")
+    }
+
+    fun deleteAll() {
+        val db = this.writableDatabase
+        db.delete(SETS_TABLE_NAME, null, null)
+        db.delete(WORDS_TABLE_NAME, null, null)
     }
 
     companion object {

@@ -5,7 +5,8 @@ import com.matttax.erica.domain.model.WordDomainModel
 
 interface WordsRepository {
     fun getWords(wordGroupConfig: WordGroupConfig): List<WordDomainModel>
-    fun addWord(wordDomainModel: WordDomainModel)
-    fun removeById(id: Long)
-    fun moveToSet(wordId: Long, setId: Long)
+    fun addWord(wordDomainModel: WordDomainModel): Boolean
+    fun remove(wordId: Long, setId: Long)
+    fun moveToSet(fromSetId: Long, toSetId: Long, vararg wordIds: Long)
+    fun onWordAsked(wordId: Long, isCorrect: Boolean)
 }

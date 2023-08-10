@@ -11,5 +11,5 @@ data class WordDomainModel (
     val answeredCount: Int = 0,
     val addedTimestamp: Long = System.currentTimeMillis(),
     val updatedTimestamp: Long = System.currentTimeMillis(),
-    val askedTimestamp: Long? = null,
+    val lastAskedTimestamp: Long? = null,
 )

@@ -1,4 +1,4 @@
-package com.matttax.erica.domain.usecases
+package com.matttax.erica.domain.usecases.words.crud
 
 import com.matttax.erica.domain.architecture.UseCase
 import com.matttax.erica.domain.config.WordGroupConfig

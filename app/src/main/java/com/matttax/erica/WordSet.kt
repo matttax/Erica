@@ -8,7 +8,12 @@ import android.widget.ImageView
 import java.util.*
 import kotlin.math.min
 
-class WordSet(val id: Int, val name: String, val description: String, val wordsCount: Int) {
+data class WordSet(
+    val id: Int,
+    val name: String,
+    val description: String,
+    val wordsCount: Int,
+) {
     override fun toString(): String {
         return name
     }

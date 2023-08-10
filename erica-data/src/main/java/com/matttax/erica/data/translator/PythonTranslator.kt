@@ -13,7 +13,6 @@ import com.matttax.erica.domain.repositories.Translator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-
 class PythonTranslator @Inject constructor(
     @ApplicationContext context: Context
 ): Translator {
