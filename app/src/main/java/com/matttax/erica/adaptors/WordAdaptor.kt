@@ -21,7 +21,7 @@ import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 class WordAdaptor constructor(
     private val context: Context,
     private val words: List<TranslatedTextCard>,
-    private val onClick: (TranslatedTextCard) -> Unit = {},
+    private val onClick: (Int) -> Unit = {},
     private val onDelete: () -> Unit = {},
     private val onSpell: (TranslatedText) -> Unit = {},
 ) : RecyclerView.Adapter<WordAdaptor.WordViewHolder>() {
@@ -51,8 +51,13 @@ class WordAdaptor constructor(
             holder.cardBackground.removeView(holder.delete)
         } else {
             holder.itemView.setOnClickListener {
-                onClick(words[holder.adapterPosition])
+                onClick(holder.adapterPosition)
             }
+        }
+        if(words[position].isSelected) {
+            holder.cardBackground.setBackgroundColor(ContextCompat.getColor(context, R.color.light_blue))
+        } else {
+            holder.cardBackground.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
         }
 
         holder.play.setOnClickListener {

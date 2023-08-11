@@ -37,7 +37,6 @@ class SetsActivity : AppCompatActivity() {
     private val sets = mutableListOf<WordSet>()
 
     private fun setData(setsState: SetsState) {
-        Log.i("viewstate", setsState.sets.toString())
         sets.clear()
         setsState.sets?.map {
             WordSet(

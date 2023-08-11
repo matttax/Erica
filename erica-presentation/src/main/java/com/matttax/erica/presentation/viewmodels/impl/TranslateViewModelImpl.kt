@@ -1,7 +1,7 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.SetGroupConfig
 import com.matttax.erica.domain.config.SetSorting
 import com.matttax.erica.domain.model.Language
@@ -16,9 +16,6 @@ import com.matttax.erica.domain.usecases.translate.GetTranslationsUseCase
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.TranslateViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -29,8 +26,6 @@ class TranslateViewModelImpl @Inject constructor(
     private val getSetsUseCase: GetSetsUseCase,
     private val addWordUseCase: AddWordUseCase
 ) : ViewModel(), TranslateViewModel {
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val translateStateFlow = MutableStateFlow<TranslateState?>(null)
 
@@ -69,7 +64,7 @@ class TranslateViewModelImpl @Inject constructor(
             )
         }.onEach {
             translateStateFlow.value = it
-        }.launchIn(scope)
+        }.launchIn(viewModelScope)
     }
 
     override fun observeState(): Flow<TranslateState?> = translateStateFlow.asStateFlow()

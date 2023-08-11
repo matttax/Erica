@@ -9,8 +9,8 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.*
 import com.matttax.erica.adaptors.WordAdaptor
@@ -18,83 +18,135 @@ import com.matttax.erica.databinding.ActivityWordsBinding
 import com.matttax.erica.dialogs.DeleteWordDialog
 import com.matttax.erica.dialogs.MoveDialog
 import com.matttax.erica.dialogs.StartLearnDialog
-import com.matttax.erica.domain.model.Language
+import com.matttax.erica.domain.config.SetId
+import com.matttax.erica.domain.config.WordGroupConfig
+import com.matttax.erica.domain.config.WordsSorting
 import com.matttax.erica.presentation.model.translate.TextCardState
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
+import com.matttax.erica.presentation.states.WordsState
+import com.matttax.erica.presentation.viewmodels.WordsViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class WordsActivity : AppCompatActivity() {
-    private val db: WordDBHelper = WordDBHelper(this)
-    public lateinit var binding: ActivityWordsBinding
-    var words = mutableListOf<StudyCard>()
-    var selected = mutableListOf<StudyCard>()
-    lateinit var set: WordSet
-    var shitSelected: Boolean = false
 
-    lateinit var studyButton: MaterialButton
-    lateinit var deleteButton: MaterialButton
-    lateinit var moveButton: MaterialButton
+    @Inject
+    lateinit var wordsViewModel: WordsViewModel
+    lateinit var binding: ActivityWordsBinding
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val words = mutableListOf<TranslatedTextCard>()
+    private var wordsSelected: Boolean = false
+
+    private lateinit var sets: List<Pair<Long, String>>
+    private lateinit var currentSet: WordSet
+    private lateinit var selected: Set<Int>
+
+    private lateinit var studyButton: MaterialButton
+    private lateinit var deleteButton: MaterialButton
+    private lateinit var moveButton: MaterialButton
+
+    private val orders = listOf(
+        "Last changed first",
+        "First changed first",
+        "Last answered first",
+        "Most accurate first",
+        "Least accurate first"
+    )
+
+    private fun setData(wordsState: WordsState) {
+        sets = wordsState.setsList
+            ?.map { it.id to it.name }
+            ?.filter { it.first != currentSet.id.toLong() }
+            ?: emptyList()
+        selected = wordsState.selectedWords ?: emptySet()
+
+        words.withIndex().forEach {
+            if (it.value.isSelected && it.index !in selected) {
+                words[it.index] = words[it.index].copy(isSelected = false)
+            }
+        }
+        if (words.isNotEmpty() && selected.isNotEmpty()) {
+            wordsSelected = true
+            selected.forEach {
+                words[it] = words[it].copy(isSelected = true)
+            }
+        } else if (words.isEmpty()) {
+            loadWords(wordsState)
+        } else {
+            wordsSelected = false
+        }
+        binding.sortByWords.visibility = if (wordsSelected) View.INVISIBLE else View.VISIBLE
+        binding.wordsList.adapter?.notifyDataSetChanged()
+        updateHead()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWordsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val preferences = getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
 
-        binding.sortByWords.apply {
-            adapter = ArrayAdapter(this@WordsActivity, R.layout.params_spinner_item,
-                listOf("Last changed first", "First changed first",
-                    "Last answered first", "Most accurate first", "Least accurate first"))
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    when (position) {
-                        0 -> loadWords("id DESC")
-                        1 -> loadWords()
-                        2 -> loadWords("last_asked DESC")
-                        3 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) DESC ")
-                        4 -> loadWords("${WordDBHelper.COLUMN_TIMES_CORRECT} / CAST(${WordDBHelper.COLUMN_TIMES_ASKED} as float) ASC ")
-                    }
-                    binding.wordsList.adapter!!.notifyDataSetChanged()
-                    val editor = preferences.edit()
-                    editor.putInt("ORDER_POS", position).apply()
+        wordsViewModel.observeState()
+            .flowOn(Dispatchers.Main)
+            .onEach { data ->
+                runOnUiThread {
+                    data?.let { setData(it) }
                 }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }.launchIn(scope)
+
+        currentSet = getSetFromIntents()
+        val preferences = getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
+        binding.sortByWords.apply {
+            adapter = ArrayAdapter(
+                this@WordsActivity,
+                R.layout.params_spinner_item,
+                orders
+            )
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    words.clear()
+                    scope.launch {
+                        wordsViewModel.onGetSets()
+                        wordsViewModel.onGetWords(getConfigByPosition(position))
+                    }
+                    preferences.edit().putInt("ORDER_POS", position).apply()
+                }
             }
             setSelection(preferences.getInt("ORDER_POS", 0))
         }
+        binding.setName.text = currentSet.name
+        binding.setDescr.text = currentSet.description
 
-        binding.wordsList.layoutManager = LinearLayoutManager(this@WordsActivity)
-        loadWords()
-        set = getSetFromIntents()
-
-        binding.setName.text = set.name
-        binding.setDescr.text = set.description
-
-        if (set.description.isEmpty())
+        if (currentSet.description.isEmpty()) {
             binding.descrLayout.removeAllViews()
-
-        binding.startLearn.setOnClickListener {
-                StartLearnDialog(this@WordsActivity, R.layout.start_learn_dialog, set.wordsCount, set.id).showDialog()
         }
-
+        scope.launch {
+            wordsViewModel.onGetWords(getConfigByPosition(binding.sortByWords.selectedItemPosition))
+        }
+        binding.wordsList.layoutManager = LinearLayoutManager(this@WordsActivity)
+        binding.wordsList.adapter = WordAdaptor(
+            context = this,
+            words = words,
+            onClick = {
+                if (words[it].isSelected) {
+                    wordsViewModel.onWordDeselected(it)
+                } else {
+                    wordsViewModel.onWordSelected(it)
+                }
+            }
+        )
+        binding.startLearn.setOnClickListener {
+                StartLearnDialog(this@WordsActivity, R.layout.start_learn_dialog, currentSet.wordsCount, currentSet.id).showDialog()
+        }
         initButtons()
-    }
-
-    fun loadWords(order: String = "id") {
-        words = db.getWords(intent.getIntExtra("setid", 1), order)
-        binding.wordsList.adapter = WordAdaptor(this, words.map {
-            TranslatedTextCard(
-                translatedText = TranslatedText(
-                    it.word.word ?: "",
-                    it.word.translation,
-                    Language(it.langPair.termLanguage),
-                    Language(it.langPair.definitionLanguage),
-                ),
-                isEditable = true,
-                isSelected = false,
-                state = TextCardState.DEFAULT
-            )
-        })
     }
 
     private fun getSetFromIntents(): WordSet {
@@ -106,81 +158,167 @@ class WordsActivity : AppCompatActivity() {
     }
 
     private fun initButtons() {
-        val moveLP = LinearLayout.LayoutParams(binding.startLearn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT,1f)
-        moveLP.setMargins(50, 20, 20, 0)
-        moveButton = getButton(moveLP, "Move", R.color.blue) {
-            MoveDialog(this, R.layout.move_dialog, set.id, selected.map { it.id }).showDialog()
-            words.removeAll { selected.contains(it) }
-            selected.clear()
+        moveButton = getButton(
+            layoutParams = LinearLayout.LayoutParams(
+                binding.startLearn.width / 3 - 50,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            ).also { it.setMargins(50, 20, 20, 0) },
+            text = "Move",
+            color = R.color.blue
+        ) {
+            MoveDialog(
+                context = this,
+                resource = R.layout.move_dialog,
+                sets = sets.map { it.second }
+            ) {
+                scope.launch {
+                    wordsViewModel.onMoveSelected(sets[it].first)
+                }
+                removeSelected()
+            }.showDialog()
+            binding.wordsList.adapter?.notifyDataSetChanged()
             updateHead()
-            binding.wordsList.adapter!!.notifyDataSetChanged()
         }
 
-        val studyLP = LinearLayout.LayoutParams(binding.startLearn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        studyLP.setMargins(20, 20, 20, 0)
-        studyButton = getButton(studyLP, "Study", R.color.green) {
+        studyButton = getButton(
+            layoutParams = LinearLayout.LayoutParams(
+                binding.startLearn.width / 3 - 50,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            ).also { it.setMargins(20, 20, 20, 0) },
+            text = "Study",
+            color = R.color.green
+        ) {
+
             val query = "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
                     "WHERE ${WordDBHelper.COLUMN_WORD_ID} IN " +
-                    selected.map { it.id }.toString().replace("[", "(")
-                        .replace("]", ")")
+                    selected.toString().replace("[", "(").replace("]", ")")
             val learnIntent = Intent(this, LearnActivity::class.java).apply {
                 putExtra("query", query)
                 putExtra("batch_size", 7)
             }
             startActivity(learnIntent)
-            selected.clear()
-            loadWords()
-            binding.startLearn.apply {
-                removeAllViews()
-                addView(binding.startLearnImage)
-                addView(binding.setName)
-            }
-        }
 
-        val deleteLP = LinearLayout.LayoutParams(binding.startLearn.width / 3 - 50, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        deleteLP.setMargins(20, 20, 50, 0)
-        deleteButton = getButton(deleteLP, "Delete", R.color.crimson) {
-            DeleteWordDialog(this, R.layout.delete_word, *selected.toTypedArray()).showDialog()
+            words.clear()
+            scope.launch {
+                wordsViewModel.onGetWords(getConfigByPosition(binding.sortByWords.selectedItemPosition))
+            }
+            binding.wordsList.adapter?.notifyDataSetChanged()
+            updateHead()
+        }.also { it.isVisible = false }
+
+        deleteButton = getButton(
+            layoutParams = LinearLayout.LayoutParams(
+                binding.startLearn.width / 3 - 50,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            ).also { it.setMargins(20, 20, 50, 0) },
+            text = "Delete",
+            color = R.color.crimson
+        ) {
+            DeleteWordDialog(this, R.layout.delete_word){
+                scope.launch {
+                    wordsViewModel.onDeleteSelected()
+                }
+                removeSelected()
+            }.showDialog()
+            binding.wordsList.adapter?.notifyDataSetChanged()
+            updateHead()
         }
     }
 
-    fun getButton(layoutParams: LinearLayout.LayoutParams,
-                  text: String,
-                  color: Int,
-                  onClick: View.OnClickListener) = MaterialButton(ContextThemeWrapper(this,
-        R.style.AppTheme_Button),
-        null, R.style.AppTheme_Button).apply {
-            setLayoutParams(layoutParams)
-            setText(text)
-            gravity = Gravity.CENTER
-            setBackgroundColor(ContextCompat.getColor(this@WordsActivity, color))
-            setOnClickListener(onClick)
-        }
+    private fun getButton(
+        layoutParams: LinearLayout.LayoutParams,
+        text: String,
+        color: Int,
+        onClick: View.OnClickListener
+    ) = MaterialButton(
+        ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button).apply {
+        setLayoutParams(layoutParams)
+        setText(text)
+        gravity = Gravity.CENTER
+        setBackgroundColor(ContextCompat.getColor(this@WordsActivity, color))
+        setOnClickListener(onClick)
+    }
 
-    fun updateHead()  {
-        if (shitSelected == selected.isNotEmpty())
-            return
-        shitSelected = selected.isNotEmpty()
+    private fun updateHead() {
         binding.startLearn.removeAllViews()
-        if (shitSelected)
+        if (wordsSelected) {
             binding.startLearn.apply {
                 addView(moveButton)
                 addView(studyButton)
                 addView(deleteButton)
             }
-        else binding.startLearn.apply {
+        } else {
+            binding.startLearn.apply {
                 addView(binding.startLearnImage)
                 addView(binding.setName)
             }
+        }
     }
 
     override fun onBackPressed() {
         if (selected.isEmpty())
             super.onBackPressed()
         else {
-            selected.clear()
+            wordsViewModel.onDeselectAll()
             binding.wordsList.adapter!!.notifyDataSetChanged()
             updateHead()
+        }
+    }
+
+    private fun getConfigByPosition(position: Int): WordGroupConfig {
+        return when (position) {
+            0 -> WordGroupConfig(
+                setId = SetId.One(currentSet.id.toLong()),
+                sorting = WordsSorting.LAST_ADDED_FIRST
+            )
+            1 -> WordGroupConfig(
+                setId = SetId.One(currentSet.id.toLong()),
+                sorting = WordsSorting.FIRST_ADDED_FIRST
+            )
+            2 -> WordGroupConfig(
+                setId = SetId.One(currentSet.id.toLong()),
+                sorting = WordsSorting.RECENTLY_ASKED_FIRST
+            )
+            3 -> WordGroupConfig(
+                setId = SetId.One(currentSet.id.toLong()),
+                sorting = WordsSorting.BEST_ANSWERED_FIRST
+            )
+            4 -> WordGroupConfig(
+                setId = SetId.One(currentSet.id.toLong()),
+                sorting = WordsSorting.WORST_ANSWERED_FIRST
+            )
+            else -> WordGroupConfig()
+        }
+    }
+
+    private fun loadWords(wordsState: WordsState) {
+        wordsState.words?.let { wordList ->
+            for (word in wordList.withIndex()) {
+                words.add(
+                    TranslatedTextCard(
+                        translatedText = TranslatedText(
+                            text = word.value.text,
+                            translation = word.value.translation,
+                            textLanguage = word.value.textLanguage,
+                            translationLanguage = word.value.translationLanguage
+                        ),
+                        isEditable = true,
+                        isSelected = false,
+                        state = TextCardState.DEFAULT
+                    )
+                )
+            }
+        }
+    }
+
+    private fun removeSelected() {
+        var count = 0
+        selected.forEach {
+            words.removeAt(it - count)
+            count++
         }
     }
 }

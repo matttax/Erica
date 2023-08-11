@@ -4,6 +4,7 @@ import android.content.ContentValues
 import com.matttax.erica.data.database.SqliteDatabaseManager
 import com.matttax.erica.data.database.SqliteDatabaseManager.Companion.COLUMN_DEFINITION
 import com.matttax.erica.data.database.SqliteDatabaseManager.Companion.COLUMN_DEFINITION_LANGUAGE
+import com.matttax.erica.data.database.SqliteDatabaseManager.Companion.COLUMN_ID
 import com.matttax.erica.data.database.SqliteDatabaseManager.Companion.COLUMN_LAST_ASKED
 import com.matttax.erica.data.database.SqliteDatabaseManager.Companion.COLUMN_SET_ID
 import com.matttax.erica.data.database.SqliteDatabaseManager.Companion.COLUMN_TERM
@@ -44,9 +45,9 @@ class WordsRepositoryImpl @Inject constructor(
 
     override fun getWords(wordGroupConfig: WordGroupConfig): List<WordDomainModel> {
         val query = "SELECT * FROM $WORDS_TABLE_NAME " +
-                "$COLUMN_TERM_LANGUAGE<>\"null\" ${setIdToQuery(wordGroupConfig.setId)} " +
+                "WHERE $COLUMN_TERM_LANGUAGE<>\"null\" ${setIdToQuery(wordGroupConfig.setId)} " +
                 "ORDER BY ${sortingToQuery(wordGroupConfig.sorting)} " +
-                "LIMIT ${wordGroupConfig.limit}"
+                "LIMIT ${wordGroupConfig.limit ?: Int.MAX_VALUE}"
 
         val currentWords = mutableListOf<WordDomainModel>()
         val cursor = sqliteDatabaseManager.writableDatabase.rawQuery(query, null)
@@ -77,7 +78,7 @@ class WordsRepositoryImpl @Inject constructor(
     override fun moveToSet(fromSetId: Long, toSetId: Long, vararg wordIds: Long) {
         sqliteDatabaseManager.writableDatabase.execSQL("UPDATE $WORDS_TABLE_NAME SET $COLUMN_SET_ID=$toSetId " +
                 "WHERE $COLUMN_WORD_ID IN " +
-                wordIds.toString().replace('[', '(').replace(']', ')')
+                wordIds.asList().toString().replace('[', '(').replace(']', ')')
         )
         sqliteDatabaseManager.writableDatabase.execSQL("UPDATE $SETS_TABLE_NAME SET $COLUMN_WORDS_COUNT=$COLUMN_WORDS_COUNT-${wordIds.size} " +
                 "WHERE id=$fromSetId")
@@ -108,15 +109,15 @@ class WordsRepositoryImpl @Inject constructor(
     private fun setIdToQuery(setId: SetId): String {
         return when(setId) {
             is SetId.None -> ""
-            is SetId.One -> "AND WHERE $COLUMN_SET_ID=${setId.id}"
-            is SetId.Many -> "AND WHERE $COLUMN_SET_ID IN ${setId.ids.toString().replace('[','(').replace(']',')')}"
+            is SetId.One -> "AND $COLUMN_SET_ID=${setId.id}"
+            is SetId.Many -> "AND $COLUMN_SET_ID IN ${setId.ids.toString().replace('[','(').replace(']',')')}"
         }
     }
 
     private fun sortingToQuery(wordsSorting: WordsSorting): String {
         return when(wordsSorting) {
-            WordsSorting.LAST_ADDED_FIRST -> "$COLUMN_SET_ID ASC"
-            WordsSorting.FIRST_ADDED_FIRST -> "$COLUMN_SET_ID DESC"
+            WordsSorting.LAST_ADDED_FIRST -> "$COLUMN_ID ASC"
+            WordsSorting.FIRST_ADDED_FIRST -> "$COLUMN_ID DESC"
             WordsSorting.BEST_ANSWERED_FIRST -> "$COLUMN_TIMES_CORRECT / CAST(${COLUMN_TIMES_ASKED} as float) DESC"
             WordsSorting.WORST_ANSWERED_FIRST -> "$COLUMN_TIMES_CORRECT / CAST(${COLUMN_TIMES_ASKED} as float) ASC"
             WordsSorting.LONG_AGO_ASKED_FIRST -> "$COLUMN_LAST_ASKED DESC"
