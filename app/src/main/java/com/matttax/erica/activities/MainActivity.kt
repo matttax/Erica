@@ -2,6 +2,7 @@ package com.matttax.erica.activities
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.util.Log
@@ -26,6 +27,7 @@ import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.TranslateViewModel
+import com.matttax.erica.speechtotext.WordSpeller
 import com.matttax.erica.utils.LanguageUtils.Companion.getLanguageCode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -40,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var translateViewModel: TranslateViewModel
     lateinit var binding: ActivityMainBinding
+    private val wordSpeller = WordSpeller(this)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var job: Job? = null
@@ -262,10 +265,16 @@ class MainActivity : AppCompatActivity() {
     private fun setExamples(list: List<UsageExample>?) {
         binding.translations.layoutManager = LinearLayoutManager(this@MainActivity)
         binding.translations.adapter = WordAdaptor(
-            this@MainActivity,
-            list?.map {
+            context = this@MainActivity,
+            words = list?.map {
                     example -> TranslatedTextCard.fromUsageExample(example)
-            } ?: emptyList()
+            } ?: emptyList(),
+            onSpell = { button, text ->
+                button.setColorFilter(Color.argb(255, 255, 165, 0))
+                wordSpeller.spell(text) {
+                    button.setColorFilter(Color.argb(255, 41, 45, 54))
+                }
+            }
         )
     }
 

@@ -3,6 +3,7 @@ package com.matttax.erica.activities
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -27,6 +28,7 @@ import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.WordsState
 import com.matttax.erica.presentation.viewmodels.WordsViewModel
+import com.matttax.erica.speechtotext.WordSpeller
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flowOn
@@ -40,6 +42,7 @@ class WordsActivity : AppCompatActivity() {
     @Inject
     lateinit var wordsViewModel: WordsViewModel
     lateinit var binding: ActivityWordsBinding
+    private val wordSpeller = WordSpeller(this)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -142,6 +145,21 @@ class WordsActivity : AppCompatActivity() {
                 } else {
                     wordsViewModel.onWordSelected(it)
                 }
+            },
+            onSpell = { button, text ->
+                button.setColorFilter(Color.argb(255, 255, 165, 0))
+                wordSpeller.spell(text) {
+                    button.setColorFilter(Color.argb(255, 41, 45, 54))
+                }
+            },
+            onDelete = {
+                DeleteWordDialog(this, R.layout.delete_word) {
+                    scope.launch {
+                        wordsViewModel.onDelete(it)
+                    }
+                    words.removeAt(it)
+                    binding.wordsList.adapter?.notifyItemRemoved(it)
+                }.showDialog()
             }
         )
         binding.startLearn.setOnClickListener {

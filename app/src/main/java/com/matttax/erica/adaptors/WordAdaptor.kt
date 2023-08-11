@@ -8,12 +8,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.matttax.erica.R
-import com.matttax.erica.activities.WordsActivity
-import com.matttax.erica.dialogs.DeleteWordDialog
-import com.matttax.erica.domain.model.translate.UsageExample
 import com.matttax.erica.presentation.model.translate.TextCardState
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
@@ -22,8 +20,8 @@ class WordAdaptor constructor(
     private val context: Context,
     private val words: List<TranslatedTextCard>,
     private val onClick: (Int) -> Unit = {},
-    private val onDelete: () -> Unit = {},
-    private val onSpell: (TranslatedText) -> Unit = {},
+    private val onDelete: (Int) -> Unit = {},
+    private val onSpell: (ImageView, TranslatedText) -> Unit = { _, _ -> },
 ) : RecyclerView.Adapter<WordAdaptor.WordViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
@@ -46,13 +44,15 @@ class WordAdaptor constructor(
             TextCardState.INCORRECT -> ContextCompat.getColor(context, R.color.crimson)
             TextCardState.DEFAULT -> ContextCompat.getColor(context, R.color.blue)
         }
+        holder.itemView.setOnClickListener {
+            onClick(holder.adapterPosition)
+        }
         if (!words[position].isEditable) {
-            holder.cardBackground.removeView(holder.edit)
-            holder.cardBackground.removeView(holder.delete)
+            holder.edit.isVisible = false
+            holder.delete.isVisible = false
         } else {
-            holder.itemView.setOnClickListener {
-                onClick(holder.adapterPosition)
-            }
+            holder.edit.isVisible = true
+            holder.delete.isVisible = true
         }
         if(words[position].isSelected) {
             holder.cardBackground.setBackgroundColor(ContextCompat.getColor(context, R.color.light_blue))
@@ -61,10 +61,10 @@ class WordAdaptor constructor(
         }
 
         holder.play.setOnClickListener {
-            onSpell(words[holder.adapterPosition].translatedText)
+            onSpell(holder.play, words[holder.adapterPosition].translatedText)
         }
         holder.delete.setOnClickListener {
-            onDelete()
+            onDelete(holder.adapterPosition)
         }
     }
 

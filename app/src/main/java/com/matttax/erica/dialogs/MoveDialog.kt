@@ -1,13 +1,9 @@
 package com.matttax.erica.dialogs
 
 import android.content.Context
-import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import androidx.cardview.widget.CardView
 import com.matttax.erica.R
-import com.matttax.erica.StudyCard
-import com.matttax.erica.activities.WordsActivity
 
 class MoveDialog(
     context: Context,

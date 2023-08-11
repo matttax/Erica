@@ -83,6 +83,10 @@ class StudyCard(val id: Int, val langPair: LanguagePair, val word: StudyItem, va
     private lateinit var termSpeech: TextToSpeech
     private lateinit var definitionSpeech: TextToSpeech
 
+    override fun toString(): String {
+        return "${word.word} ${word.translation}"
+    }
+
     fun spell(context: Context, play:ImageView?=null) {
         spellTerm(context, play)
         termSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
@@ -90,10 +94,6 @@ class StudyCard(val id: Int, val langPair: LanguagePair, val word: StudyItem, va
             override fun onError(utteranceId: String) {}
             override fun onDone(utteranceId: String) { spellDefinition(context, play) }
         })
-    }
-
-    override fun toString(): String {
-        return "${word.word} ${word.translation}"
     }
 
     fun spellTerm(context: Context, play:ImageView?=null) {
