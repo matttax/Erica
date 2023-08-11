@@ -1,5 +1,6 @@
 package com.matttax.erica.activities
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -258,6 +259,8 @@ class WordsActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (selected.isEmpty())
             super.onBackPressed()

@@ -106,22 +106,32 @@ class TranslateViewModelImpl @Inject constructor(
             toLanguage = languageOut
         )
         getTranslationsUseCase.execute(request) {
-            translationsDataStateFlow.value = DataState.LoadedInfo(it)
+            translationsDataStateFlow.value = when {
+                it.isEmpty() -> DataState.NotFound
+                else -> DataState.LoadedInfo(it)
+            }
         }
         getDefinitionsUseCase.execute(request) {
-            definitionsDataStateFlow.value = DataState.LoadedInfo(it)
+            definitionsDataStateFlow.value = when {
+                it.isEmpty() -> DataState.NotFound
+                else -> DataState.LoadedInfo(it)
+            }
         }
         getExamplesUseCase.execute(request) {
-            examplesDataStateFlow.value = DataState.LoadedInfo(it)
+            examplesDataStateFlow.value = when {
+                it.isEmpty() -> DataState.NotFound
+                it.size == 1 && it.first().text.endsWith("Error@") -> DataState.NotFound
+                else -> DataState.LoadedInfo(it)
+            }
         }
     }
 
     override fun onTranslationSelected(translation: String) = onOutputTextChanged(translation)
 
     override fun onClear() {
-        translationsDataStateFlow.value = DataState.Loading
-        definitionsDataStateFlow.value = DataState.Loading
-        examplesDataStateFlow.value = DataState.Loading
+        translationsDataStateFlow.value = null
+        definitionsDataStateFlow.value = null
+        examplesDataStateFlow.value = null
     }
 
     override suspend fun onAddAction() {

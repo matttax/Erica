@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableStringBuilder
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.defTextField.doOnTextChanged { text, _, _, _ ->
             translateViewModel.onOutputTextChanged(text.toString())
+            binding.defTextField.setSelection(text?.length ?: 0)
         }
 
         binding.addWord.setOnClickListener {
@@ -98,10 +100,9 @@ class MainActivity : AppCompatActivity() {
         binding.dismissWord.apply {
             isInvisible = true
             setOnClickListener {
+                job?.cancel()
                 binding.termTextField.text = SpannableStringBuilder("")
-                translateViewModel.onOutputTextChanged("")
                 translateViewModel.onClear()
-                showTranslateButton()
             }
         }
 
@@ -180,7 +181,6 @@ class MainActivity : AppCompatActivity() {
     private fun translateClicked() {
         job?.cancel()
         job = scope.launch(Dispatchers.Main) {
-            binding.translations.layoutManager = FlexboxLayoutManager(this@MainActivity)
             translateViewModel.onTranslateAction()
         }
     }
@@ -193,77 +193,101 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showTranslateButton() {
-        if (binding.addWord.text.toString().lowercase() == "add") {
-            binding.addWord.textSize = 15F
-            binding.addWord.text = "translate"
-            binding.addWord.background.setTint(ContextCompat.getColor(this, R.color.blue))
-            binding.dismissWord.isInvisible = true
-        }
+        binding.addWord.textSize = 15F
+        binding.addWord.text = "translate"
+        binding.addWord.background.setTint(ContextCompat.getColor(this, R.color.blue))
+        binding.dismissWord.isInvisible = true
     }
 
     private fun updateAdaptor() {
-        binding.translationsProgressBar.isVisible = false
+        hideImages()
         binding.translations.adapter = null
         when (binding.tabs.selectedTabPosition) {
             0 -> {
                 lastTranslateState?.let {
-                    when (it.translations) {
-                        is DataState.LoadedInfo<*> -> {
-                            showAddButtons()
-                            binding.translations.layoutManager =
-                                FlexboxLayoutManager(this@MainActivity)
-                            binding.translations.adapter = TranslationAdaptor(
-                                this@MainActivity,
-                                (it.translations as DataState.LoadedInfo<*>).info as? List<String>
-                                    ?: emptyList()
-                            ) {
-                                text -> translateViewModel.onOutputTextChanged(text.toString())
-                            }
-                        }
-                        is DataState.Loading -> {
-                            showTranslateButton()
-                            binding.translationsProgressBar.isVisible = true
-                        }
-                        else -> {}
+                    setDataState(it.translations) {
+                        setTranslations(
+                            list = (it.translations as? DataState.LoadedInfo<*>)?.info as? List<String>
+                        )
                     }
                 }
             }
             1 -> {
                 lastTranslateState?.let {
-                    when(it.definitions) {
-                        is DataState.LoadedInfo<*> -> {
-                            binding.translations.layoutManager = LinearLayoutManager(this@MainActivity)
-                            binding.translations.adapter = PartOfSpeechAdaptor(
-                                this@MainActivity,
-                                (it.definitions as DataState.LoadedInfo<*>).info as? List<DictionaryDefinition> ?: emptyList()
-                            )
-                        }
-                        is DataState.Loading -> {
-                            binding.translationsProgressBar.isVisible = true
-                        }
-                        else -> {}
+                    setDataState(it.definitions) {
+                        setDefinitions(
+                            list = (it.definitions as? DataState.LoadedInfo<*>)?.info as? List<DictionaryDefinition>
+                        )
                     }
                 }
             }
             2 -> {
                 lastTranslateState?.let {
-                    when(it.examples) {
-                        is DataState.LoadedInfo<*> -> {
-                            binding.translations.layoutManager = LinearLayoutManager(this@MainActivity)
-                            binding.translations.adapter = WordAdaptor(
-                                this@MainActivity,
-                                ((it.examples as DataState.LoadedInfo<*>).info as? List<UsageExample>)?.map {
-                                    example -> TranslatedTextCard.fromUsageExample(example)
-                                } ?: emptyList()
-                            )
-                        }
-                        is DataState.Loading -> {
-                            binding.translationsProgressBar.isVisible = true
-                        }
-                        else -> {}
+                    setDataState(it.examples) {
+                        setExamples(
+                            list = (it.examples as? DataState.LoadedInfo<*>)?.info as? List<UsageExample>
+                        )
                     }
-
                 }
+            }
+        }
+    }
+
+    private fun hideImages() {
+        binding.apply {
+            translationsProgressBar.isVisible = false
+            noInternetImage.isVisible = false
+            notFoundImage.isVisible = false
+        }
+    }
+
+    private fun setTranslations(list: List<String>?) {
+        binding.translations.layoutManager = FlexboxLayoutManager(this@MainActivity)
+        binding.translations.adapter = TranslationAdaptor(
+            this@MainActivity,
+            list ?: emptyList()
+        ) { text ->
+            translateViewModel.onOutputTextChanged(text.toString())
+        }
+    }
+
+    private fun setDefinitions(list: List<DictionaryDefinition>?) {
+        binding.translations.layoutManager = LinearLayoutManager(this@MainActivity)
+        binding.translations.adapter = PartOfSpeechAdaptor(
+            this@MainActivity,
+            list ?: emptyList()
+        )
+    }
+
+    private fun setExamples(list: List<UsageExample>?) {
+        binding.translations.layoutManager = LinearLayoutManager(this@MainActivity)
+        binding.translations.adapter = WordAdaptor(
+            this@MainActivity,
+            list?.map {
+                    example -> TranslatedTextCard.fromUsageExample(example)
+            } ?: emptyList()
+        )
+    }
+
+    private fun setDataState(dataState: DataState?, onLoaded: () -> Unit) {
+        when(dataState) {
+            is DataState.LoadedInfo<*> -> {
+                onLoaded()
+                showAddButtons()
+            }
+            is DataState.Loading -> {
+                binding.translationsProgressBar.isVisible = true
+                showTranslateButton()
+            }
+            is DataState.NotFound -> {
+                binding.notFoundImage.isVisible = true
+            }
+            is DataState.NoInternet -> {
+                binding.noInternetImage.isVisible = true
+            }
+            else -> {
+                showTranslateButton()
+                translateViewModel.onOutputTextChanged("")
             }
         }
     }
