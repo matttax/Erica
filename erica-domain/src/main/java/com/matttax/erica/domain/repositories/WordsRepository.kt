@@ -8,5 +8,5 @@ interface WordsRepository {
     fun addWord(wordDomainModel: WordDomainModel): Boolean
     fun remove(wordId: Long, setId: Long)
     fun moveToSet(fromSetId: Long, toSetId: Long, vararg wordIds: Long)
-    fun onWordAsked(wordId: Long, isCorrect: Boolean)
+    fun onWordAnswered(wordId: Long, isCorrect: Boolean)
 }

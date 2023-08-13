@@ -20,7 +20,8 @@
         android:name=".App">
         <activity
             android:name=".activities.LearnActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity
             android:name=".activities.WordsActivity"
             android:exported="false" />

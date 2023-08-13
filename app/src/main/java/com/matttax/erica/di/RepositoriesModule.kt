@@ -5,8 +5,10 @@ import com.matttax.erica.data.repositories.WordsRepositoryImpl
 import com.matttax.erica.domain.repositories.SetsRepository
 import com.matttax.erica.domain.repositories.WordsRepository
 import com.matttax.erica.presentation.viewmodels.SetsViewModel
+import com.matttax.erica.presentation.viewmodels.StudyViewModel
 import com.matttax.erica.presentation.viewmodels.WordsViewModel
 import com.matttax.erica.presentation.viewmodels.impl.SetsViewModelImpl
+import com.matttax.erica.presentation.viewmodels.impl.StudyViewModelImpl
 import com.matttax.erica.presentation.viewmodels.impl.WordsViewModelImpl
 import dagger.Binds
 import dagger.Module
@@ -28,4 +30,7 @@ abstract class RepositoriesModule {
 
     @Binds
     abstract fun bindWordsViewModel(wordsViewModelImpl: WordsViewModelImpl): WordsViewModel
+
+    @Binds
+    abstract fun bindStudyViewModel(studyViewModelImpl: StudyViewModelImpl): StudyViewModel
 }

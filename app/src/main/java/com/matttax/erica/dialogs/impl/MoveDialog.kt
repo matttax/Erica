@@ -1,16 +1,16 @@
-package com.matttax.erica.dialogs
+package com.matttax.erica.dialogs.impl
 
 import android.content.Context
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import com.matttax.erica.R
+import com.matttax.erica.dialogs.ActionDialog
 
 class MoveDialog(
     context: Context,
-    resource: Int,
     sets: List<String>,
     onAction: (Int) -> Unit
-): ActionDialog(context, resource) {
+): ActionDialog(context, R.layout.move_dialog) {
 
     private val setsSpinner: Spinner = dialogView.findViewById(R.id.setsToMove)
 

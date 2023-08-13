@@ -19,34 +19,6 @@ data class WordSet(
     }
 }
 
-class WordGroup(var words: MutableList<StudyCard>, private val batchSize: Int, ask: String) {
-    var nextBatchStart = 0
-
-    init {
-        words.shuffle()
-        val w = mutableListOf<StudyCard>()
-        if (ask != "Word")
-            words.forEach { w.add(it.getInvert()) }
-        if (ask == "Translation")
-            words = w
-        else if (ask == "Both")
-            words.addAll(w)
-    }
-
-    fun getNextBatch(incorrectWords:MutableList<StudyCard>): Stack<StudyCard> {
-        words = ArrayList(words.drop(nextBatchStart))
-        words.addAll(incorrectWords)
-        words.shuffle()
-        nextBatchStart = min(batchSize, words.size)
-        val batch = Stack<StudyCard>()
-        for (i in 0 until nextBatchStart) {
-            batch.push(words[i])
-        }
-        return batch
-    }
-
-}
-
 class StudyItem(val word: String?, val translation: String)
 
 class LanguagePair(val termLanguage: String, val definitionLanguage: String) {
@@ -121,9 +93,4 @@ class StudyCard(val id: Int, val langPair: LanguagePair, val word: StudyItem, va
             }
         }
     }
-
-    fun getInvert() = StudyCard(id, LanguagePair(langPair.definitionLanguage, langPair.termLanguage),
-                                StudyItem(word.translation, word.word?:""), setId)
 }
-
-class Definitions(val partOfSpeech: String, val description: String, val definition: List<String>)

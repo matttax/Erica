@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.matttax.erica.Definitions
 import com.matttax.erica.R
 import com.matttax.erica.domain.model.translate.DictionaryDefinition
 

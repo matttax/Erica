@@ -1,11 +1,13 @@
-package com.matttax.erica.dialogs
+package com.matttax.erica.dialogs.impl
 
 import android.content.Context
-import com.matttax.erica.StudyCard
 import com.matttax.erica.R
-import com.matttax.erica.activities.WordsActivity
+import com.matttax.erica.dialogs.ActionDialog
 
-class DeleteWordDialog(context: Context, resource: Int, onAction: () -> Unit): ActionDialog(context, resource) {
+class DeleteWordDialog(
+    context: Context,
+    onAction: () -> Unit
+): ActionDialog(context, R.layout.delete_word) {
     init {
         initDismissButton(R.id.noDeleteWord)
         initActionButton(R.id.yesDeleteWord) {

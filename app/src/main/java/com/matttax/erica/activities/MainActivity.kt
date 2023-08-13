@@ -41,8 +41,12 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var translateViewModel: TranslateViewModel
+
+    @Inject
+    lateinit var wordSpeller: WordSpeller
+
     lateinit var binding: ActivityMainBinding
-    private val wordSpeller = WordSpeller(this)
+
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var job: Job? = null

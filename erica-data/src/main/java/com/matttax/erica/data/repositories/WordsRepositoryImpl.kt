@@ -86,7 +86,7 @@ class WordsRepositoryImpl @Inject constructor(
                 "WHERE id=$toSetId")
     }
 
-    override fun onWordAsked(wordId: Long, isCorrect: Boolean) {
+    override fun onWordAnswered(wordId: Long, isCorrect: Boolean) {
         sqliteDatabaseManager.writableDatabase.execSQL("UPDATE $WORDS_TABLE_NAME " +
                 "SET $COLUMN_TIMES_CORRECT=$COLUMN_TIMES_CORRECT+1 " +
                 "WHERE id=$wordId")

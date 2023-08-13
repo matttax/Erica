@@ -1,14 +1,13 @@
-package com.matttax.erica.dialogs
+package com.matttax.erica.dialogs.impl
 
 import android.content.Context
 import com.matttax.erica.R
-import com.matttax.erica.activities.SetsActivity
+import com.matttax.erica.dialogs.ActionDialog
 
 class DeleteSetDialog(
     context: Context,
-    resource: Int,
     action: () -> Unit,
-): ActionDialog(context, resource) {
+): ActionDialog(context, R.layout.delete_set) {
 
     init {
         initDismissButton(R.id.noDeleteSet)

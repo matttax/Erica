@@ -2,20 +2,16 @@ package com.matttax.erica.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.matttax.erica.R
 import com.matttax.erica.adaptors.SetAdaptor
 import com.matttax.erica.WordSet
 import com.matttax.erica.WordDBHelper
-import com.matttax.erica.databinding.ActivityLearnBinding
 import com.matttax.erica.databinding.ActivitySetsBinding
-import com.matttax.erica.dialogs.CreateSetDialog
-import com.matttax.erica.dialogs.DeleteSetDialog
+import com.matttax.erica.dialogs.impl.CreateSetDialog
+import com.matttax.erica.dialogs.impl.DeleteSetDialog
 import com.matttax.erica.presentation.states.SetsState
 import com.matttax.erica.presentation.viewmodels.SetsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,7 +61,6 @@ class SetsActivity : AppCompatActivity() {
         binding.addNewSet.setOnClickListener {
             CreateSetDialog(
                 context = this,
-                resource = R.layout.create_set_dialog,
                 onSuccess = { name, description ->
                     scope.launch {
                         setsViewModel.onAddAction(name, description)
@@ -106,7 +101,7 @@ class SetsActivity : AppCompatActivity() {
                 startActivity(i)
             },
             onDeleteClick = {
-                DeleteSetDialog(this, R.layout.delete_set) {
+                DeleteSetDialog(this) {
                     scope.launch {
                         setsViewModel.onDelete(it)
                     }

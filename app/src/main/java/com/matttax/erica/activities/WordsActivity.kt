@@ -17,9 +17,9 @@ import com.google.android.material.button.MaterialButton
 import com.matttax.erica.*
 import com.matttax.erica.adaptors.WordAdaptor
 import com.matttax.erica.databinding.ActivityWordsBinding
-import com.matttax.erica.dialogs.DeleteWordDialog
-import com.matttax.erica.dialogs.MoveDialog
-import com.matttax.erica.dialogs.StartLearnDialog
+import com.matttax.erica.dialogs.impl.DeleteWordDialog
+import com.matttax.erica.dialogs.impl.MoveDialog
+import com.matttax.erica.dialogs.impl.StartLearnDialog
 import com.matttax.erica.domain.config.SetId
 import com.matttax.erica.domain.config.WordGroupConfig
 import com.matttax.erica.domain.config.WordsSorting
@@ -153,7 +153,7 @@ class WordsActivity : AppCompatActivity() {
                 }
             },
             onDelete = {
-                DeleteWordDialog(this, R.layout.delete_word) {
+                DeleteWordDialog(this) {
                     scope.launch {
                         wordsViewModel.onDelete(it)
                     }
@@ -188,7 +188,6 @@ class WordsActivity : AppCompatActivity() {
         ) {
             MoveDialog(
                 context = this,
-                resource = R.layout.move_dialog,
                 sets = sets.map { it.second }
             ) {
                 scope.launch {
@@ -236,7 +235,7 @@ class WordsActivity : AppCompatActivity() {
             text = "Delete",
             color = R.color.crimson
         ) {
-            DeleteWordDialog(this, R.layout.delete_word){
+            DeleteWordDialog(this){
                 scope.launch {
                     wordsViewModel.onDeleteSelected()
                 }

@@ -13,13 +13,10 @@ abstract class Dialog(activity: Context, resource: Int) {
 
     val dialog: AlertDialog
     protected val dialogView: View
-    protected val db: WordDBHelper
 
     lateinit var dismissButton: MaterialButton
 
     init {
-        db = WordDBHelper(activity)
-
         val dialogBuilder = AlertDialog.Builder(activity)
         dialogView = (activity as Activity).layoutInflater.inflate(resource, null)
         dialogBuilder.setView(dialogView)

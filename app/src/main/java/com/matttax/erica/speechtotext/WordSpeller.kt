@@ -4,16 +4,18 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.matttax.erica.presentation.model.translate.TranslatedText
+import dagger.hilt.android.qualifiers.ActivityContext
 import java.util.Locale
+import javax.inject.Inject
 
-class WordSpeller(
-    private val context: Context
+class WordSpeller @Inject constructor(
+    @ActivityContext val context: Context
 ) {
 
     private lateinit var termSpeech: TextToSpeech
     private lateinit var definitionSpeech: TextToSpeech
 
-    fun spell(translatedText: TranslatedText, onDone: () -> Unit) {
+    fun spell(translatedText: TranslatedText, onDone: () -> Unit = {}) {
         termSpeech = TextToSpeech(context) {
             if (it == TextToSpeech.SUCCESS) {
                 termSpeech.language = translatedText.textLanguage.locale
@@ -33,7 +35,7 @@ class WordSpeller(
         )
     }
 
-    fun spellText(text: String, locale: Locale, onDone: () -> Unit) {
+    fun spellText(text: String, locale: Locale, onDone: () -> Unit = {}) {
         definitionSpeech = TextToSpeech(context) {
             if (it == TextToSpeech.SUCCESS) {
                 definitionSpeech.language = locale

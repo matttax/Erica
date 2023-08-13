@@ -7,6 +7,7 @@ import com.matttax.erica.domain.usecases.words.crud.AddWordUseCase
 import com.matttax.erica.domain.usecases.words.crud.DeleteWordsUseCase
 import com.matttax.erica.domain.usecases.words.crud.GetWordsUseCase
 import com.matttax.erica.domain.usecases.words.crud.MoveWordsUseCase
+import com.matttax.erica.domain.usecases.words.study.WordAnsweredUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,5 +46,11 @@ class WordUseCasesModule {
     @Singleton
     fun provideDeleteWordsUseCase(wordsRepository: WordsRepository): DeleteWordsUseCase {
         return DeleteWordsUseCase(wordsRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWordAnsweredUseCase(wordsRepository: WordsRepository): WordAnsweredUseCase {
+        return WordAnsweredUseCase(wordsRepository)
     }
 }

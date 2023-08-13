@@ -1,7 +1,6 @@
 package com.matttax.erica.adaptors
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,11 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.R
 import com.matttax.erica.WordSet
-import com.matttax.erica.WordDBHelper
-import com.matttax.erica.activities.LearnActivity
-import com.matttax.erica.activities.WordsActivity
-import com.matttax.erica.dialogs.ActionDialog
-import com.matttax.erica.dialogs.DeleteSetDialog
 
 class SetAdaptor(
     private val context: Context,

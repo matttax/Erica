@@ -22,9 +22,3 @@ data class TranslatedTextCard(
         )
     }
 }
-
-enum class TextCardState {
-    CORRECT,
-    INCORRECT,
-    DEFAULT
-}

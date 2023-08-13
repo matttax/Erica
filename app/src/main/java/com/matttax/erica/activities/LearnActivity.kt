@@ -1,46 +1,89 @@
 package com.matttax.erica.activities
 
+import android.annotation.SuppressLint
 import android.graphics.PorterDuff
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.matttax.erica.*
 import com.matttax.erica.databinding.ActivityLearnBinding
-import com.matttax.erica.dialogs.WordAnsweredDialog
-import java.util.*
+import com.matttax.erica.dialogs.impl.AfterBatchDialog
+import com.matttax.erica.dialogs.impl.WordAnsweredDialog
+import com.matttax.erica.domain.config.SetId
+import com.matttax.erica.domain.config.StudyConfig
+import com.matttax.erica.domain.config.WordGroupConfig
+import com.matttax.erica.domain.config.WordsSorting
+import com.matttax.erica.presentation.states.StudyState
+import com.matttax.erica.presentation.viewmodels.StudyViewModel
+import com.matttax.erica.speechtotext.WordSpeller
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class LearnActivity : AppCompatActivity() {
-    private val db: WordDBHelper = WordDBHelper(this)
-    lateinit var studying: WordGroup
-    lateinit var words: Stack<StudyCard>
-    var incorrectWords = mutableListOf<StudyCard>()
-    var correctWords = mutableListOf<StudyCard>()
-    var allIncorrectWords = mutableListOf<StudyCard>()
-    var allCorrectWords = mutableListOf<StudyCard>()
-    var total = 0
-    var answered = 0
-    lateinit var definitionInputField: EditText
-    public lateinit var binding: ActivityLearnBinding
 
+    @Inject
+    lateinit var studyViewModel: StudyViewModel
+
+    @Inject
+    lateinit var wordSpeller: WordSpeller
+
+    lateinit var binding: ActivityLearnBinding
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private var dialogOnScreen = false
+
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLearnBinding.inflate(layoutInflater)
-
         setContentView(binding.root)
-        definitionInputField = findViewById(R.id.definitionInputField)
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        studying = WordGroup(db.getWords(intent.getStringExtra("query")),
-                                    intent.getIntExtra("batch_size", 7),
-                                intent.getStringExtra("ask") ?: "Translation")
 
-        definitionInputField.setOnKeyListener(View.OnKeyListener { _, i, keyEvent ->
+        val batchSize = intent.getIntExtra("batch_size", 5)
+
+        studyViewModel.observeState()
+            .flowOn(Dispatchers.Main)
+            .onEach {
+                Log.i("viewstate", it.toString())
+                runOnUiThread {
+                    it?.let { data -> setData(data) }
+                }
+            }
+            .launchIn(scope)
+
+        scope.launch {
+            studyViewModel.onGetWords(
+                StudyConfig(
+                    wordGroupConfig = WordGroupConfig(
+                        setId = SetId.One(intent.getLongExtra("setId", -1)),
+                        sorting = WordsSorting.WORST_ANSWERED_FIRST
+                    ),
+                    batchSize = batchSize
+                )
+            )
+            studyViewModel.onGetNewBatchAction()
+        }
+        studyViewModel.onGetNextWordAction()
+
+
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        binding.definitionInputField.setOnKeyListener(View.OnKeyListener { _, i, keyEvent ->
             if ((keyEvent.action == KeyEvent.ACTION_DOWN) && (i == KeyEvent.KEYCODE_ENTER)) {
-                readWord()
+                scope.launch {
+                    studyViewModel.onWordAnswered(binding.definitionInputField.text.toString())
+                }
                 return@OnKeyListener true
             }
             false
@@ -49,70 +92,69 @@ class LearnActivity : AppCompatActivity() {
             finish()
         }
         binding.doNotKnow.setOnClickListener {
-            readWord(true)
-        }
-
-        words = studying.getNextBatch(mutableListOf())
-        getNext()
-        words.peek().spellTerm(this)
-        total = words.size
-
-        binding.answeredTextInfo.text = "0/$total"
-        binding.answeredProgressBar.apply {
-            progressDrawable.setColorFilter(ContextCompat.getColor(this@LearnActivity, R.color.blue), PorterDuff.Mode.SRC_IN)
-            max = total
-        }
-    }
-
-    override fun onDestroy() {
-        words.clear()
-        super.onDestroy()
-    }
-
-    fun getNext() {
-        if (words.isNotEmpty()) {
-            binding.termAskedField.text = words.peek().word.word
-//            Log.i("test", words.peek().word.word.toString())
-//            if (words.peek().word.translation == "gait") {
-//                val f: LinearLayout = findViewById(R.id.wordField)
-//                f.removeAllViews()
-//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
-//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
-//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
-//                f.addView(MaterialButton(ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button))
-//            }
-        } else if (studying.words.isNotEmpty()) {
-            words = studying.getNextBatch(incorrectWords)
-            if (studying.words.isEmpty()) {
-                finish()
-            } else {
-                total = words.size
-                binding.answeredProgressBar.max = total
-                answered = 0
-                allIncorrectWords.addAll(incorrectWords)
-                allCorrectWords.addAll(correctWords)
-                incorrectWords.clear()
-                correctWords.clear()
-                binding.termAskedField.text = words.peek().word.word
-                binding.answeredProgressBar.progress = 0
+            scope.launch {
+                studyViewModel.onWordAnswered("")
             }
-        } else {
+        }
+        binding.answeredProgressBar.progressDrawable.setColorFilter(
+            ContextCompat.getColor(this@LearnActivity, R.color.blue),
+            PorterDuff.Mode.SRC_IN
+        )
+        binding.answeredProgressBar.max = batchSize
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setData(studyState: StudyState) {
+        val currentWord = studyState.currentBatch?.getOrNull(studyState.currentAskedPosition ?: -1)
+            ?: return
+
+        if (studyState.isFinished == true) {
             finish()
         }
-    }
-
-    private fun readWord(unknownWord:Boolean=false) {
-        words.peek().spellDefinition(this)
-        val answer: String? = if (unknownWord || binding.definitionInputField.text?.isEmpty() != false) null
-            else binding.definitionInputField.text.toString()
-        WordAnsweredDialog(this,
-            R.layout.word_answered, StudyItem(answer, words.peek().word.translation), words.peek().id, words.peek()).showDialog()
-    }
-
-    fun updateQuestion() {
-        words.pop()
-        getNext()
-        binding.definitionInputField.text?.clear()
+        val newPosition = studyState.currentAskedPosition ?: 0
+        val newMax = studyState.currentBatch?.size ?: 0
+        binding.answeredTextInfo.text = "$newPosition/$newMax"
+        binding.answeredProgressBar.apply {
+            progress = newPosition
+            max = newMax
+        }
+        if (studyState.isLastCorrect != null) {
+            if (!dialogOnScreen) {
+                dialogOnScreen = true
+                with(currentWord){
+                    wordSpeller.spellText(
+                        translation,
+                        translationLanguage.locale
+                    )
+                }
+                WordAnsweredDialog(
+                    context = this,
+                    correctAnswer = currentWord.translation,
+                    isCorrect = studyState.isLastCorrect ?: false
+                ) {
+                    dialogOnScreen = false
+                    if (studyState.currentAskedPosition?.plus(1) != studyState.currentBatch?.size) {
+                        studyViewModel.onGetNextWordAction()
+                    } else {
+                        AfterBatchDialog(
+                            context = this,
+                            results = studyState.batchResult ?: emptyList(),
+                        ) {
+                            studyViewModel.onGetNewBatchAction()
+                        }.showDialog()
+                    }
+                }.showDialog()
+            }
+        } else {
+            binding.definitionInputField.text?.clear()
+            binding.termAskedField.text = currentWord.text
+            with(currentWord){
+                wordSpeller.spellText(
+                    text,
+                    textLanguage.locale
+                )
+            }
+        }
     }
 
 }

@@ -1,17 +1,15 @@
-package com.matttax.erica.dialogs
+package com.matttax.erica.dialogs.impl
 
 import android.content.Context
-import android.widget.Toast
 import com.google.android.material.textfield.TextInputEditText
 import com.matttax.erica.R
-import com.matttax.erica.activities.SetsActivity
+import com.matttax.erica.dialogs.ActionDialog
 
 class CreateSetDialog(
     context: Context,
-    resource: Int,
     onSuccess: (String, String) -> Unit,
     onFailure: () -> Unit = {}
-): ActionDialog(context, resource) {
+): ActionDialog(context, R.layout.create_set_dialog) {
 
     private val setNameInputField: TextInputEditText = dialogView.findViewById(R.id.setNameField)
     private val setDescriptionInputField: TextInputEditText = dialogView.findViewById(R.id.setDescriptionField)

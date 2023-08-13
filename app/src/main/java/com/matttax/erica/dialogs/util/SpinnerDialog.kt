@@ -1,4 +1,4 @@
-package com.matttax.erica.dialogs.start_study
+package com.matttax.erica.dialogs.util
 
 import android.content.Context
 import android.widget.NumberPicker

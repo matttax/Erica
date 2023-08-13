@@ -1,4 +1,4 @@
-package com.matttax.erica.dialogs
+package com.matttax.erica.dialogs.impl
 
 import android.content.Context
 import android.content.Intent
@@ -6,7 +6,8 @@ import android.widget.*
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.R
 import com.matttax.erica.WordDBHelper
-import com.matttax.erica.dialogs.start_study.SpinnerDialog
+import com.matttax.erica.dialogs.ActionDialog
+import com.matttax.erica.dialogs.util.SpinnerDialog
 
 class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, setId: Int): ActionDialog(context, resource) {
     private val learnIntent = Intent(context, LearnActivity::class.java)
@@ -54,9 +55,15 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
             }
         }
 
-        studyPriority.adapter = getAdaptor(listOf("Worst answered", "Least answered", "Long ago asked", "Recently asked", "Last added", "First added", "Random"))
-        studyMode.adapter = getAdaptor(listOf("Study", "Learn", "Test", "Flashcards"))
-        askWith.adapter = getAdaptor(listOf("Translation", "Word", "Both"))
+        studyPriority.adapter = getAdaptor(
+            listOf("Worst answered", "Least answered", "Long ago asked", "Recently asked", "Last added", "First added", "Random")
+        )
+        studyMode.adapter = getAdaptor(
+            listOf("Study", "Learn", "Test", "Flashcards")
+        )
+        askWith.adapter = getAdaptor(
+            listOf("Translation", "Word", "Both")
+        )
 
         studyPriority.setSelection(preferences.getInt("STUDY_POS", 0))
 
@@ -68,6 +75,7 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
                         "WHERE ${WordDBHelper.COLUMN_SET_ID}=$setId AND ${WordDBHelper.COLUMN_TERM_LANGUAGE}<>\"null\" " +
                         "ORDER BY ${getOrderBy(studyPriority.selectedItem.toString())}" +
                         "LIMIT $woirt "
+            learnIntent.putExtra("setId", setId.toLong())
             learnIntent.putExtra("query", query)
             learnIntent.putExtra("batch_size", nadab)
             learnIntent.putExtra("ask", askWith.selectedItem.toString())
@@ -77,8 +85,7 @@ class StartLearnDialog(val context: Context, resource: Int, wordsCount: Int, set
     }
 
     private fun <T> getAdaptor(elements: List<T>): ArrayAdapter<T> {
-        val adaptor = ArrayAdapter(context, R.layout.params_spinner_item, elements)
-        return adaptor
+        return ArrayAdapter(context, R.layout.params_spinner_item, elements)
     }
 
     private fun getOrderBy(str: String) = when(str) {
