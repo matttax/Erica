@@ -7,9 +7,8 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import com.google.android.material.button.MaterialButton
-import com.matttax.erica.WordDBHelper
 
-abstract class Dialog(activity: Context, resource: Int) {
+abstract class Dialog(context: Context, resource: Int) {
 
     val dialog: AlertDialog
     protected val dialogView: View
@@ -17,8 +16,8 @@ abstract class Dialog(activity: Context, resource: Int) {
     lateinit var dismissButton: MaterialButton
 
     init {
-        val dialogBuilder = AlertDialog.Builder(activity)
-        dialogView = (activity as Activity).layoutInflater.inflate(resource, null)
+        val dialogBuilder = AlertDialog.Builder(context)
+        dialogView = (context as Activity).layoutInflater.inflate(resource, null)
         dialogBuilder.setView(dialogView)
         dialog = dialogBuilder.create()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

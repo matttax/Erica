@@ -13,13 +13,15 @@ import android.widget.AdapterView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.*
 import com.matttax.erica.adaptors.WordAdaptor
 import com.matttax.erica.databinding.ActivityWordsBinding
-import com.matttax.erica.dialogs.impl.DeleteWordDialog
+import com.matttax.erica.dialogs.impl.DeleteDialog
+import com.matttax.erica.dialogs.impl.EditDialog
 import com.matttax.erica.dialogs.impl.MoveDialog
 import com.matttax.erica.dialogs.impl.StartLearnDialog
 import com.matttax.erica.domain.config.SetId
@@ -55,7 +57,6 @@ class WordsActivity : AppCompatActivity() {
     private lateinit var currentSet: WordSet
     private lateinit var selected: Set<Int>
 
-    private lateinit var studyButton: MaterialButton
     private lateinit var deleteButton: MaterialButton
     private lateinit var moveButton: MaterialButton
 
@@ -136,8 +137,8 @@ class WordsActivity : AppCompatActivity() {
         binding.setName.text = currentSet.name
         binding.setDescr.text = currentSet.description
 
-        if (currentSet.description.isEmpty()) {
-            binding.descrLayout.removeAllViews()
+        if (currentSet.description.isBlank()) {
+            binding.setDescr.isVisible = false
         }
         scope.launch {
             wordsViewModel.onGetWords(getConfigByPosition(binding.sortByWords.selectedItemPosition))
@@ -160,13 +161,41 @@ class WordsActivity : AppCompatActivity() {
                 }
             },
             onDelete = {
-                DeleteWordDialog(this) {
+                DeleteDialog(
+                    context = this,
+                    headerText = "Ready to remove this word?",
+                    detailedExplanationText = null
+                ) {
                     scope.launch {
                         wordsViewModel.onDelete(it)
                     }
                     words.removeAt(it)
                     binding.wordsList.adapter?.notifyItemRemoved(it)
                 }.showDialog()
+            },
+            onEdit = {
+                EditDialog(
+                    context = this,
+                    headerText = "Edit word",
+                    firstField = "Text" to words[it].translatedText.text,
+                    secondField = "Translation" to words[it].translatedText.translation,
+                    ignoreSecondField = false,
+                    onSuccess = {
+                        text, translation ->
+                        run {
+                            val newWord = words[it].translatedText.copy(text = text, translation = translation)
+                            scope.launch {
+                                wordsViewModel.onDelete(it)
+                                wordsViewModel.onAddWord(newWord)
+                            }
+                            val newCard = words[it].copy(translatedText = newWord)
+                            words.removeAt(it)
+                            words.add(0, newCard)
+                            binding.wordsList.adapter?.notifyItemRemoved(it)
+                            binding.wordsList.adapter?.notifyItemInserted(0)
+                        }
+                    }
+                ).showDialog()
             }
         )
         binding.startLearn.setOnClickListener {
@@ -210,24 +239,6 @@ class WordsActivity : AppCompatActivity() {
             updateHead()
         }
 
-        studyButton = getButton(
-            layoutParams = LinearLayout.LayoutParams(
-                binding.startLearn.width / 3 - 50,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1f
-            ).also { it.setMargins(20, 20, 20, 0) },
-            text = "Study",
-            color = R.color.green
-        ) {
-
-            words.clear()
-            scope.launch {
-                wordsViewModel.onGetWords(getConfigByPosition(binding.sortByWords.selectedItemPosition))
-            }
-            binding.wordsList.adapter?.notifyItemRangeChanged(0, words.size - 1)
-            updateHead()
-        }.also { it.isVisible = false }
-
         deleteButton = getButton(
             layoutParams = LinearLayout.LayoutParams(
                 binding.startLearn.width / 3 - 50,
@@ -237,7 +248,11 @@ class WordsActivity : AppCompatActivity() {
             text = "Delete",
             color = R.color.crimson
         ) {
-            DeleteWordDialog(this) {
+            DeleteDialog(
+                context = this,
+                headerText = "Ready to remove ${selected.size} words?",
+                detailedExplanationText = null
+            ) {
                 scope.launch {
                     wordsViewModel.onDeleteSelected()
                 }
@@ -268,7 +283,6 @@ class WordsActivity : AppCompatActivity() {
         if (wordsSelected) {
             binding.startLearn.apply {
                 addView(moveButton)
-                addView(studyButton)
                 addView(deleteButton)
             }
         } else {

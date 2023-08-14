@@ -1,8 +1,8 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.matttax.erica.domain.config.AskMode.*
 import com.matttax.erica.domain.config.StudyConfig
 import com.matttax.erica.domain.model.WordDomainModel
 import com.matttax.erica.domain.usecases.words.crud.GetWordsUseCase
@@ -21,6 +21,7 @@ class StudyViewModelImpl @Inject constructor(
 ): ViewModel(), StudyViewModel {
 
     private var batchSize = 0
+    private var remaining = 0
     private val correctList = mutableListOf<Long>()
     private val results = mutableSetOf<StudiedWord>()
 
@@ -48,7 +49,8 @@ class StudyViewModelImpl @Inject constructor(
                 isFinished = arr[3] as? Boolean,
                 isLastCorrect = arr[4] as? Boolean,
                 batchResult = results
-                    .sortedBy { it.state == StudiedWordState.CORRECT } as? List<StudiedWord>
+                    .sortedBy { it.state == StudiedWordState.CORRECT } as? List<StudiedWord>,
+                remainingWords = remaining
             )
         }.onEach {
             studyStateFlow.value = it
@@ -59,7 +61,12 @@ class StudyViewModelImpl @Inject constructor(
 
     override suspend fun onGetWords(studyConfig: StudyConfig) {
         getWordsUseCase.execute(studyConfig.wordGroupConfig) {
-            wordsListFlow.value = it
+            wordsListFlow.value = when(studyConfig.askMode) {
+                TEXT -> it
+                TRANSLATION -> it.map { word -> word.reverse() }
+                BOTH -> it + it.map { word -> word.reverse() }
+            }
+            remaining = wordsListFlow.value?.size ?: 0
         }
         batchSize = studyConfig.batchSize
     }
@@ -85,27 +92,51 @@ class StudyViewModelImpl @Inject constructor(
                 currentWord.id?.let {
                     id -> correctList.add(id)
                 }
+                remaining--
             }
         }
         results += currentWord.let {
-            StudiedWord(
-                translatedText = TranslatedText(
-                    textLanguage = it.textLanguage,
-                    translationLanguage = it.translationLanguage,
-                    text = it.text,
-                    translation = it.translation
-                ),
-                state = if (correctList.contains(it.id)) {
-                    StudiedWordState.CORRECT
-                } else {
-                    StudiedWordState.INCORRECT
-                }
-            )
+            it.toStudiedWord(correctList.contains(it.id))
+        }
+    }
+
+    override suspend fun onWordForceCorrectAnswer() {
+        val currentWord = batchFlow.value?.getOrNull(currentAskedPosition.value ?: -1) ?: return
+        wordAnsweredUseCase.execute(currentWord to currentWord.translation) {
+            currentWord.id?.let { id -> correctList.add(id) }
+            val newAnswer = currentWord.toStudiedWord(true)
+            results.removeIf { it.translatedText == newAnswer.translatedText }
+            results.add(newAnswer)
+            remaining--
         }
     }
 
     override fun onGetNextWordAction() {
         isCorrectFlow.value = null
         currentAskedPosition.value = currentAskedPosition.value?.plus(1)
+    }
+
+    companion object {
+        fun WordDomainModel.reverse(): WordDomainModel {
+            return WordDomainModel(
+                id?.times(id ?: 1), translation, text, translationLanguage, textLanguage, setId, askedCount, answeredCount, addedTimestamp
+            )
+        }
+
+        fun WordDomainModel.toStudiedWord(isCorrect: Boolean): StudiedWord {
+            return StudiedWord(
+                translatedText = TranslatedText(
+                    textLanguage = textLanguage,
+                    translationLanguage = translationLanguage,
+                    text = text,
+                    translation = translation
+                ),
+                state = if (isCorrect) {
+                    StudiedWordState.CORRECT
+                } else {
+                    StudiedWordState.INCORRECT
+                }
+            )
+        }
     }
 }

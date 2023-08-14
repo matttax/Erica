@@ -5,11 +5,12 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import dagger.hilt.android.qualifiers.ActivityContext
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 
 class WordSpeller @Inject constructor(
-    @ActivityContext val context: Context
+    @ApplicationContext val context: Context
 ) {
 
     private lateinit var termSpeech: TextToSpeech

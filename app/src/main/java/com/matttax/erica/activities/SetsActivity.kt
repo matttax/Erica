@@ -7,8 +7,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.matttax.erica.adaptors.SetAdaptor
 import com.matttax.erica.WordSet
 import com.matttax.erica.databinding.ActivitySetsBinding
-import com.matttax.erica.dialogs.impl.CreateSetDialog
-import com.matttax.erica.dialogs.impl.DeleteSetDialog
+import com.matttax.erica.dialogs.impl.EditDialog
+import com.matttax.erica.dialogs.impl.DeleteDialog
+import com.matttax.erica.domain.config.AskMode
+import com.matttax.erica.domain.config.WordsSorting
 import com.matttax.erica.presentation.states.SetsState
 import com.matttax.erica.presentation.viewmodels.SetsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,11 +48,18 @@ class SetsActivity : AppCompatActivity() {
             }.launchIn(scope)
 
         binding.addNewSet.setOnClickListener {
-            CreateSetDialog(
+            EditDialog(
                 context = this,
+                headerText = "Create set",
+                firstField = "Name" to "",
+                secondField = "Description" to "",
+                ignoreSecondField = true,
                 onSuccess = { name, description ->
                     scope.launch {
                         setsViewModel.onAddAction(name, description)
+                        runOnUiThread {
+                            loadSets()
+                        }
                     }
                 },
                 onFailure = {
@@ -58,10 +67,6 @@ class SetsActivity : AppCompatActivity() {
                 }
             ).showDialog()
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
         loadSets()
     }
 
@@ -89,14 +94,41 @@ class SetsActivity : AppCompatActivity() {
                 WordsActivity.start(this, sets[it])
             },
             onLearnClick = {
-//                LearnActivity.start(this, sets[it].id, 7)
+                LearnActivity.start(
+                    context = this,
+                    setId = sets[it].id,
+                    batchSize = 7,
+                    wordsCount = sets[it].wordsCount,
+                    wordsSorting = WordsSorting.RANDOM,
+                    askMode = AskMode.TEXT
+                )
             },
             onDeleteClick = {
-                DeleteSetDialog(this) {
+                DeleteDialog(
+                    context = this,
+                    headerText = "Sure?",
+                    detailedExplanationText = "If you delete the set, all containing words are lost"
+                ) {
                     scope.launch {
-                        setsViewModel.onDelete(it)
+                        setsViewModel.onDelete(sets[it].id)
                     }
                 }.showDialog()
+            },
+            onEditClick = {
+                EditDialog(
+                    context = this,
+                    headerText = "Edit set",
+                    firstField = "Name" to sets[it].name,
+                    secondField = "Description" to sets[it].description,
+                    ignoreSecondField = true,
+                    onSuccess = {
+                        name, description -> run {
+                            scope.launch {
+                                setsViewModel.onUpdateAction(sets[it].id.toLong(), name, description)
+                            }
+                        }
+                    }
+                ).showDialog()
             }
         )
         binding.setsListRecyclerView.layoutManager = LinearLayoutManager(this)

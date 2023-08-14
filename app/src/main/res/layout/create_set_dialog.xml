@@ -18,6 +18,7 @@
          android:layout_height="wrap_content"
          android:orientation="vertical">
           <TextView
+              android:id="@+id/editDialogHeader"
               android:fontFamily="@font/nunito_bold"
               android:layout_marginTop="20dp"
               android:layout_width="wrap_content"
@@ -29,6 +30,7 @@
               />
 
           <com.google.android.material.textfield.TextInputLayout
+              android:id="@+id/firstFieldLayout"
               android:layout_width="match_parent"
               android:layout_height="70dp"
               android:layout_marginStart="20dp"
@@ -56,6 +58,7 @@
           </com.google.android.material.textfield.TextInputLayout>
 
           <com.google.android.material.textfield.TextInputLayout
+              android:id="@+id/secondFieldLayout"
               android:layout_width="match_parent"
               android:layout_height="150dp"
               android:layout_marginStart="20dp"
@@ -92,7 +95,7 @@
                <com.google.android.material.button.MaterialButton
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
-                   android:text="Dismiss"
+                   android:text="Cancel"
                    android:layout_marginTop="10dp"
                    android:layout_marginEnd="20dp"
                    android:backgroundTint="@color/crimson"
@@ -104,7 +107,7 @@
                <com.google.android.material.button.MaterialButton
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
-                   android:text="Add"
+                   android:text="Forward"
                    android:layout_marginTop="10dp"
                    android:layout_marginStart="20dp"
                    android:backgroundTint="@color/green"

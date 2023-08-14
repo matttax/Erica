@@ -8,6 +8,7 @@ import com.matttax.erica.domain.repositories.WordsRepository
 class GetWordsUseCase(
     private val wordsRepository: WordsRepository
 ): UseCase<WordGroupConfig, List<WordDomainModel>> {
+
     override suspend fun execute(
         input: WordGroupConfig,
         onResult: (List<WordDomainModel>) -> Unit

@@ -21,6 +21,7 @@ class WordAdaptor constructor(
     private val words: List<TranslatedTextCard>,
     private val onClick: (Int) -> Unit = {},
     private val onDelete: (Int) -> Unit = {},
+    private val onEdit: (Int) -> Unit = {},
     private val onSpell: (ImageView, TranslatedText) -> Unit = { _, _ -> },
 ) : RecyclerView.Adapter<WordAdaptor.WordViewHolder>() {
 
@@ -54,7 +55,7 @@ class WordAdaptor constructor(
             holder.edit.isVisible = true
             holder.delete.isVisible = true
         }
-        if(words[position].isSelected) {
+        if (words[position].isSelected) {
             holder.cardBackground.setBackgroundColor(ContextCompat.getColor(context, R.color.light_blue))
         } else {
             holder.cardBackground.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
@@ -65,6 +66,9 @@ class WordAdaptor constructor(
         }
         holder.delete.setOnClickListener {
             onDelete(holder.adapterPosition)
+        }
+        holder.edit.setOnClickListener {
+            onEdit(holder.adapterPosition)
         }
     }
 

@@ -11,5 +11,6 @@ data class TranslateState(
     val translations: DataState? = null,
     val definitions: DataState? = null,
     val examples: DataState? = null,
-    val sets: List<SetDomainModel>? = null
+    val sets: List<SetDomainModel>? = null,
+    val currentSetId: Long? = null
 )

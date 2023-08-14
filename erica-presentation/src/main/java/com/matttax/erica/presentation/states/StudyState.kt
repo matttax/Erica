@@ -10,6 +10,7 @@ data class StudyState(
     val isFinished: Boolean? = null,
     val isLastCorrect: Boolean? = null,
     val batchResult: List<StudiedWord>? = null,
+    val remainingWords: Int = 0
 ) {
     override fun toString(): String {
         return "\n" +

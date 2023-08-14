@@ -1,6 +1,7 @@
 package com.matttax.erica.presentation.viewmodels
 
 import com.matttax.erica.domain.config.WordGroupConfig
+import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.states.WordsState
 
 interface WordsViewModel: StateViewModel<WordsState?> {
@@ -12,4 +13,5 @@ interface WordsViewModel: StateViewModel<WordsState?> {
     suspend fun onDelete(position: Int)
     suspend fun onDeleteSelected()
     suspend fun onGetSets()
+    suspend fun onAddWord(translatedText: TranslatedText)
 }

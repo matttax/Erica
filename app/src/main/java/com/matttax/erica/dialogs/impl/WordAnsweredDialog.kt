@@ -1,8 +1,10 @@
 package com.matttax.erica.dialogs.impl
 
 import android.content.Context
+import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.google.android.material.card.MaterialCardView
 import com.matttax.erica.R
 import com.matttax.erica.dialogs.Dialog
@@ -11,7 +13,9 @@ class WordAnsweredDialog(
     context: Context,
     correctAnswer: String,
     isCorrect: Boolean,
+    showNotIncorrect: Boolean,
     onOk: () -> Unit,
+    onNotIncorrect: () -> Unit,
 ): Dialog(context, R.layout.word_answered) {
 
     private val answeredHeader: TextView = dialogView.findViewById(R.id.answeredHeader)
@@ -29,8 +33,15 @@ class WordAnsweredDialog(
         } else {
             dialogCard.strokeColor = ContextCompat.getColor(context, R.color.green)
         }
+        if (!showNotIncorrect) {
+            notIncorrectButton.visibility = View.INVISIBLE
+        }
         dialog.setOnDismissListener {
             onOk()
+        }
+        notIncorrectButton.setOnClickListener {
+            onNotIncorrect()
+            dialog.dismiss()
         }
     }
 }

@@ -10,7 +10,7 @@ plugins {
 android {
     defaultConfig {
         applicationId "com.matttax.erica"
-        minSdk 21
+        minSdk 24
         targetSdk 33
         compileSdk 33
         versionCode 1

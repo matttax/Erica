@@ -5,9 +5,10 @@ import android.util.Log
 import android.widget.*
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.R
+import com.matttax.erica.activities.LearnActivity.Companion.toAskMode
+import com.matttax.erica.activities.LearnActivity.Companion.toWordSorting
 import com.matttax.erica.dialogs.ActionDialog
 import com.matttax.erica.dialogs.util.SpinnerDialog
-import com.matttax.erica.domain.config.WordsSorting
 
 class StartLearnDialog(
     private val context: Context,
@@ -16,7 +17,6 @@ class StartLearnDialog(
 ): ActionDialog(context, R.layout.start_learn_dialog) {
 
     private val studyPriority: Spinner = dialogView.findViewById(R.id.priority)
-    private val studyMode: Spinner = dialogView.findViewById(R.id.mode)
     private val askWith: Spinner = dialogView.findViewById(R.id.termDef)
 
     private val wordCountSpinner: LinearLayout = dialogView.findViewById(R.id.select_num_of_words)
@@ -54,10 +54,7 @@ class StartLearnDialog(
         }
 
         studyPriority.adapter = getAdaptor(
-            listOf("Worst answered", "Least answered", "Long ago asked", "Recently asked", "Last added", "First added", "Random")
-        )
-        studyMode.adapter = getAdaptor(
-            listOf("Study", "Learn", "Test", "Flashcards")
+            listOf("Worst answered", "Long ago asked", "Recently asked", "Last added", "First added", "Random")
         )
         askWith.adapter = getAdaptor(
             listOf("Translation", "Word", "Both")
@@ -67,8 +64,15 @@ class StartLearnDialog(
 
         initDismissButton(R.id.noStartLearn)
         initActionButton(R.id.yesStartLearn) {
-            Log.i("viewstate", wordsTotalCount.toString())
-            LearnActivity.start(context, setId, wordsInBatch, wordsTotalCount, WordsSorting.BEST_ANSWERED_FIRST)
+            Log.i("viewstate", askWith.selectedItemPosition.toString())
+            LearnActivity.start(
+                context = context,
+                setId = setId,
+                batchSize = wordsInBatch,
+                wordsCount = wordsTotalCount,
+                wordsSorting = studyPriority.selectedItemPosition.toWordSorting(),
+                askMode = askWith.selectedItemPosition.toAskMode()
+            )
             val editor = preferences.edit()
             editor.putInt("STUDY_POS", studyPriority.selectedItemPosition).apply()
             dialog.dismiss()
@@ -78,5 +82,4 @@ class StartLearnDialog(
     private fun <T> getAdaptor(elements: List<T>): ArrayAdapter<T> {
         return ArrayAdapter(context, R.layout.params_spinner_item, elements)
     }
-
 }

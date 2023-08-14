@@ -6,6 +6,7 @@ import com.matttax.erica.domain.repositories.SetsRepository
 import com.matttax.erica.domain.usecases.sets.crud.AddSetUseCase
 import com.matttax.erica.domain.usecases.sets.crud.DeleteSetUseCase
 import com.matttax.erica.domain.usecases.sets.crud.GetSetsUseCase
+import com.matttax.erica.domain.usecases.sets.crud.UpdateSetUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,5 +39,11 @@ class SetUseCasesModule {
     @Singleton
     fun provideDeleteSetUseCase(setsRepository: SetsRepository): DeleteSetUseCase {
         return DeleteSetUseCase(setsRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUpdateSetUseCase(setsRepository: SetsRepository): UpdateSetUseCase {
+        return UpdateSetUseCase(setsRepository)
     }
 }

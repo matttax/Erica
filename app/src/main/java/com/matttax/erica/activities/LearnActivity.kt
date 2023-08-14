@@ -11,16 +11,15 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.matttax.erica.R
 import com.matttax.erica.databinding.ActivityLearnBinding
 import com.matttax.erica.dialogs.impl.AfterBatchDialog
 import com.matttax.erica.dialogs.impl.WordAnsweredDialog
-import com.matttax.erica.domain.config.SetId
-import com.matttax.erica.domain.config.StudyConfig
-import com.matttax.erica.domain.config.WordGroupConfig
-import com.matttax.erica.domain.config.WordsSorting
+import com.matttax.erica.domain.config.*
 import com.matttax.erica.presentation.states.StudyState
 import com.matttax.erica.presentation.viewmodels.StudyViewModel
+import com.matttax.erica.presentation.viewmodels.impl.StudyViewModelImpl
 import com.matttax.erica.speechtotext.WordSpeller
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -46,6 +45,7 @@ class LearnActivity : AppCompatActivity() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private var dialogOnScreen = false
+    private var doNotKnowFlag = false
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,10 +53,11 @@ class LearnActivity : AppCompatActivity() {
         binding = ActivityLearnBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val batchSize = intent.getIntExtra(BATCH_SIZE_EXTRA_NAME, 5)
+        val batchSize = intent.getIntExtra(BATCH_SIZE_EXTRA_NAME, 7)
         val setId = intent.getIntExtra(SET_ID_EXTRA_NAME, -1)
         val wordsCount = intent.getIntExtra(WORDS_COUNT_EXTRA_NAME, -1)
         val wordsSorting = intent.getIntExtra(WORDS_SORTING_EXTRA_NAME, -1).toWordSorting()
+        val askMode = intent.getIntExtra(ASK_MODE_EXTRA_NAME, -1).toAskMode()
         if (setId == -1 || wordsCount == -1) {
             finish()
         }
@@ -78,7 +79,8 @@ class LearnActivity : AppCompatActivity() {
                         sorting = wordsSorting,
                         limit = wordsCount
                     ),
-                    batchSize = batchSize
+                    batchSize = batchSize,
+                    askMode = askMode
                 )
             )
             studyViewModel.onGetNewBatchAction()
@@ -90,7 +92,11 @@ class LearnActivity : AppCompatActivity() {
         binding.definitionInputField.setOnKeyListener(View.OnKeyListener { _, i, keyEvent ->
             if ((keyEvent.action == KeyEvent.ACTION_DOWN) && (i == KeyEvent.KEYCODE_ENTER)) {
                 scope.launch {
-                    studyViewModel.onWordAnswered(binding.definitionInputField.text.toString())
+                    val text = binding.definitionInputField.text.toString()
+                    if (text.isBlank()) {
+                        doNotKnowFlag = true
+                    }
+                    studyViewModel.onWordAnswered(text)
                 }
                 return@OnKeyListener true
             }
@@ -100,6 +106,7 @@ class LearnActivity : AppCompatActivity() {
             finish()
         }
         binding.doNotKnow.setOnClickListener {
+            doNotKnowFlag = true
             scope.launch {
                 studyViewModel.onWordAnswered("")
             }
@@ -114,10 +121,11 @@ class LearnActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun setData(studyState: StudyState) {
         val currentWord = studyState.currentBatch?.getOrNull(studyState.currentAskedPosition ?: -1)
-            ?: return
-
         if (studyState.isFinished == true) {
             finish()
+        }
+        if (currentWord == null) {
+            return
         }
         val newPosition = studyState.currentAskedPosition ?: 0
         val newMax = studyState.currentBatch?.size ?: 0
@@ -138,29 +146,41 @@ class LearnActivity : AppCompatActivity() {
                 WordAnsweredDialog(
                     context = this,
                     correctAnswer = currentWord.translation,
-                    isCorrect = studyState.isLastCorrect ?: false
-                ) {
-                    dialogOnScreen = false
-                    if (studyState.currentAskedPosition?.plus(1) != studyState.currentBatch?.size) {
-                        studyViewModel.onGetNextWordAction()
-                    } else {
-                        AfterBatchDialog(
-                            context = this,
-                            results = studyState.batchResult ?: emptyList(),
-                        ) {
-                            studyViewModel.onGetNewBatchAction()
-                        }.showDialog()
+                    isCorrect = studyState.isLastCorrect ?: false,
+                    showNotIncorrect = studyState.isLastCorrect == false && !doNotKnowFlag,
+                    onOk = {
+                        dialogOnScreen = false
+                        doNotKnowFlag = false
+                        if (studyState.currentAskedPosition?.plus(1) != studyState.currentBatch?.size) {
+                            studyViewModel.onGetNextWordAction()
+                        } else {
+                            AfterBatchDialog(
+                                context = this,
+                                results = studyState.batchResult ?: emptyList(),
+                                wordSpeller = wordSpeller,
+                                remainingCount = studyState.remainingWords,
+                            ) {
+                                studyViewModel.onGetNewBatchAction()
+                            }.showDialog()
+                        }
+                    },
+                    onNotIncorrect = {
+                        scope.launch {
+                            studyViewModel.onWordForceCorrectAnswer()
+                        }
                     }
-                }.showDialog()
+                ).showDialog()
             }
         } else {
             binding.definitionInputField.text?.clear()
             binding.termAskedField.text = currentWord.text
-            with(currentWord) {
-                wordSpeller.spellText(
-                    text,
-                    textLanguage.locale
-                )
+            if (studyState.remainingWords > 0) {
+                with(currentWord) {
+                    wordSpeller.spellText(
+                        text,
+                        textLanguage.locale
+                    )
+                }
             }
         }
     }
@@ -170,44 +190,61 @@ class LearnActivity : AppCompatActivity() {
         private const val SET_ID_EXTRA_NAME = "set_id"
         private const val WORDS_COUNT_EXTRA_NAME = "words_count"
         private const val WORDS_SORTING_EXTRA_NAME = "words_sorting"
+        private const val ASK_MODE_EXTRA_NAME = "ask_mode"
 
         fun start(
             context: Context,
             setId: Int,
-            batchSize: Int,
-            wordsCount: Int,
-            wordsSorting: WordsSorting
+            batchSize: Int = 7,
+            wordsCount: Int = Int.MAX_VALUE,
+            wordsSorting: WordsSorting = WordsSorting.RANDOM,
+            askMode: AskMode = AskMode.TEXT
         ) {
             val intent = Intent(context, LearnActivity::class.java).apply {
                 putExtra(SET_ID_EXTRA_NAME, setId)
                 putExtra(BATCH_SIZE_EXTRA_NAME, batchSize)
                 putExtra(WORDS_COUNT_EXTRA_NAME, wordsCount)
                 putExtra(WORDS_SORTING_EXTRA_NAME, wordsSorting.toInt())
+                putExtra(ASK_MODE_EXTRA_NAME, askMode.toInt())
             }
             context.startActivity(intent)
         }
 
-        private fun WordsSorting.toInt(): Int {
+        fun Int.toWordSorting(): WordsSorting {
             return when(this) {
-                WordsSorting.RANDOM -> 0
-                WordsSorting.LAST_ADDED_FIRST -> 1
-                WordsSorting.FIRST_ADDED_FIRST -> 2
-                WordsSorting.WORST_ANSWERED_FIRST -> 3
-                WordsSorting.BEST_ANSWERED_FIRST -> 4
-                WordsSorting.LONG_AGO_ASKED_FIRST -> 5
-                WordsSorting.RECENTLY_ASKED_FIRST -> 6
+                0 -> WordsSorting.WORST_ANSWERED_FIRST
+                1 -> WordsSorting.LONG_AGO_ASKED_FIRST
+                2 -> WordsSorting.RECENTLY_ASKED_FIRST
+                3 -> WordsSorting.LAST_ADDED_FIRST
+                4 -> WordsSorting.FIRST_ADDED_FIRST
+                else -> WordsSorting.RANDOM
             }
         }
 
-        private fun Int.toWordSorting(): WordsSorting {
+        fun Int.toAskMode(): AskMode {
             return when(this) {
-                1 -> WordsSorting.LAST_ADDED_FIRST
-                2 -> WordsSorting.FIRST_ADDED_FIRST
-                3 -> WordsSorting.WORST_ANSWERED_FIRST
-                4 -> WordsSorting.BEST_ANSWERED_FIRST
-                5 -> WordsSorting.LONG_AGO_ASKED_FIRST
-                6 -> WordsSorting.RECENTLY_ASKED_FIRST
-                else -> WordsSorting.RANDOM
+                1 -> AskMode.TRANSLATION
+                2 -> AskMode.BOTH
+                else -> AskMode.TEXT
+            }
+        }
+
+        private fun WordsSorting.toInt(): Int {
+            return when(this) {
+                WordsSorting.WORST_ANSWERED_FIRST -> 0
+                WordsSorting.LONG_AGO_ASKED_FIRST -> 1
+                WordsSorting.RECENTLY_ASKED_FIRST -> 2
+                WordsSorting.LAST_ADDED_FIRST -> 3
+                WordsSorting.FIRST_ADDED_FIRST -> 4
+                else -> 5
+            }
+        }
+
+        private fun AskMode.toInt(): Int {
+            return when(this) {
+                AskMode.TEXT -> 0
+                AskMode.TRANSLATION -> 1
+                AskMode.BOTH -> 2
             }
         }
     }

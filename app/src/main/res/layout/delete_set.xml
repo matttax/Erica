@@ -25,6 +25,7 @@
         android:layout_marginBottom="10dp"
         >
         <TextView
+            android:id="@+id/dialogHeader"
             android:layout_marginTop="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,6 +39,7 @@
             android:fontFamily="@font/nunito_bold"
             />
         <TextView
+            android:id="@+id/explanationText"
             android:layout_marginTop="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,7 +59,7 @@
             android:textSize="15dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="still Yes"
+            android:text="Yes"
             android:fontFamily="@font/organo"
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"

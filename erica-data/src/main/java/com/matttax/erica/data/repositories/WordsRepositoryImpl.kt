@@ -78,7 +78,7 @@ class WordsRepositoryImpl @Inject constructor(
     override fun moveToSet(fromSetId: Long, toSetId: Long, vararg wordIds: Long) {
         sqliteDatabaseManager.writableDatabase.execSQL("UPDATE $WORDS_TABLE_NAME SET $COLUMN_SET_ID=$toSetId " +
                 "WHERE $COLUMN_WORD_ID IN " +
-                wordIds.asList().toString().replace('[', '(').replace(']', ')')
+                wordIds.asList().toQuery()
         )
         sqliteDatabaseManager.writableDatabase.execSQL("UPDATE $SETS_TABLE_NAME SET $COLUMN_WORDS_COUNT=$COLUMN_WORDS_COUNT-${wordIds.size} " +
                 "WHERE id=$fromSetId")
@@ -124,5 +124,9 @@ class WordsRepositoryImpl @Inject constructor(
             WordsSorting.RECENTLY_ASKED_FIRST -> "$COLUMN_LAST_ASKED ASC"
             WordsSorting.RANDOM -> "RANDOM()"
         }
+    }
+
+    private fun <T> List<T>.toQuery(): String {
+        return toString().replace('[', '(').replace(']', ')')
     }
 }

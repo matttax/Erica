@@ -6,6 +6,7 @@ import com.matttax.erica.presentation.states.StudyState
 interface StudyViewModel: StateViewModel<StudyState?> {
     suspend fun onGetWords(studyConfig: StudyConfig)
     suspend fun onWordAnswered(answer: String)
+    suspend fun onWordForceCorrectAnswer()
     fun onGetNextWordAction()
     fun onGetNewBatchAction()
 }

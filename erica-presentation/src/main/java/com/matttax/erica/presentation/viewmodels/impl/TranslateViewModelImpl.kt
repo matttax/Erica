@@ -1,5 +1,6 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.SetGroupConfig
@@ -16,6 +17,7 @@ import com.matttax.erica.domain.usecases.translate.GetTranslationsUseCase
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.TranslateViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -49,7 +51,8 @@ class TranslateViewModelImpl @Inject constructor(
             translationsDataStateFlow,
             definitionsDataStateFlow,
             examplesDataStateFlow,
-            currentSetsFlow
+            currentSetsFlow,
+            currentSetIdFlow
         ) {
             array ->
             TranslateState(
@@ -60,7 +63,8 @@ class TranslateViewModelImpl @Inject constructor(
                 array[4] as DataState?,
                 array[5] as DataState?,
                 array[6] as DataState?,
-                array[7] as List<SetDomainModel>?
+                array[7] as List<SetDomainModel>?,
+                array[8] as Long?
             )
         }.onEach {
             translateStateFlow.value = it

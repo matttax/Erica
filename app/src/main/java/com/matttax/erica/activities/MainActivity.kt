@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.tabs.TabLayout
@@ -27,6 +28,7 @@ import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.TranslateViewModel
+import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModelImpl
 import com.matttax.erica.speechtotext.WordSpeller
 import com.matttax.erica.utils.LanguageUtils.Companion.getLanguageCode
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,6 +53,9 @@ class MainActivity : AppCompatActivity() {
     private var job: Job? = null
     private var lastTranslateState: TranslateState? = null
 
+    private var currentSet = -1L
+    private var currentPosition = 0
+
     private val languages = listOf("English", "Russian", "German", "French", "Spanish", "Italian")
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         binding.setSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                currentPosition = position
                 translateViewModel.onSetSelected(position)
             }
         }
@@ -154,6 +160,9 @@ class MainActivity : AppCompatActivity() {
             binding.fromSpinner.setSelection(binding.toSpinner.selectedItemPosition)
             binding.toSpinner.setSelection(fr)
         }
+        binding.startLearn.setOnClickListener {
+            LearnActivity.start(this, currentSet.toInt())
+        }
     }
 
     override fun onResume() {
@@ -174,6 +183,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setData(translateState: TranslateState) {
+        currentSet = translateState.currentSetId ?: -1
         lastTranslateState = translateState
         binding.defTextField.setText(translateState.textOut, TextView.BufferType.EDITABLE)
         binding.setSpinner.adapter = ArrayAdapter(
@@ -181,6 +191,7 @@ class MainActivity : AppCompatActivity() {
         ).also {
             it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
+        binding.setSpinner.setSelection(currentPosition)
     }
 
     private fun translateClicked() {

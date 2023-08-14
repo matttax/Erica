@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.*
+import com.matttax.erica.domain.model.Language
 import com.matttax.erica.domain.model.SetDomainModel
 import com.matttax.erica.domain.model.WordDomainModel
 import com.matttax.erica.domain.usecases.sets.crud.GetSetsUseCase
+import com.matttax.erica.domain.usecases.words.crud.AddWordUseCase
 import com.matttax.erica.domain.usecases.words.crud.DeleteWordsUseCase
 import com.matttax.erica.domain.usecases.words.crud.GetWordsUseCase
 import com.matttax.erica.domain.usecases.words.crud.MoveWordsUseCase
+import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.states.WordsState
 import com.matttax.erica.presentation.viewmodels.WordsViewModel
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class WordsViewModelImpl @Inject constructor(
@@ -25,6 +29,7 @@ class WordsViewModelImpl @Inject constructor(
     private val moveWordsUseCase: MoveWordsUseCase,
     private val deleteWordsUseCase: DeleteWordsUseCase,
     private val getSetsUseCase: GetSetsUseCase,
+    private val addWordUseCase: AddWordUseCase
 ) : ViewModel(), WordsViewModel {
 
     private val wordsStateFlow = MutableStateFlow<WordsState?>(null)
@@ -33,6 +38,8 @@ class WordsViewModelImpl @Inject constructor(
     private val setsStateFlow = MutableStateFlow<List<SetDomainModel>?>(null)
 
     private var setId: Long = -1
+
+    private lateinit var defaultConfig: WordGroupConfig
 
     init {
         combine(
@@ -110,9 +117,27 @@ class WordsViewModelImpl @Inject constructor(
     }
 
     override suspend fun onGetWords(wordGroupConfig: WordGroupConfig) {
+        defaultConfig = wordGroupConfig
         this.setId = (wordGroupConfig.setId as? SetId.One)?.id?.toLong() ?: -1L
         getWordsUseCase.execute(wordGroupConfig) {
             wordsListFlow.value = it
+        }
+        selectedWordsPositionsListFlow.value = emptySet()
+    }
+
+    override suspend fun onAddWord(translatedText: TranslatedText) {
+        addWordUseCase.execute(
+            WordDomainModel(
+                text = translatedText.text,
+                translation = translatedText.translation,
+                textLanguage = translatedText.textLanguage,
+                translationLanguage = translatedText.translationLanguage,
+                setId = setId
+            )
+        ) {
+            viewModelScope.launch {
+                onGetWords(defaultConfig)
+            }
         }
     }
 

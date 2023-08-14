@@ -46,6 +46,14 @@ class SetsRepositoryImpl(
         return result
     }
 
+    override fun updateSet(id: Long, name: String, description: String) {
+        val query = "UPDATE $SETS_TABLE_NAME " +
+                "SET $COLUMN_NAME=\"$name\" " +
+                "$COLUMN_SET_DESCRIPTION=${"\"$description\"}".ifEmpty { " " }} " +
+                "WHERE $COLUMN_ID=$id"
+        sqliteDatabaseManager.writableDatabase.execSQL(query)
+    }
+
     override fun getSets(setGroupConfig: SetGroupConfig): List<SetDomainModel> {
         val currentSets = mutableListOf<SetDomainModel>()
         val cursor = sqliteDatabaseManager.writableDatabase.rawQuery(

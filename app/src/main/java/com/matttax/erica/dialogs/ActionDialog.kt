@@ -6,7 +6,10 @@ import android.service.autofill.OnClickAction
 import android.view.View
 import com.google.android.material.button.MaterialButton
 
-abstract class ActionDialog(context: Context, resource: Int): Dialog(context as Activity, resource) {
+abstract class ActionDialog(
+    context: Context, resource: Int
+): Dialog(context as Activity, resource) {
+
     lateinit var actionButton: MaterialButton
 
     fun initActionButton(buttonResource: Int, onClick: View.OnClickListener) {

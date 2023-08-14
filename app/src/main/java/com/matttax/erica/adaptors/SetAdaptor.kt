@@ -17,6 +17,7 @@ class SetAdaptor(
     private val sets: List<WordSet>,
     private val onClick: (Int) -> Unit = {},
     private val onLearnClick: (Int) -> Unit = {},
+    private val onEditClick: (Int) -> Unit = {},
     private val onDeleteClick: (Int) -> Unit = {},
 ) : RecyclerView.Adapter<SetAdaptor.SetViewHolder>() {
 
@@ -33,10 +34,13 @@ class SetAdaptor(
             onClick(position)
         }
         holder.learnButton.setOnClickListener {
-            onLearnClick(sets[position].id)
+            onLearnClick(position)
         }
         holder.deleteButton.setOnClickListener {
-            onDeleteClick(sets[position].id)
+            onDeleteClick(position)
+        }
+        holder.editButton.setOnClickListener {
+            onEditClick(position)
         }
     }
 
@@ -48,5 +52,6 @@ class SetAdaptor(
         val setLayout: LinearLayout = itemView.findViewById(R.id.setItem)
         val learnButton: MaterialButton = itemView.findViewById(R.id.learnSet)
         val deleteButton: ImageButton = itemView.findViewById(R.id.deleteSet)
+        val editButton: ImageButton = itemView.findViewById(R.id.editSet)
     }
 }

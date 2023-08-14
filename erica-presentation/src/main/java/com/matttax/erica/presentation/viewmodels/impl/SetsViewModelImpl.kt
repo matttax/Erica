@@ -9,15 +9,18 @@ import com.matttax.erica.domain.model.SetDomainModel
 import com.matttax.erica.domain.usecases.sets.crud.AddSetUseCase
 import com.matttax.erica.domain.usecases.sets.crud.DeleteSetUseCase
 import com.matttax.erica.domain.usecases.sets.crud.GetSetsUseCase
+import com.matttax.erica.domain.usecases.sets.crud.UpdateSetUseCase
 import com.matttax.erica.presentation.states.SetsState
 import com.matttax.erica.presentation.viewmodels.SetsViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class SetsViewModelImpl @Inject constructor(
     private val getSetsUseCase: GetSetsUseCase,
     private val addSetUseCase: AddSetUseCase,
-    private val deleteSetUseCase: DeleteSetUseCase
+    private val deleteSetUseCase: DeleteSetUseCase,
+    private val updateSetUseCase: UpdateSetUseCase,
 ) : ViewModel(), SetsViewModel {
 
     private val setsStateFlow = MutableStateFlow<SetsState?>(null)
@@ -36,6 +39,12 @@ class SetsViewModelImpl @Inject constructor(
             if (it != -1L) {
                 setsFlow.value = setsFlow.value?.plus(SetDomainModel(it, name, description))
             }
+        }
+    }
+
+    override suspend fun onUpdateAction(id: Long, name: String, description: String) {
+        updateSetUseCase.execute(SetDomainModel(id, name, description)) {
+            viewModelScope.launch { onGetSetsAction() }
         }
     }
 
