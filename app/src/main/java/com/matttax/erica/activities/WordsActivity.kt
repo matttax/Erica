@@ -8,7 +8,9 @@ import android.os.Bundle
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.AdapterView
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -106,7 +108,7 @@ class WordsActivity : AppCompatActivity() {
             }.launchIn(scope)
 
         currentSet = getSetFromIntents()
-        val preferences = getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
+        val preferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         binding.sortByWords.apply {
             adapter = ArrayAdapter(
                 this@WordsActivity,
@@ -115,16 +117,21 @@ class WordsActivity : AppCompatActivity() {
             )
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
                     words.clear()
                     scope.launch {
                         wordsViewModel.onGetSets()
                         wordsViewModel.onGetWords(getConfigByPosition(position))
                     }
-                    preferences.edit().putInt("ORDER_POS", position).apply()
+                    preferences.edit().putInt(SHARED_PREFS_POSITION_KEY, position).apply()
                 }
             }
-            setSelection(preferences.getInt("ORDER_POS", 0))
+            setSelection(preferences.getInt(SHARED_PREFS_POSITION_KEY, 0))
         }
         binding.setName.text = currentSet.name
         binding.setDescr.text = currentSet.description
@@ -163,16 +170,20 @@ class WordsActivity : AppCompatActivity() {
             }
         )
         binding.startLearn.setOnClickListener {
-                StartLearnDialog(this@WordsActivity, R.layout.start_learn_dialog, currentSet.wordsCount, currentSet.id).showDialog()
+            StartLearnDialog(
+                this@WordsActivity,
+                currentSet.wordsCount,
+                currentSet.id
+            ).showDialog()
         }
         initButtons()
     }
 
     private fun getSetFromIntents(): WordSet {
-        val setId = intent.getIntExtra("setid", 1)
-        val setName = intent.getStringExtra("setname").toString()
-        val setDescription = intent.getStringExtra("setdescr").toString()
-        val wordsCount = intent.getIntExtra("setwordcount", 0)
+        val setId = intent.getIntExtra(SET_ID_EXTRA_NAME, 1)
+        val setName = intent.getStringExtra(SET_NAME_EXTRA_NAME).toString()
+        val setDescription = intent.getStringExtra(SET_DESCRIPTION_EXTRA_NAME).toString()
+        val wordsCount = intent.getIntExtra(WORD_COUNT_EXTRA_NAME, 0)
         return WordSet(setId, setName, setDescription, wordsCount)
     }
 
@@ -195,7 +206,7 @@ class WordsActivity : AppCompatActivity() {
                 }
                 removeSelected()
             }.showDialog()
-            binding.wordsList.adapter?.notifyDataSetChanged()
+            binding.wordsList.adapter?.notifyItemRangeChanged(0, words.size - 1)
             updateHead()
         }
 
@@ -209,20 +220,11 @@ class WordsActivity : AppCompatActivity() {
             color = R.color.green
         ) {
 
-            val query = "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
-                    "WHERE ${WordDBHelper.COLUMN_WORD_ID} IN " +
-                    selected.toString().replace("[", "(").replace("]", ")")
-            val learnIntent = Intent(this, LearnActivity::class.java).apply {
-                putExtra("query", query)
-                putExtra("batch_size", 7)
-            }
-            startActivity(learnIntent)
-
             words.clear()
             scope.launch {
                 wordsViewModel.onGetWords(getConfigByPosition(binding.sortByWords.selectedItemPosition))
             }
-            binding.wordsList.adapter?.notifyDataSetChanged()
+            binding.wordsList.adapter?.notifyItemRangeChanged(0, words.size - 1)
             updateHead()
         }.also { it.isVisible = false }
 
@@ -235,13 +237,13 @@ class WordsActivity : AppCompatActivity() {
             text = "Delete",
             color = R.color.crimson
         ) {
-            DeleteWordDialog(this){
+            DeleteWordDialog(this) {
                 scope.launch {
                     wordsViewModel.onDeleteSelected()
                 }
                 removeSelected()
             }.showDialog()
-            binding.wordsList.adapter?.notifyDataSetChanged()
+            binding.wordsList.adapter?.notifyItemRangeChanged(0, words.size - 1)
             updateHead()
         }
     }
@@ -252,7 +254,8 @@ class WordsActivity : AppCompatActivity() {
         color: Int,
         onClick: View.OnClickListener
     ) = MaterialButton(
-        ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button).apply {
+        ContextThemeWrapper(this, R.style.AppTheme_Button), null, R.style.AppTheme_Button
+    ).apply {
         setLayoutParams(layoutParams)
         setText(text)
         gravity = Gravity.CENTER
@@ -291,23 +294,23 @@ class WordsActivity : AppCompatActivity() {
     private fun getConfigByPosition(position: Int): WordGroupConfig {
         return when (position) {
             0 -> WordGroupConfig(
-                setId = SetId.One(currentSet.id.toLong()),
+                setId = SetId.One(currentSet.id),
                 sorting = WordsSorting.LAST_ADDED_FIRST
             )
             1 -> WordGroupConfig(
-                setId = SetId.One(currentSet.id.toLong()),
+                setId = SetId.One(currentSet.id),
                 sorting = WordsSorting.FIRST_ADDED_FIRST
             )
             2 -> WordGroupConfig(
-                setId = SetId.One(currentSet.id.toLong()),
+                setId = SetId.One(currentSet.id),
                 sorting = WordsSorting.RECENTLY_ASKED_FIRST
             )
             3 -> WordGroupConfig(
-                setId = SetId.One(currentSet.id.toLong()),
+                setId = SetId.One(currentSet.id),
                 sorting = WordsSorting.BEST_ANSWERED_FIRST
             )
             4 -> WordGroupConfig(
-                setId = SetId.One(currentSet.id.toLong()),
+                setId = SetId.One(currentSet.id),
                 sorting = WordsSorting.WORST_ANSWERED_FIRST
             )
             else -> WordGroupConfig()
@@ -339,6 +342,28 @@ class WordsActivity : AppCompatActivity() {
         selected.forEach {
             words.removeAt(it - count)
             count++
+        }
+    }
+
+    companion object {
+        const val SHARED_PREFS_NAME = "ericaPrefs"
+        const val SHARED_PREFS_POSITION_KEY = "ORDER_POS"
+
+        const val SET_ID_EXTRA_NAME = "set_id"
+        const val SET_NAME_EXTRA_NAME = "set_name"
+        const val SET_DESCRIPTION_EXTRA_NAME = "set_description"
+        const val WORD_COUNT_EXTRA_NAME = "words_count"
+
+        fun start(context: Context, set: WordSet) {
+            val intent = Intent(context, WordsActivity::class.java).apply {
+                with(set) {
+                    putExtra(SET_ID_EXTRA_NAME, id)
+                    putExtra(SET_NAME_EXTRA_NAME, name)
+                    putExtra(SET_DESCRIPTION_EXTRA_NAME, description)
+                    putExtra(WORD_COUNT_EXTRA_NAME, wordsCount)
+                }
+            }
+            context.startActivity(intent)
         }
     }
 }

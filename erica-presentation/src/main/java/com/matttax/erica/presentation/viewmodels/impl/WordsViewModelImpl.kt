@@ -71,7 +71,7 @@ class WordsViewModelImpl @Inject constructor(
         }
         moveWordsUseCase.execute(
             MoveWordsRequest(
-                idFrom = setId,
+                idFrom = setId.toInt(),
                 idTo = toId,
                 words = ids
             )
@@ -110,7 +110,7 @@ class WordsViewModelImpl @Inject constructor(
     }
 
     override suspend fun onGetWords(wordGroupConfig: WordGroupConfig) {
-        this.setId = (wordGroupConfig.setId as? SetId.One)?.id ?: -1
+        this.setId = (wordGroupConfig.setId as? SetId.One)?.id?.toLong() ?: -1L
         getWordsUseCase.execute(wordGroupConfig) {
             wordsListFlow.value = it
         }

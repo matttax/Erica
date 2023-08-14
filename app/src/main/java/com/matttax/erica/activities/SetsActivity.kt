@@ -1,24 +1,24 @@
 package com.matttax.erica.activities
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.matttax.erica.R
 import com.matttax.erica.adaptors.SetAdaptor
 import com.matttax.erica.WordSet
-import com.matttax.erica.WordDBHelper
 import com.matttax.erica.databinding.ActivitySetsBinding
 import com.matttax.erica.dialogs.impl.CreateSetDialog
 import com.matttax.erica.dialogs.impl.DeleteSetDialog
 import com.matttax.erica.presentation.states.SetsState
 import com.matttax.erica.presentation.viewmodels.SetsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -31,19 +31,6 @@ class SetsActivity : AppCompatActivity() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val sets = mutableListOf<WordSet>()
-
-    private fun setData(setsState: SetsState) {
-        sets.clear()
-        setsState.sets?.map {
-            WordSet(
-                id = it.id.toInt(),
-                name = it.name,
-                description = it.description,
-                wordsCount = 0
-            )
-        }?.let { sets.addAll(it) }
-        binding.setsListRecyclerView.adapter?.notifyDataSetChanged()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +65,19 @@ class SetsActivity : AppCompatActivity() {
         loadSets()
     }
 
+    private fun setData(setsState: SetsState) {
+        sets.clear()
+        setsState.sets?.map {
+            WordSet(
+                id = it.id.toInt(),
+                name = it.name,
+                description = it.description,
+                wordsCount = it.wordsCount ?: 0
+            )
+        }?.let { sets.addAll(it) }
+        binding.setsListRecyclerView.adapter?.notifyItemRangeChanged(0, sets.size - 1)
+    }
+
     private fun loadSets() {
         scope.launch {
             setsViewModel.onGetSetsAction()
@@ -86,19 +86,10 @@ class SetsActivity : AppCompatActivity() {
             context = this,
             sets = sets,
             onClick = {
-                val intent = Intent(this, WordsActivity::class.java).apply {
-                    putExtra("setid", sets[it].id)
-                    putExtra("setname", sets[it].name)
-                    putExtra("setdescr", sets[it].description)
-                    putExtra("setwordcount", sets[it].wordsCount)
-                }
-                startActivity(intent)
+                WordsActivity.start(this, sets[it])
             },
             onLearnClick = {
-                val i = Intent(this, LearnActivity::class.java)
-                i.putExtra("query", "SELECT * FROM ${WordDBHelper.WORDS_TABLE_NAME} " +
-                        "WHERE ${WordDBHelper.COLUMN_SET_ID}=${sets[it].id}")
-                startActivity(i)
+//                LearnActivity.start(this, sets[it].id, 7)
             },
             onDeleteClick = {
                 DeleteSetDialog(this) {
@@ -110,5 +101,4 @@ class SetsActivity : AppCompatActivity() {
         )
         binding.setsListRecyclerView.layoutManager = LinearLayoutManager(this)
     }
-
 }

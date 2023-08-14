@@ -122,6 +122,7 @@ class WordsRepositoryImpl @Inject constructor(
             WordsSorting.WORST_ANSWERED_FIRST -> "$COLUMN_TIMES_CORRECT / CAST(${COLUMN_TIMES_ASKED} as float) ASC"
             WordsSorting.LONG_AGO_ASKED_FIRST -> "$COLUMN_LAST_ASKED DESC"
             WordsSorting.RECENTLY_ASKED_FIRST -> "$COLUMN_LAST_ASKED ASC"
+            WordsSorting.RANDOM -> "RANDOM()"
         }
     }
 }

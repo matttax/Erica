@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
 
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var job: Job? = null
     private var lastTranslateState: TranslateState? = null
@@ -68,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }.launchIn(scope)
 
-        val preferences = getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
+        val preferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
 
         binding.setSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -78,8 +77,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.toSetsButton.setOnClickListener {
-            val setsIntent = Intent(this@MainActivity, SetsActivity::class.java)
-            startActivity(setsIntent)
+            startActivity(Intent(this@MainActivity, SetsActivity::class.java))
         }
 
         binding.termTextField.doOnTextChanged { text, _, _, _ ->
@@ -127,7 +125,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.fromSpinner.apply {
             adapter = ArrayAdapter(this@MainActivity, R.layout.sets_spinner_item, languages)
-            setSelection(preferences.getInt("FROM", 0))
+            setSelection(preferences.getInt(SHARED_PREFS_FROM_LANGUAGE_KEY, 0))
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -139,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.toSpinner.apply {
             adapter = ArrayAdapter(this@MainActivity, R.layout.sets_spinner_item, languages)
-            setSelection(preferences.getInt("TO", 1))
+            setSelection(preferences.getInt(SHARED_PREFS_TO_LANGUAGE_KEY, 1))
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -167,11 +165,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        val preferences = getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
+        val preferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val editor = preferences.edit()
         editor.apply {
-            putInt("FROM", binding.fromSpinner.selectedItemPosition)
-            putInt("TO", binding.toSpinner.selectedItemPosition)
+            putInt(SHARED_PREFS_FROM_LANGUAGE_KEY, binding.fromSpinner.selectedItemPosition)
+            putInt(SHARED_PREFS_TO_LANGUAGE_KEY, binding.toSpinner.selectedItemPosition)
         }.apply()
     }
 
@@ -303,5 +301,12 @@ class MainActivity : AppCompatActivity() {
                 translateViewModel.onOutputTextChanged("")
             }
         }
+    }
+
+    companion object {
+        const val SHARED_PREFS_NAME = "ericaPrefs"
+
+        const val SHARED_PREFS_FROM_LANGUAGE_KEY = "FROM"
+        const val SHARED_PREFS_TO_LANGUAGE_KEY = "TO"
     }
 }

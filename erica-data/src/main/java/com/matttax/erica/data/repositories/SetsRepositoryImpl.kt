@@ -60,7 +60,8 @@ class SetsRepositoryImpl(
                 currentSets += SetDomainModel(
                     id = cursor.getLong(0),
                     name = cursor.getString(1),
-                    description = cursor.getString(3)
+                    description = cursor.getString(3),
+                    wordsCount = cursor.getInt(2)
                 )
             }
         }

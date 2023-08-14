@@ -1,6 +1,8 @@
 package com.matttax.erica.activities
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
@@ -9,7 +11,7 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.matttax.erica.*
+import com.matttax.erica.R
 import com.matttax.erica.databinding.ActivityLearnBinding
 import com.matttax.erica.dialogs.impl.AfterBatchDialog
 import com.matttax.erica.dialogs.impl.WordAnsweredDialog
@@ -39,7 +41,7 @@ class LearnActivity : AppCompatActivity() {
     @Inject
     lateinit var wordSpeller: WordSpeller
 
-    lateinit var binding: ActivityLearnBinding
+    private lateinit var binding: ActivityLearnBinding
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -51,12 +53,17 @@ class LearnActivity : AppCompatActivity() {
         binding = ActivityLearnBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val batchSize = intent.getIntExtra("batch_size", 5)
+        val batchSize = intent.getIntExtra(BATCH_SIZE_EXTRA_NAME, 5)
+        val setId = intent.getIntExtra(SET_ID_EXTRA_NAME, -1)
+        val wordsCount = intent.getIntExtra(WORDS_COUNT_EXTRA_NAME, -1)
+        val wordsSorting = intent.getIntExtra(WORDS_SORTING_EXTRA_NAME, -1).toWordSorting()
+        if (setId == -1 || wordsCount == -1) {
+            finish()
+        }
 
         studyViewModel.observeState()
             .flowOn(Dispatchers.Main)
             .onEach {
-                Log.i("viewstate", it.toString())
                 runOnUiThread {
                     it?.let { data -> setData(data) }
                 }
@@ -67,8 +74,9 @@ class LearnActivity : AppCompatActivity() {
             studyViewModel.onGetWords(
                 StudyConfig(
                     wordGroupConfig = WordGroupConfig(
-                        setId = SetId.One(intent.getLongExtra("setId", -1)),
-                        sorting = WordsSorting.WORST_ANSWERED_FIRST
+                        setId = SetId.One(setId),
+                        sorting = wordsSorting,
+                        limit = wordsCount
                     ),
                     batchSize = batchSize
                 )
@@ -121,7 +129,7 @@ class LearnActivity : AppCompatActivity() {
         if (studyState.isLastCorrect != null) {
             if (!dialogOnScreen) {
                 dialogOnScreen = true
-                with(currentWord){
+                with(currentWord) {
                     wordSpeller.spellText(
                         translation,
                         translationLanguage.locale
@@ -148,7 +156,7 @@ class LearnActivity : AppCompatActivity() {
         } else {
             binding.definitionInputField.text?.clear()
             binding.termAskedField.text = currentWord.text
-            with(currentWord){
+            with(currentWord) {
                 wordSpeller.spellText(
                     text,
                     textLanguage.locale
@@ -157,4 +165,50 @@ class LearnActivity : AppCompatActivity() {
         }
     }
 
+    companion object {
+        private const val BATCH_SIZE_EXTRA_NAME = "batch_size"
+        private const val SET_ID_EXTRA_NAME = "set_id"
+        private const val WORDS_COUNT_EXTRA_NAME = "words_count"
+        private const val WORDS_SORTING_EXTRA_NAME = "words_sorting"
+
+        fun start(
+            context: Context,
+            setId: Int,
+            batchSize: Int,
+            wordsCount: Int,
+            wordsSorting: WordsSorting
+        ) {
+            val intent = Intent(context, LearnActivity::class.java).apply {
+                putExtra(SET_ID_EXTRA_NAME, setId)
+                putExtra(BATCH_SIZE_EXTRA_NAME, batchSize)
+                putExtra(WORDS_COUNT_EXTRA_NAME, wordsCount)
+                putExtra(WORDS_SORTING_EXTRA_NAME, wordsSorting.toInt())
+            }
+            context.startActivity(intent)
+        }
+
+        private fun WordsSorting.toInt(): Int {
+            return when(this) {
+                WordsSorting.RANDOM -> 0
+                WordsSorting.LAST_ADDED_FIRST -> 1
+                WordsSorting.FIRST_ADDED_FIRST -> 2
+                WordsSorting.WORST_ANSWERED_FIRST -> 3
+                WordsSorting.BEST_ANSWERED_FIRST -> 4
+                WordsSorting.LONG_AGO_ASKED_FIRST -> 5
+                WordsSorting.RECENTLY_ASKED_FIRST -> 6
+            }
+        }
+
+        private fun Int.toWordSorting(): WordsSorting {
+            return when(this) {
+                1 -> WordsSorting.LAST_ADDED_FIRST
+                2 -> WordsSorting.FIRST_ADDED_FIRST
+                3 -> WordsSorting.WORST_ANSWERED_FIRST
+                4 -> WordsSorting.BEST_ANSWERED_FIRST
+                5 -> WordsSorting.LONG_AGO_ASKED_FIRST
+                6 -> WordsSorting.RECENTLY_ASKED_FIRST
+                else -> WordsSorting.RANDOM
+            }
+        }
+    }
 }
