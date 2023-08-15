@@ -41,7 +41,7 @@ def getTranslations(word, from_lang, to_lang):
     except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
         return data
     except requests.exceptions.HTTPError:
-        data.append('@HttpError@No examples are found')
+        data.append('@HttpError@')
     return data
 
 

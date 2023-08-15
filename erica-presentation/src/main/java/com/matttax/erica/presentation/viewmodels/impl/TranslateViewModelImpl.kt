@@ -111,7 +111,7 @@ class TranslateViewModelImpl @Inject constructor(
         )
         getTranslationsUseCase.execute(request) {
             translationsDataStateFlow.value = when {
-                it.isEmpty() -> DataState.NotFound
+                it.size <= 1 && it.first().endsWith("Error@") -> DataState.NotFound
                 else -> DataState.LoadedInfo(it)
             }
         }
@@ -123,8 +123,7 @@ class TranslateViewModelImpl @Inject constructor(
         }
         getExamplesUseCase.execute(request) {
             examplesDataStateFlow.value = when {
-                it.isEmpty() -> DataState.NotFound
-                it.size == 1 && it.first().text.endsWith("Error@") -> DataState.NotFound
+                it.size <= 1 && it.first().text.endsWith("Error@") -> DataState.NotFound
                 else -> DataState.LoadedInfo(it)
             }
         }

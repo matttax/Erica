@@ -28,7 +28,7 @@ class WordAdaptor constructor(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
         return WordViewHolder(
             itemView = LayoutInflater.from(context).inflate(
-                R.layout.term_item,
+                R.layout.word_card,
                 parent,
                 false
             )

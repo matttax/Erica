@@ -14,7 +14,6 @@
     android:background="@drawable/notification_form"
     >
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,61 +25,45 @@
         >
         <TextView
             android:id="@+id/dialogHeader"
+            style="@style/dialogText"
             android:layout_marginTop="20dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sure?"
-            android:layout_gravity="center"
+            android:text="@string/beforeDeleteQuestion"
             android:textSize="25sp"
-            android:textStyle="bold"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
             android:layout_marginBottom="5dp"
-            android:fontFamily="@font/nunito_bold"
             />
         <TextView
             android:id="@+id/explanationText"
+            style="@style/dialogText"
             android:layout_marginTop="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="If you delete the set, all containing words are lost"
-            android:fontFamily="@font/nunito_bold"
-            android:layout_gravity="center"
+            android:text="@string/setDeleteInfo"
             android:textSize="18sp"
-            android:textStyle="bold"
             android:textAlignment="center"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
             android:layout_marginBottom="30dp"
             android:textColor="@color/strong_grey"
             />
 
         <com.google.android.material.button.MaterialButton
-            android:textSize="15dp"
+            android:id="@+id/yesDeleteSet"
+            android:textSize="15sp"
+            android:fontFamily="@font/organo"
+            android:layout_marginStart="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Yes"
-            android:fontFamily="@font/organo"
+            android:text="@string/yes"
             android:layout_marginTop="10dp"
-            android:layout_marginStart="20dp"
             android:backgroundTint="@color/green"
-            android:id="@+id/yesDeleteSet"
             />
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/noDeleteSet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dismiss"
+            android:text="@string/cleanData"
             android:fontFamily="@font/organo"
-            android:textSize="15dp"
+            android:textSize="15sp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
             android:backgroundTint="@color/crimson"
-            android:id="@+id/noDeleteSet"
             />
     </LinearLayout>
-
-
-
-
 
 </com.google.android.material.card.MaterialCardView>

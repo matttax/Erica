@@ -1,7 +1,6 @@
 package com.matttax.erica.dialogs.impl
 
 import android.content.Context
-import android.widget.Button
 import android.widget.TextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -16,15 +15,15 @@ class EditDialog(
     ignoreSecondField: Boolean,
     onSuccess: (String, String) -> Unit,
     onFailure: () -> Unit = {}
-): ActionDialog(context, R.layout.create_set_dialog) {
+): ActionDialog(context, R.layout.edit_dialog) {
 
     private val dialogHeaderText: TextView = dialogView.findViewById(R.id.editDialogHeader)
 
     private val firstFieldLayout: TextInputLayout = dialogView.findViewById(R.id.firstFieldLayout)
-    private val firstFieldInputTextView: TextInputEditText = dialogView.findViewById(R.id.setNameField)
+    private val firstFieldInputTextView: TextInputEditText = dialogView.findViewById(R.id.firstFieldText)
 
     private val secondFieldLayout: TextInputLayout = dialogView.findViewById(R.id.secondFieldLayout)
-    private val secondFieldInputTextView: TextInputEditText = dialogView.findViewById(R.id.setDescriptionField)
+    private val secondFieldInputTextView: TextInputEditText = dialogView.findViewById(R.id.secondFieldText)
 
     init {
         dialogHeaderText.text = headerText

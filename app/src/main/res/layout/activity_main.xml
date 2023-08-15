@@ -11,12 +11,7 @@
     tools:context=".activities.MainActivity">
 
     <androidx.cardview.widget.CardView
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        card_view:cardCornerRadius="4dp"
-        card_view:cardElevation="4dp">
+        style="@style/upperButton">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="70dp"
@@ -47,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="20dp"
-                android:text="To sets"
+                android:text="@string/navigateToSetList"
                 android:id="@+id/toSetsButton"
                 android:backgroundTint="@color/transparent"
                 android:layout_weight="1"
@@ -66,7 +61,6 @@
         <Spinner
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_play_arrow_24"
             android:id="@+id/fromSpinner"
             android:background="?android:attr/selectableItemBackground"
             app:layout_constraintStart_toStartOf="parent"
@@ -85,7 +79,6 @@
         <Spinner
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_play_arrow_24"
             android:id="@+id/toSpinner"
             android:background="?android:attr/selectableItemBackground"
             app:layout_constraintTop_toTopOf="parent"
@@ -94,71 +87,36 @@
             />
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/editInputLayout"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:hint="Term"
-            android:padding="5dp"
-            android:textColorHint="@color/black_shade_1"
+            style="@style/inputLayout"
+            android:hint="@string/text"
             app:hintTextColor="@color/black_shade_1"
             app:layout_constraintTop_toBottomOf="@id/swapButton"
             >
             <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
                 android:id="@+id/termTextField"
-                android:ems="10"
-                android:importantForAutofill="no"
-                android:textColor="@color/black_shade_1"
-                android:textColorHint="@color/black_shade_1"
-                android:textSize="14sp"
-                android:maxLines="1"
-                android:inputType="text"
-                android:scrollHorizontally="true"
-                android:fontFamily="@font/nunito_regular"
+                style="@style/inputTextView"
                 />
         </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/defInputLayout"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="15dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:hint="Definition"
-            android:padding="5dp"
-            android:textColorHint="@color/black_shade_1"
+            style="@style/inputLayout"
+            android:hint="@string/translation"
             app:hintTextColor="@color/black_shade_1"
             app:layout_constraintTop_toBottomOf="@id/editInputLayout"
             >
             <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:ems="10"
-                android:importantForAutofill="no"
-                android:textColor="@color/black_shade_1"
-                android:textColorHint="@color/black_shade_1"
-                android:textSize="14sp"
-                android:maxLines="1"
-                android:inputType="text"
-                android:scrollHorizontally="true"
                 android:id="@+id/defTextField"
-                android:fontFamily="@font/nunito_regular"
+                style="@style/inputTextView"
                 />
         </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.button.MaterialButton
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintWidth_percent="0.3"
-            android:text="Dismiss"
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="15dp"
+            android:text="@string/cleanData"
             android:backgroundTint="@color/crimson"
             android:id="@+id/dismissWord"
             android:fontFamily="@font/organo"
@@ -172,10 +130,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintWidth_percent="0.5"
-            android:text="translate"
             android:layout_marginTop="10dp"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="20dp"
+            android:text="@string/translate"
             android:backgroundTint="@color/blue"
             android:layout_weight="1"
             android:id="@+id/addWord"
@@ -207,31 +165,19 @@
                 android:id="@+id/translations"
                 />
             <ProgressBar
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:indeterminateTint="@color/blue"
-                android:visibility="gone"
                 android:id="@+id/translationsProgressBar"
+                style="@style/notificationSign"
+                android:indeterminateTint="@color/blue"
                 />
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_baseline_signal_wifi_connected_no_internet_4_24"
-                android:visibility="gone"
                 android:id="@+id/noInternetImage"
+                style="@style/notificationSign"
+                android:src="@drawable/ic_baseline_signal_wifi_connected_no_internet_4_24"
                 />
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_baseline_close_24"
-                android:visibility="gone"
                 android:id="@+id/notFoundImage"
+                style="@style/notificationSign"
+                android:src="@drawable/ic_baseline_close_24"
                 />
         </RelativeLayout>
 
@@ -248,17 +194,17 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:text="Translations"
+                android:text="@string/translations"
                 />
             <com.google.android.material.tabs.TabItem
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:text="Definitions"
+                android:text="@string/dictionaryDefinitions"
                 />
             <com.google.android.material.tabs.TabItem
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:text="Examples"
+                android:text="@string/usageExamples"
                 />
 
         </com.google.android.material.tabs.TabLayout>

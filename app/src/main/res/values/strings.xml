@@ -1,3 +1,37 @@
 <resources>
-    <string name="app_name">Erica</string>
+    <string name="appName">Erica</string>
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="ok">OK</string>
+    <string name="start">Start</string>
+    <string name="cancel">Cancel</string>
+    <string name="cleanData">Dismiss</string>
+    <string name="moveNext">Next</string>
+    <string name="nextAction">Forward</string>
+    <string name="words">Words</string>
+
+    <string name="navigateToSetList">To sets</string>
+    <string name="text">Text</string>
+    <string name="translation">Translation</string>
+    <string name="translate">Translate</string>
+    <string name="translations">Translations</string>
+    <string name="dictionaryDefinitions">Definitions</string>
+    <string name="usageExamples">Examples</string>
+    <string name="studyResults">Results</string>
+
+    <string name="beforeDeleteQuestion">Sure?</string>
+    <string name="setDeleteInfo">If you delete the set, all containing words are lost</string>
+
+    <string name="moveHeader">Move to</string>
+    <string name="studyHeader">Study</string>
+    <string name="parametersHeader">Parameters</string>
+
+    <string name="numberOfWordsToLearn">Words to learn</string>
+    <string name="numberOfWordsInBatch">Words in batch</string>
+    <string name="askMode">Ask</string>
+    <string name="wordsSorting">Priority</string>
+
+    <string name="correct">Correct</string>
+    <string name="undoIncorrectAnswer">I was correct</string>
 </resources>

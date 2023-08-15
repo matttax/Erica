@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.R
-import com.matttax.erica.WordSet
+import com.matttax.erica.model.WordSet
 
 class SetAdaptor(
     private val context: Context,

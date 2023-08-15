@@ -11,7 +11,7 @@ class DeleteDialog(
     headerText: String,
     detailedExplanationText: String?,
     action: () -> Unit,
-): ActionDialog(context, R.layout.delete_set) {
+): ActionDialog(context, R.layout.delete_dialog) {
 
     private val dialogHeader: TextView = dialogView.findViewById(R.id.dialogHeader)
     private val explanationText: TextView = dialogView.findViewById(R.id.explanationText)

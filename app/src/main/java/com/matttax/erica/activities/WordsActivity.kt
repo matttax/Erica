@@ -13,7 +13,6 @@ import android.widget.AdapterView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
@@ -27,6 +26,7 @@ import com.matttax.erica.dialogs.impl.StartLearnDialog
 import com.matttax.erica.domain.config.SetId
 import com.matttax.erica.domain.config.WordGroupConfig
 import com.matttax.erica.domain.config.WordsSorting
+import com.matttax.erica.model.WordSet
 import com.matttax.erica.presentation.model.translate.TextCardState
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard

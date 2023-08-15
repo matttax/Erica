@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="30dp"
+    android:layout_marginEnd="30dp"
+    android:layout_gravity="center"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:strokeColor="@color/blue"
+    app:strokeWidth="3dp"
+    app:cardCornerRadius="20dp"
+    android:background="@drawable/notification_form"
+    >
+
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:orientation="vertical">
+          <TextView
+              android:id="@+id/editDialogHeader"
+              android:fontFamily="@font/nunito_bold"
+              android:layout_marginTop="20dp"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Edit?"
+              android:layout_gravity="center"
+              android:textSize="25sp"
+              android:textStyle="bold"
+              />
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:id="@+id/firstFieldLayout"
+              style="@style/inputLayout"
+              android:hint="Name"
+              >
+               <com.google.android.material.textfield.TextInputEditText
+                   android:id="@+id/firstFieldText"
+                   style="@style/inputTextView"
+                   android:maxLength="20"
+                   />
+          </com.google.android.material.textfield.TextInputLayout>
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:id="@+id/secondFieldLayout"
+              style="@style/inputLayout"
+              android:layout_height="150dp"
+              android:hint="Description"
+              >
+               <com.google.android.material.textfield.TextInputEditText
+                   android:id="@+id/secondFieldText"
+                   style="@style/inputTextView"
+                   android:maxLength="100"
+                   />
+          </com.google.android.material.textfield.TextInputLayout>
+
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:layout_marginStart="30dp"
+              android:layout_marginEnd="30dp"
+              android:layout_marginBottom="20dp"
+              >
+               <com.google.android.material.button.MaterialButton
+                   android:id="@+id/dismissSet"
+                   style="@style/dialogButton"
+                   android:text="@string/cancel"
+                   android:backgroundTint="@color/crimson"
+                   />
+               <com.google.android.material.button.MaterialButton
+                   android:id="@+id/addSet"
+                   style="@style/dialogButton"
+                   android:text="@string/nextAction"
+                   android:backgroundTint="@color/green"
+                   />
+          </LinearLayout>
+     </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableStringBuilder
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +12,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.tabs.TabLayout
@@ -28,7 +26,6 @@ import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.TranslateViewModel
-import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModelImpl
 import com.matttax.erica.speechtotext.WordSpeller
 import com.matttax.erica.utils.LanguageUtils.Companion.getLanguageCode
 import dagger.hilt.android.AndroidEntryPoint
@@ -94,7 +91,6 @@ class MainActivity : AppCompatActivity() {
         }
         binding.defTextField.doOnTextChanged { text, _, _, _ ->
             translateViewModel.onOutputTextChanged(text.toString())
-            binding.defTextField.setSelection(text?.length ?: 0)
         }
 
         binding.addWord.setOnClickListener {
@@ -113,6 +109,7 @@ class MainActivity : AppCompatActivity() {
             setOnClickListener {
                 job?.cancel()
                 binding.termTextField.text = SpannableStringBuilder("")
+                binding.defTextField.text = SpannableStringBuilder("")
                 translateViewModel.onClear()
             }
         }
@@ -156,17 +153,17 @@ class MainActivity : AppCompatActivity() {
         translateViewModel.onInputTextLanguageChanged(getLanguageCode(binding.fromSpinner.selectedItem.toString()))
         translateViewModel.onOutputLanguageChanged(getLanguageCode(binding.toSpinner.selectedItem.toString()))
         binding.swapButton.setOnClickListener {
-            val fr = binding.fromSpinner.selectedItemPosition
+            val oldPosition = binding.fromSpinner.selectedItemPosition
             binding.fromSpinner.setSelection(binding.toSpinner.selectedItemPosition)
-            binding.toSpinner.setSelection(fr)
+            binding.toSpinner.setSelection(oldPosition)
         }
         binding.startLearn.setOnClickListener {
             LearnActivity.start(this, currentSet.toInt())
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         scope.launch {
             translateViewModel.onGetSetsAction()
         }
@@ -185,7 +182,6 @@ class MainActivity : AppCompatActivity() {
     private fun setData(translateState: TranslateState) {
         currentSet = translateState.currentSetId ?: -1
         lastTranslateState = translateState
-        binding.defTextField.setText(translateState.textOut, TextView.BufferType.EDITABLE)
         binding.setSpinner.adapter = ArrayAdapter(
             this, R.layout.sets_spinner_item, translateState.sets?.map { it.name } ?: emptyList()
         ).also {
@@ -263,7 +259,7 @@ class MainActivity : AppCompatActivity() {
             this@MainActivity,
             list ?: emptyList()
         ) { text ->
-            translateViewModel.onOutputTextChanged(text.toString())
+            binding.defTextField.setText(text)
         }
     }
 

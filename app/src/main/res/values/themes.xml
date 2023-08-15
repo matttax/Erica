@@ -33,4 +33,5 @@
         <item name="android:textColor">@color/white</item>
         <item name="fontFamily">@font/organo</item>
     </style>
+
 </resources>

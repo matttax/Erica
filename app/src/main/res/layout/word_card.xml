@@ -32,43 +32,33 @@
             android:id="@+id/playSound"
             />
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_weight="1">
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:id="@+id/wordTerm"
+                style="@style/textField"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="20dp"
                 android:hint="Term"
                 android:textStyle="bold"
-                android:inputType="none"
-                android:padding="5dp"
                 android:textSize="15sp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:textColorHint="@color/black_shade_1"
                 app:hintTextColor="@color/black_shade_1"
-                android:id="@+id/wordTerm"
                 android:fontFamily="@font/nunito_bold"
                 >
             </TextView>
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:id="@+id/wordDef"
+                style="@style/textField"
                 android:layout_marginStart="15dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:hint="Definition"
-                android:inputType="none"
-                android:padding="5dp"
                 android:textSize="12sp"
-                android:textColorHint="@color/black_shade_1"
                 app:hintTextColor="@color/black_shade_1"
                 android:layout_weight="4"
-                android:id="@+id/wordDef"
                 android:fontFamily="@font/nunito_regular"
                 >
             </TextView>

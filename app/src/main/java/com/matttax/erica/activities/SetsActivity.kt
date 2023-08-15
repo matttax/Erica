@@ -5,7 +5,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.matttax.erica.adaptors.SetAdaptor
-import com.matttax.erica.WordSet
+import com.matttax.erica.model.WordSet
 import com.matttax.erica.databinding.ActivitySetsBinding
 import com.matttax.erica.dialogs.impl.EditDialog
 import com.matttax.erica.dialogs.impl.DeleteDialog
@@ -67,6 +67,10 @@ class SetsActivity : AppCompatActivity() {
                 }
             ).showDialog()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
         loadSets()
     }
 

@@ -16,18 +16,20 @@
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/ic_baseline_volume_down_24.xml" value="0.2135" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/ic_mic.xml" value="0.178" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/drawable/notification_form.xml" value="0.2135" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_learn.xml" value="0.24139492753623187" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_learn.xml" value="0.1" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_main.xml" value="0.24010416666666667" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_sets.xml" value="0.136" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_words.xml" value="0.264" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/after_batch.xml" value="0.264" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/create_set_dialog.xml" value="0.24139492753623187" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/definition_item.xml" value="0.24139492753623187" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/delete_set.xml" value="0.24139492753623187" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_sets.xml" value="0.1" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/activity_words.xml" value="0.1" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/after_batch.xml" value="0.1" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/create_set_dialog.xml" value="0.1" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/definition_item.xml" value="0.2" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/delete_dialog.xml" value="0.1" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/delete_set.xml" value="0.1" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/delete_word.xml" value="0.24139492753623187" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/edit_dialog.xml" value="0.176" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/example_item.xml" value="0.24139492753623187" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/m.xml" value="0.24139492753623187" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/move_dialog.xml" value="0.17255434782608695" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/move_dialog.xml" value="0.1" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/move_spinner_item.xml" value="0.20778110303548525" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/params_spinner_item.xml" value="0.24139492753623187" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/set_item.xml" value="0.24547101449275363" />
@@ -35,11 +37,12 @@
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/shitty_rv.xml" value="0.24139492753623187" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/spinnerItem.xml" value="0.24547101449275363" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/spinner_item.xml" value="0.18510928961748635" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/start_learn_dialog.xml" value="0.24139492753623187" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/term_item.xml" value="0.24547101449275363" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/start_learn_dialog.xml" value="0.264" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/term_item.xml" value="0.1" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/translation_item.xml" value="0.24139492753623187" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/word_answered.xml" value="0.24139492753623187" />
-        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/words_to_study.xml" value="0.24139492753623187" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/word_answered.xml" value="0.1" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/word_card.xml" value="0.2" />
+        <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/layout/words_to_study.xml" value="0.1" />
         <entry key="..\:/Users/1661322/AndroidStudioProjects/Erica/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2135" />
         <entry key="..\:/Users/1661322/AppData/Local/Android/Sdk/platforms/android-32/data/res/layout/simple_spinner_dropdown_item.xml" value="0.24139492753623187" />
       </map>
