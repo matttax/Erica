@@ -17,15 +17,18 @@ class PythonTranslator @Inject constructor(
     @ApplicationContext context: Context
 ): Translator {
 
+    private val python: Python
+    private val translateModule: PyObject
+
     init {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(context))
         }
+        python = Python.getInstance()
+        translateModule = python.getModule(TRANSLATE_MODULE_NAME)
     }
 
     override fun getTranslations(request: TranslationRequest): List<String> {
-        val python: Python = Python.getInstance()
-        val translateModule: PyObject = python.getModule(TRANSLATE_MODULE_NAME)
         return translateModule.callAttr(
             GET_TRANSLATIONS_FUNCTION_NAME,
             request.text,
@@ -35,8 +38,6 @@ class PythonTranslator @Inject constructor(
     }
 
     override fun getDefinitions(request: TranslationRequest): List<DictionaryDefinition> {
-        val python: Python = Python.getInstance()
-        val translateModule: PyObject = python.getModule(TRANSLATE_MODULE_NAME)
         val preparedText =
             if (request.fromLanguage == Language.GERMAN &&
                 request.text.lowercase().matches("(der |die |das ).*".toRegex())
@@ -57,8 +58,6 @@ class PythonTranslator @Inject constructor(
     }
 
     override fun getExamples(request: TranslationRequest): List<UsageExample> {
-        val python: Python = Python.getInstance()
-        val translateModule: PyObject = python.getModule(TRANSLATE_MODULE_NAME)
         return translateModule.callAttr(
             GET_EXAMPLES_FUNCTION_NAME,
             request.text,
