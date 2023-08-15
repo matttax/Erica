@@ -1,6 +1,7 @@
 package com.matttax.erica.activities
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -80,11 +81,13 @@ class SetsActivity : AppCompatActivity() {
             WordSet(
                 id = it.id.toInt(),
                 name = it.name,
-                description = it.description,
+                description = it.description ?: " ",
                 wordsCount = it.wordsCount ?: 0
             )
-        }?.let { sets.addAll(it) }
-        binding.setsListRecyclerView.adapter?.notifyItemRangeChanged(0, sets.size - 1)
+        }?.let {
+            sets.addAll(it)
+        }
+        binding.setsListRecyclerView.adapter?.notifyItemRangeChanged(0, sets.size)
     }
 
     private fun loadSets() {

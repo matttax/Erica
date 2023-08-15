@@ -1,6 +1,5 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.SetGroupConfig
@@ -17,7 +16,6 @@ import com.matttax.erica.domain.usecases.translate.GetTranslationsUseCase
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.TranslateViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -152,7 +150,7 @@ class TranslateViewModelImpl @Inject constructor(
     override suspend fun onGetSetsAction() {
         getSetsUseCase.execute(
             SetGroupConfig(
-                sorting = SetSorting.LAST_ADDED,
+                sorting = SetSorting.LAST_MODIFIED,
                 limit = Int.MAX_VALUE
             )
         ) {

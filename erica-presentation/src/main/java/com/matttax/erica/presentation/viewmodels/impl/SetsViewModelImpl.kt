@@ -61,7 +61,7 @@ class SetsViewModelImpl @Inject constructor(
     override suspend fun onGetSetsAction() {
         getSetsUseCase.execute(
             SetGroupConfig(
-                sorting = SetSorting.LAST_ADDED,
+                sorting = SetSorting.LAST_MODIFIED,
                 limit = Int.MAX_VALUE
             )
         ) {

@@ -1,10 +1,8 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.*
-import com.matttax.erica.domain.model.Language
 import com.matttax.erica.domain.model.SetDomainModel
 import com.matttax.erica.domain.model.WordDomainModel
 import com.matttax.erica.domain.usecases.sets.crud.GetSetsUseCase
@@ -105,7 +103,7 @@ class WordsViewModelImpl @Inject constructor(
     override suspend fun onGetSets() {
         getSetsUseCase.execute(
             SetGroupConfig(
-                sorting = SetSorting.LAST_ADDED
+                sorting = SetSorting.LAST_MODIFIED
             )
         ) {
             setsStateFlow.value = it

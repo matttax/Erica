@@ -9,7 +9,7 @@ class UpdateSetUseCase(
 ) : UseCase<SetDomainModel, Unit> {
 
     override suspend fun execute(input: SetDomainModel, onResult: (Unit) -> Unit) {
-        setsRepository.updateSet(input.id, input.name, input.description)
+        setsRepository.updateSet(input.id, input.name, input.description ?: " ")
         onResult(Unit)
     }
 
