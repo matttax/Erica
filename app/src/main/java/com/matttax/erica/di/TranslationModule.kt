@@ -20,7 +20,4 @@ abstract class TranslationModule {
 
     @Binds
     abstract fun bindTranslator(pythonTranslator: PythonTranslator): Translator
-
-    @Binds
-    abstract fun bindViewModel(translateViewModelImpl: TranslateViewModelImpl): TranslateViewModel
 }

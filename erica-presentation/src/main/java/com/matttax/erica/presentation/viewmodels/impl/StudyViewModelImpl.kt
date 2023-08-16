@@ -119,7 +119,9 @@ class StudyViewModelImpl @Inject constructor(
     companion object {
         fun WordDomainModel.reverse(): WordDomainModel {
             return WordDomainModel(
-                id?.times(id ?: 1), translation, text, translationLanguage, textLanguage, setId, askedCount, answeredCount, addedTimestamp
+                Long.MAX_VALUE.minus(id ?: 1),
+                translation, text, translationLanguage, textLanguage,
+                setId, askedCount, answeredCount, addedTimestamp
             )
         }
 

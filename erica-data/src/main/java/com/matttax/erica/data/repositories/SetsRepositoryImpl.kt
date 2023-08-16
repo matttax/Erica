@@ -24,7 +24,7 @@ class SetsRepositoryImpl(
     override fun addSet(name: String, description: String): Long {
         val contentValues = ContentValues().apply {
             put(SETS_COLUMN_NAME, name)
-            put(SETS_COLUMN_LAST_MODIFIED_TIMESTAMP, 1)
+            put(SETS_COLUMN_LAST_MODIFIED_TIMESTAMP, System.currentTimeMillis())
             put(SETS_COLUMN_DESCRIPTION, description)
         }
         return sqliteDatabaseManager.writableDatabase.insert(SETS_TABLE_NAME, null, contentValues)
@@ -66,12 +66,17 @@ class SetsRepositoryImpl(
         sqliteDatabaseManager.writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE set_id=$id")
     }
 
+    override fun touchSet(id: Long) {
+        val query = "UPDATE $SETS_TABLE_NAME " +
+                "SET $SETS_COLUMN_LAST_MODIFIED_TIMESTAMP=${System.currentTimeMillis()} " +
+                "WHERE $SETS_COLUMN_ID=$id"
+        sqliteDatabaseManager.writableDatabase.execSQL(query)
+    }
+
     private fun sortingToQuery(setSorting: SetSorting): String {
         return when(setSorting) {
             SetSorting.ALPHABETICALLY -> SETS_COLUMN_NAME
-            SetSorting.LAST_MODIFIED -> "(SELECT MAX($WORDS_COLUMN_LAST_ASKED_TIMESTAMP) " +
-                    "FROM $WORDS_TABLE_NAME " +
-                    "WHERE $WORDS_COLUMN_SET_ID=$SETS_TABLE_NAME.$SETS_COLUMN_ID) DESC"
+            SetSorting.LAST_MODIFIED -> "$SETS_COLUMN_LAST_MODIFIED_TIMESTAMP DESC"
         }
     }
 }

@@ -33,7 +33,7 @@ class SetsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySetsBinding
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val sets = mutableListOf<WordSet>()
+    private var sets: List<WordSet> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,28 +72,24 @@ class SetsActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        loadSets()
+        scope.launch {
+            setsViewModel.onGetSetsAction()
+        }
     }
 
     private fun setData(setsState: SetsState) {
-        sets.clear()
-        setsState.sets?.map {
+        sets = setsState.sets?.map {
             WordSet(
                 id = it.id.toInt(),
                 name = it.name,
                 description = it.description ?: " ",
                 wordsCount = it.wordsCount ?: 0
             )
-        }?.let {
-            sets.addAll(it)
-        }
-        binding.setsListRecyclerView.adapter?.notifyItemRangeChanged(0, sets.size)
+        } ?: emptyList()
+        loadSets()
     }
 
     private fun loadSets() {
-        scope.launch {
-            setsViewModel.onGetSetsAction()
-        }
         binding.setsListRecyclerView.adapter = SetAdaptor(
             context = this,
             sets = sets,

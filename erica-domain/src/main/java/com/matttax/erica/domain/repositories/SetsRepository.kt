@@ -8,4 +8,5 @@ interface SetsRepository {
     fun updateSet(id: Long, name: String, description: String)
     fun getSets(setGroupConfig: SetGroupConfig): List<SetDomainModel>
     fun removeById(id: Long)
+    fun touchSet(id: Long)
 }

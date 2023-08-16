@@ -1,6 +1,7 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.SetGroupConfig
@@ -51,10 +52,8 @@ class SetsViewModelImpl @Inject constructor(
     override suspend fun onDelete(id: Int) {
         deleteSetUseCase.execute(id.toLong()) {
             val list = setsFlow.value?.toMutableList() ?: mutableListOf()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                list.removeIf { it.id == id.toLong() }
-            }
-            setsFlow.value = list
+            list.removeIf { it.id == id.toLong() }
+            setsFlow.value = list.toList()
         }
     }
 

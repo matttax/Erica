@@ -2,6 +2,7 @@ package com.matttax.erica.di
 
 import com.matttax.erica.data.database.SqliteDatabaseManager
 import com.matttax.erica.data.repositories.WordsRepositoryImpl
+import com.matttax.erica.domain.repositories.SetsRepository
 import com.matttax.erica.domain.repositories.WordsRepository
 import com.matttax.erica.domain.usecases.words.crud.AddWordUseCase
 import com.matttax.erica.domain.usecases.words.crud.DeleteWordsUseCase
@@ -50,7 +51,10 @@ class WordUseCasesModule {
 
     @Provides
     @Singleton
-    fun provideWordAnsweredUseCase(wordsRepository: WordsRepository): WordAnsweredUseCase {
-        return WordAnsweredUseCase(wordsRepository)
+    fun provideWordAnsweredUseCase(
+        wordsRepository: WordsRepository,
+        setsRepository: SetsRepository
+    ): WordAnsweredUseCase {
+        return WordAnsweredUseCase(wordsRepository, setsRepository)
     }
 }
