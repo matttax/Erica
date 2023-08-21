@@ -1,3 +1,12 @@
+Приложение для изучения иностранных языков.<br>
+Позволяет переводить слова и группировать их в сеты, чтобы упорядочивать в соответствии с темами, уровнями сложности или другими параметрами.
+
+Architecture: <br>
+**app**: UI (activities, adaptors, dialogs), Python-scripts and Dagger modules.<br>
+**erica-presentation**: viewmodels and states for presentation on UI layer via KotlinFlows.<br>
+**erica-domain**: usecases and repositories' interfaces.<br>
+**erica-data**: database manager (based on SQLiteOpenHelper), repositories' implementations and translator.<br><br>
+
 <p float="left">
   <img src="https://user-images.githubusercontent.com/67387151/226593117-84cb0ab9-a011-4d3d-8d53-d66dfd472780.jpg" alt="drawing" style="width:200px;"/>
   <img src="https://user-images.githubusercontent.com/67387151/226593129-58acb7e4-973e-40f7-8e70-eb317e5026da.jpg" alt="drawing" style="width:200px;"/>
