@@ -1,8 +1,6 @@
 package com.matttax.erica.presentation.viewmodels
 
-import com.matttax.erica.presentation.states.TranslateState
-
-interface TranslateViewModel: StateViewModel<TranslateState?> {
+interface TranslateInteractor {
     fun onInputTextLanguageChanged(language: String)
     fun onOutputLanguageChanged(language: String)
     fun onInputTextChanged(text: String)

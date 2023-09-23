@@ -1,5 +1,6 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.SetGroupConfig
@@ -15,17 +16,21 @@ import com.matttax.erica.domain.usecases.translate.GetExamplesUseCase
 import com.matttax.erica.domain.usecases.translate.GetTranslationsUseCase
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
-import com.matttax.erica.presentation.viewmodels.TranslateViewModel
+import com.matttax.erica.presentation.viewmodels.StatefulObservable
+import com.matttax.erica.presentation.viewmodels.TranslateInteractor
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class TranslateViewModelImpl @Inject constructor(
+@HiltViewModel
+class TranslateViewModel @Inject constructor(
     private val getTranslationsUseCase: GetTranslationsUseCase,
     private val getDefinitionsUseCase: GetDefinitionsUseCase,
     private val getExamplesUseCase: GetExamplesUseCase,
     private val getSetsUseCase: GetSetsUseCase,
     private val addWordUseCase: AddWordUseCase
-) : ViewModel(), TranslateViewModel {
+) : ViewModel(), TranslateInteractor, StatefulObservable<TranslateState?> {
 
     private val translateStateFlow = MutableStateFlow<TranslateState?>(null)
 
@@ -36,9 +41,13 @@ class TranslateViewModelImpl @Inject constructor(
     private val translationsDataStateFlow = MutableStateFlow<DataState?>(null)
     private val definitionsDataStateFlow = MutableStateFlow<DataState?>(null)
     private val examplesDataStateFlow = MutableStateFlow<DataState?>(null)
+    private val isAddableFlow = MutableStateFlow<Boolean?>(false)
 
     private val currentSetIdFlow = MutableStateFlow<Long?>(null)
     private val currentSetsFlow = MutableStateFlow<List<SetDomainModel>?>(null)
+
+    var lastTranslatedCache: String? = null
+        private set
 
     init {
         combine(
@@ -50,7 +59,8 @@ class TranslateViewModelImpl @Inject constructor(
             definitionsDataStateFlow,
             examplesDataStateFlow,
             currentSetsFlow,
-            currentSetIdFlow
+            currentSetIdFlow,
+            isAddableFlow
         ) {
             array ->
             TranslateState(
@@ -62,7 +72,8 @@ class TranslateViewModelImpl @Inject constructor(
                 array[5] as DataState?,
                 array[6] as DataState?,
                 array[7] as List<SetDomainModel>?,
-                array[8] as Long?
+                array[8] as Long?,
+                array[9] as Boolean?
             )
         }.onEach {
             translateStateFlow.value = it
@@ -71,16 +82,36 @@ class TranslateViewModelImpl @Inject constructor(
 
     override fun observeState(): Flow<TranslateState?> = translateStateFlow.asStateFlow()
 
+    override fun getCurrentState(): TranslateState? = translateStateFlow.value
+
     override fun onInputTextLanguageChanged(language: String) {
+        val newLanguage = Language(language)
+        if (newLanguage == languageInFlow.value)
+            return
         languageInFlow.value = Language(language)
+        isAddableFlow.value = false
     }
 
     override fun onOutputLanguageChanged(language: String) {
-        languageOutFlow.value = Language(language)
+        val newLanguage = Language(language)
+        if (newLanguage == languageOutFlow.value)
+            return
+        languageOutFlow.value = newLanguage
+        isAddableFlow.value = false
     }
 
     override fun onInputTextChanged(text: String) {
         textInFlow.value = text
+        if (text == lastTranslatedCache
+            && (translationsDataStateFlow.value == DataState.Loading
+            || definitionsDataStateFlow.value == DataState.Loading
+            || examplesDataStateFlow.value == DataState.Loading)
+        ) {
+            viewModelScope.launch {
+                onTranslateAction()
+            }
+        }
+        isAddableFlow.value = text == lastTranslatedCache
     }
 
     override fun onOutputTextChanged(text: String) {
@@ -91,6 +122,7 @@ class TranslateViewModelImpl @Inject constructor(
         val text = textInFlow.value
         val languageIn = languageInFlow.value
         val languageOut = languageOutFlow.value
+        lastTranslatedCache = text
         if (text.isNullOrBlank() || languageIn == null || languageOut == null) {
             translationsDataStateFlow.value = DataState.NotFound
             definitionsDataStateFlow.value = DataState.NotFound
@@ -109,9 +141,10 @@ class TranslateViewModelImpl @Inject constructor(
         )
         getTranslationsUseCase.execute(request) {
             translationsDataStateFlow.value = when {
-                it.size <= 1 && it.first().endsWith("Error@") -> DataState.NotFound
+                it.size <= 1 && it.firstOrNull()?.endsWith("Error@") ?: true -> DataState.NotFound
                 else -> DataState.LoadedInfo(it)
             }
+            isAddableFlow.value = true
         }
         getDefinitionsUseCase.execute(request) {
             definitionsDataStateFlow.value = when {
@@ -121,7 +154,7 @@ class TranslateViewModelImpl @Inject constructor(
         }
         getExamplesUseCase.execute(request) {
             examplesDataStateFlow.value = when {
-                it.size <= 1 && it.first().text.endsWith("Error@") -> DataState.NotFound
+                it.size <= 1 && it.firstOrNull()?.text?.endsWith("Error@") ?: true -> DataState.NotFound
                 else -> DataState.LoadedInfo(it)
             }
         }
@@ -130,9 +163,9 @@ class TranslateViewModelImpl @Inject constructor(
     override fun onTranslationSelected(translation: String) = onOutputTextChanged(translation)
 
     override fun onClear() {
-        translationsDataStateFlow.value = null
-        definitionsDataStateFlow.value = null
-        examplesDataStateFlow.value = null
+//        translationsDataStateFlow.value = null
+//        definitionsDataStateFlow.value = null
+//        examplesDataStateFlow.value = null
     }
 
     override suspend fun onAddAction() {

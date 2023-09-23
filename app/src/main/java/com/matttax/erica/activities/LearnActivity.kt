@@ -5,21 +5,19 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import com.matttax.erica.R
 import com.matttax.erica.databinding.ActivityLearnBinding
 import com.matttax.erica.dialogs.impl.AfterBatchDialog
 import com.matttax.erica.dialogs.impl.WordAnsweredDialog
 import com.matttax.erica.domain.config.*
 import com.matttax.erica.presentation.states.StudyState
-import com.matttax.erica.presentation.viewmodels.StudyViewModel
-import com.matttax.erica.presentation.viewmodels.impl.StudyViewModelImpl
+import com.matttax.erica.presentation.viewmodels.impl.StudyViewModel
 import com.matttax.erica.speechtotext.WordSpeller
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -34,8 +32,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LearnActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var studyViewModel: StudyViewModel
+    private val studyViewModel: StudyViewModel by viewModels()
 
     @Inject
     lateinit var wordSpeller: WordSpeller

@@ -12,7 +12,9 @@ import com.matttax.erica.domain.usecases.words.crud.GetWordsUseCase
 import com.matttax.erica.domain.usecases.words.crud.MoveWordsUseCase
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.states.WordsState
-import com.matttax.erica.presentation.viewmodels.WordsViewModel
+import com.matttax.erica.presentation.viewmodels.StatefulObservable
+import com.matttax.erica.presentation.viewmodels.WordsInteractor
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -22,13 +24,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class WordsViewModelImpl @Inject constructor(
+@HiltViewModel
+class WordsViewModel @Inject constructor(
     private val getWordsUseCase: GetWordsUseCase,
     private val moveWordsUseCase: MoveWordsUseCase,
     private val deleteWordsUseCase: DeleteWordsUseCase,
     private val getSetsUseCase: GetSetsUseCase,
     private val addWordUseCase: AddWordUseCase
-) : ViewModel(), WordsViewModel {
+) : ViewModel(), WordsInteractor, StatefulObservable<WordsState?> {
 
     private val wordsStateFlow = MutableStateFlow<WordsState?>(null)
     private val wordsListFlow = MutableStateFlow<List<WordDomainModel>?>(null)
@@ -52,6 +55,8 @@ class WordsViewModelImpl @Inject constructor(
     }
 
     override fun observeState(): Flow<WordsState?> = wordsStateFlow.asStateFlow()
+
+    override fun getCurrentState(): WordsState? = wordsStateFlow.value
 
     override fun onWordSelected(position: Int) {
         selectedWordsPositionsListFlow.value = selectedWordsPositionsListFlow.value?.plus(position)

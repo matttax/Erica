@@ -1,8 +1,8 @@
 package com.matttax.erica.activities
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.matttax.erica.adaptors.SetAdaptor
@@ -13,7 +13,8 @@ import com.matttax.erica.dialogs.impl.DeleteDialog
 import com.matttax.erica.domain.config.AskMode
 import com.matttax.erica.domain.config.WordsSorting
 import com.matttax.erica.presentation.states.SetsState
-import com.matttax.erica.presentation.viewmodels.SetsViewModel
+import com.matttax.erica.presentation.viewmodels.SetsInteractor
+import com.matttax.erica.presentation.viewmodels.impl.SetsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,8 +28,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SetsActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var setsViewModel: SetsViewModel
+    private val setsViewModel: SetsViewModel by viewModels()
 
     private lateinit var binding: ActivitySetsBinding
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

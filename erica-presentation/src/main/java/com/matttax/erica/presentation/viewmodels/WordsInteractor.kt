@@ -2,9 +2,8 @@ package com.matttax.erica.presentation.viewmodels
 
 import com.matttax.erica.domain.config.WordGroupConfig
 import com.matttax.erica.presentation.model.translate.TranslatedText
-import com.matttax.erica.presentation.states.WordsState
 
-interface WordsViewModel: StateViewModel<WordsState?> {
+interface WordsInteractor {
     fun onWordSelected(position: Int)
     fun onWordDeselected(position: Int)
     fun onDeselectAll()

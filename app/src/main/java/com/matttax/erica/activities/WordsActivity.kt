@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
 import android.widget.LinearLayout
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -31,20 +32,19 @@ import com.matttax.erica.presentation.model.translate.TextCardState
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.WordsState
-import com.matttax.erica.presentation.viewmodels.WordsViewModel
+import com.matttax.erica.presentation.viewmodels.impl.WordsViewModel
 import com.matttax.erica.speechtotext.WordSpeller
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class WordsActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var wordsViewModel: WordsViewModel
+    private val wordsViewModel: WordsViewModel by viewModels()
+
     lateinit var binding: ActivityWordsBinding
     private val wordSpeller = WordSpeller(this)
 

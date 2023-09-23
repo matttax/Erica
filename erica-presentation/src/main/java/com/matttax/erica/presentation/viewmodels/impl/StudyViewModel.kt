@@ -11,14 +11,17 @@ import com.matttax.erica.presentation.model.study.StudiedWord
 import com.matttax.erica.presentation.model.study.StudiedWordState
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.states.StudyState
-import com.matttax.erica.presentation.viewmodels.StudyViewModel
+import com.matttax.erica.presentation.viewmodels.StatefulObservable
+import com.matttax.erica.presentation.viewmodels.StudyInteractor
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
-class StudyViewModelImpl @Inject constructor(
+@HiltViewModel
+class StudyViewModel @Inject constructor(
     private val getWordsUseCase: GetWordsUseCase,
     private val wordAnsweredUseCase: WordAnsweredUseCase,
-): ViewModel(), StudyViewModel {
+): ViewModel(), StudyInteractor, StatefulObservable<StudyState?> {
 
     private var batchSize = 0
     private var remaining = 0
@@ -58,6 +61,8 @@ class StudyViewModelImpl @Inject constructor(
     }
 
     override fun observeState(): Flow<StudyState?> = studyStateFlow.asStateFlow()
+
+    override fun getCurrentState(): StudyState? = studyStateFlow.value
 
     override suspend fun onGetWords(studyConfig: StudyConfig) {
         getWordsUseCase.execute(studyConfig.wordGroupConfig) {

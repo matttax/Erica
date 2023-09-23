@@ -1,9 +1,10 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
-import android.os.Build
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.matttax.erica.domain.config.SetGroupConfig
 import com.matttax.erica.domain.config.SetSorting
 import com.matttax.erica.domain.model.SetDomainModel
@@ -12,17 +13,20 @@ import com.matttax.erica.domain.usecases.sets.crud.DeleteSetUseCase
 import com.matttax.erica.domain.usecases.sets.crud.GetSetsUseCase
 import com.matttax.erica.domain.usecases.sets.crud.UpdateSetUseCase
 import com.matttax.erica.presentation.states.SetsState
-import com.matttax.erica.presentation.viewmodels.SetsViewModel
+import com.matttax.erica.presentation.viewmodels.SetsInteractor
+import com.matttax.erica.presentation.viewmodels.StatefulObservable
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class SetsViewModelImpl @Inject constructor(
+@HiltViewModel
+class SetsViewModel @Inject constructor(
     private val getSetsUseCase: GetSetsUseCase,
     private val addSetUseCase: AddSetUseCase,
     private val deleteSetUseCase: DeleteSetUseCase,
     private val updateSetUseCase: UpdateSetUseCase,
-) : ViewModel(), SetsViewModel {
+) : ViewModel(), SetsInteractor, StatefulObservable<SetsState?> {
 
     private val setsStateFlow = MutableStateFlow<SetsState?>(null)
     private val setsFlow = MutableStateFlow<List<SetDomainModel>?>(null)
@@ -34,6 +38,8 @@ class SetsViewModelImpl @Inject constructor(
     }
 
     override fun observeState(): Flow<SetsState?> = setsStateFlow.asStateFlow()
+
+    override fun getCurrentState(): SetsState? = setsStateFlow.value
 
     override suspend fun onAddAction(name: String, description: String) {
         addSetUseCase.execute(name to description) {

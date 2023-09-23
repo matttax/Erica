@@ -79,5 +79,7 @@ dependencies {
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2'
     implementation 'com.google.dagger:hilt-android:2.44'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation 'androidx.activity:activity-ktx:1.7.2'
     kapt 'com.google.dagger:hilt-compiler:2.44'
 }
