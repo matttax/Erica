@@ -10,7 +10,7 @@ import com.google.android.material.button.MaterialButton
 
 abstract class Dialog(context: Context, resource: Int) {
 
-    val dialog: AlertDialog
+    protected val dialog: AlertDialog
     protected val dialogView: View
 
     lateinit var dismissButton: MaterialButton

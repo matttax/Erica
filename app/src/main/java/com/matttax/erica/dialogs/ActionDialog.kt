@@ -1,14 +1,12 @@
 package com.matttax.erica.dialogs
 
-import android.app.Activity
 import android.content.Context
-import android.service.autofill.OnClickAction
 import android.view.View
 import com.google.android.material.button.MaterialButton
 
 abstract class ActionDialog(
     context: Context, resource: Int
-): Dialog(context as Activity, resource) {
+): Dialog(context, resource) {
 
     lateinit var actionButton: MaterialButton
 

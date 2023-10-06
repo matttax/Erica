@@ -31,7 +31,7 @@ import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModel
 import com.matttax.erica.speechtotext.WordSpeller
-import com.matttax.erica.utils.LanguageUtils.Companion.getLanguageCode
+import com.matttax.erica.utils.Utils.getLanguageCode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flowOn
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.toSetsButton.setOnClickListener {
-            startActivity(Intent(this@MainActivity, SetsActivity::class.java))
+            startActivity(Intent(this@MainActivity, ChoiceActivity::class.java))
         }
 
         binding.termTextField.apply {
@@ -206,7 +206,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setData(translateState: TranslateState) {
-        Log.i("Set data", translateState.toString())
         currentSet = translateState.currentSetId ?: -1
         lastTranslateState = translateState
         binding.setSpinner.adapter = ArrayAdapter(

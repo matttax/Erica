@@ -108,12 +108,12 @@ class WordsRepositoryImpl @Inject constructor(
 
     private fun sortingToQuery(wordsSorting: WordsSorting): String {
         return when(wordsSorting) {
-            WordsSorting.LAST_ADDED_FIRST -> "$SETS_COLUMN_ID ASC"
-            WordsSorting.FIRST_ADDED_FIRST -> "$SETS_COLUMN_ID DESC"
+            WordsSorting.LAST_ADDED_FIRST -> "$SETS_COLUMN_ID DESC"
+            WordsSorting.FIRST_ADDED_FIRST -> "$SETS_COLUMN_ID ASC"
             WordsSorting.BEST_ANSWERED_FIRST -> "$WORDS_COLUMN_TIMES_CORRECT / CAST(${WORDS_COLUMN_TIMES_ASKED} as float) DESC"
             WordsSorting.WORST_ANSWERED_FIRST -> "$WORDS_COLUMN_TIMES_CORRECT / CAST(${WORDS_COLUMN_TIMES_ASKED} as float) ASC"
-            WordsSorting.LONG_AGO_ASKED_FIRST -> "$WORDS_COLUMN_LAST_ASKED_TIMESTAMP DESC"
-            WordsSorting.RECENTLY_ASKED_FIRST -> "$WORDS_COLUMN_LAST_ASKED_TIMESTAMP ASC"
+            WordsSorting.RECENTLY_ASKED_FIRST -> "$WORDS_COLUMN_LAST_ASKED_TIMESTAMP DESC"
+            WordsSorting.LONG_AGO_ASKED_FIRST -> "$WORDS_COLUMN_LAST_ASKED_TIMESTAMP ASC"
             WordsSorting.RANDOM -> "RANDOM()"
         }
     }

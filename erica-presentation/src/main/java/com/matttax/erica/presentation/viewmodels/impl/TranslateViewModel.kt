@@ -1,6 +1,5 @@
 package com.matttax.erica.presentation.viewmodels.impl
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.SetGroupConfig

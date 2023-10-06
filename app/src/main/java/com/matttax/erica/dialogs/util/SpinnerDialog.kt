@@ -13,8 +13,8 @@ class SpinnerDialog(
     text: String,
     onOk: (Int) -> Unit = {}
 ): Dialog(context, R.layout.words_to_study) {
-    val wordsToBeStudied: NumberPicker = dialogView.findViewById(R.id.wordsNumberPicker)
-    val wordsText: TextView = dialogView.findViewById(R.id.words_text)
+    private val wordsToBeStudied: NumberPicker = dialogView.findViewById(R.id.wordsNumberPicker)
+    private val wordsText: TextView = dialogView.findViewById(R.id.words_text)
 
     init {
         initDismissButton(R.id.ok_num_of_words)
