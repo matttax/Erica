@@ -1,8 +1,15 @@
 package com.matttax.erica.utils
 
+import android.app.Activity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.matttax.erica.domain.config.SetId
 import com.matttax.erica.domain.config.WordGroupConfig
 import com.matttax.erica.domain.config.WordsSorting
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 object Utils {
 
@@ -15,7 +22,7 @@ object Utils {
         else -> "en"
     }
 
-    fun getConfigByPosition(id: Int, position: Int): WordGroupConfig {
+    fun getConfigByPosition(id: Long, position: Int): WordGroupConfig {
         return when (position) {
             0 -> WordGroupConfig(
                 setId = SetId.One(id),
@@ -40,4 +47,11 @@ object Utils {
             else -> WordGroupConfig()
         }
     }
+
+    fun Activity.getScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    fun Activity.launchSuspend(action: suspend () -> Unit) = getScope().launch { action() }
+
+    fun Fragment.launchSuspend(action: suspend () -> Unit) =
+        viewLifecycleOwner.lifecycleScope.launch { action() }
 }

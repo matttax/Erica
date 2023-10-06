@@ -19,14 +19,13 @@ import com.matttax.erica.domain.config.*
 import com.matttax.erica.presentation.states.StudyState
 import com.matttax.erica.presentation.viewmodels.impl.StudyViewModel
 import com.matttax.erica.speechtotext.WordSpeller
+import com.matttax.erica.utils.Utils.getScope
+import com.matttax.erica.utils.Utils.launchSuspend
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -39,8 +38,6 @@ class LearnActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLearnBinding
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
     private var dialogOnScreen = false
     private var doNotKnowFlag = false
 
@@ -51,11 +48,11 @@ class LearnActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val batchSize = intent.getIntExtra(BATCH_SIZE_EXTRA_NAME, 7)
-        val setId = intent.getIntExtra(SET_ID_EXTRA_NAME, -1)
+        val setId = intent.getLongExtra(SET_ID_EXTRA_NAME, -1)
         val wordsCount = intent.getIntExtra(WORDS_COUNT_EXTRA_NAME, -1)
         val wordsSorting = intent.getIntExtra(WORDS_SORTING_EXTRA_NAME, -1).toWordSorting()
         val askMode = intent.getIntExtra(ASK_MODE_EXTRA_NAME, -1).toAskMode()
-        if (setId == -1 || wordsCount == -1) {
+        if (setId == -1L || wordsCount == -1) {
             finish()
         }
 
@@ -66,9 +63,9 @@ class LearnActivity : AppCompatActivity() {
                     it?.let { data -> setData(data) }
                 }
             }
-            .launchIn(scope)
+            .launchIn(getScope())
 
-        scope.launch {
+        launchSuspend {
             studyViewModel.onGetWords(
                 StudyConfig(
                     wordGroupConfig = WordGroupConfig(
@@ -88,7 +85,7 @@ class LearnActivity : AppCompatActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.definitionInputField.setOnKeyListener(View.OnKeyListener { _, i, keyEvent ->
             if ((keyEvent.action == KeyEvent.ACTION_DOWN) && (i == KeyEvent.KEYCODE_ENTER)) {
-                scope.launch {
+                launchSuspend {
                     val text = binding.definitionInputField.text.toString()
                     if (text.isBlank()) {
                         doNotKnowFlag = true
@@ -104,7 +101,7 @@ class LearnActivity : AppCompatActivity() {
         }
         binding.doNotKnow.setOnClickListener {
             doNotKnowFlag = true
-            scope.launch {
+            launchSuspend {
                 studyViewModel.onWordAnswered("")
             }
         }
@@ -162,7 +159,7 @@ class LearnActivity : AppCompatActivity() {
                         }
                     },
                     onNotIncorrect = {
-                        scope.launch {
+                        launchSuspend {
                             studyViewModel.onWordForceCorrectAnswer()
                         }
                     }
@@ -191,7 +188,7 @@ class LearnActivity : AppCompatActivity() {
 
         fun start(
             context: Context,
-            setId: Int,
+            setId: Long,
             batchSize: Int = 7,
             wordsCount: Int = Int.MAX_VALUE,
             wordsSorting: WordsSorting = WordsSorting.RANDOM,

@@ -13,7 +13,7 @@ import com.matttax.erica.dialogs.util.SpinnerDialog
 class StartLearnDialog(
     private val context: Context,
     wordsCount: Int,
-    setId: Int
+    setId: Long
 ): ActionDialog(context, R.layout.start_learn_dialog) {
 
     private val studyPriority: Spinner = dialogView.findViewById(R.id.priority)

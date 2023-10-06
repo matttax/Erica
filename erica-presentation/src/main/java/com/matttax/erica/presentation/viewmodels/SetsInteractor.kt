@@ -4,5 +4,5 @@ interface SetsInteractor {
     suspend fun onGetSets()
     suspend fun onAddSetAction(name: String, description: String)
     suspend fun onUpdateSetAction(id: Long, name: String, description: String)
-    suspend fun onDeleteSetById(id: Int)
+    suspend fun onDeleteSetById(id: Long)
 }

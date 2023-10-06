@@ -3,7 +3,6 @@ package com.matttax.erica.fragments
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
@@ -15,9 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.R
 import com.matttax.erica.adaptors.WordAdaptor
@@ -40,6 +37,7 @@ import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_NAME
 import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_POSITION_KEY
 import com.matttax.erica.utils.ChoiceNavigator.Companion.WORD_COUNT_EXTRA_NAME
 import com.matttax.erica.utils.Utils.getConfigByPosition
+import com.matttax.erica.utils.Utils.launchSuspend
 import com.matttax.erica.utils.getChoiceNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -53,23 +51,19 @@ class WordsFragment : Fragment() {
     @Inject
     lateinit var wordSpeller: WordSpeller
 
+    private lateinit var preferences: SharedPreferences
+
     private val choiceViewModel: ChoiceViewModel by activityViewModels()
-    private val scope by lazy { viewLifecycleOwner.lifecycleScope }
 
     private val binding get() = _binding!!
     private var _binding: FragmentWordsBinding? = null
 
-    private val words = mutableListOf<TranslatedTextCard>()
-    private var wordsSelected: Boolean = false
-
-    private lateinit var sets: List<Pair<Long, String>>
     private lateinit var currentSet: WordSet
-    private lateinit var selected: Set<Int>
+    private var words = mutableListOf<TranslatedTextCard>()
+    private var wordsSelected: Boolean = false
 
     private lateinit var deleteButton: MaterialButton
     private lateinit var moveButton: MaterialButton
-
-    private lateinit var preferences: SharedPreferences
 
     private val orders = listOf(
         "Last changed first",
@@ -93,10 +87,16 @@ class WordsFragment : Fragment() {
     ): View {
         _binding = FragmentWordsBinding.inflate(inflater)
         initButtons()
+        wordsSelected = choiceViewModel.getSelectedPositions().isNotEmpty()
         getChoiceNavigator().apply {
+            notifyWordsSelected(wordsSelected)
             listenBackPressed(viewLifecycleOwner) {
+                choiceViewModel.getSelectedPositions().forEach {
+                    words[it] = words[it].copy(isSelected = false)
+                    binding.wordsList.adapter?.notifyItemChanged(it)
+                }
                 choiceViewModel.onDeselectAll()
-                binding.wordsList.adapter!!.notifyDataSetChanged()
+                wordsSelected = false
                 updateHead()
                 notifyWordsSelected(false)
             }
@@ -111,7 +111,7 @@ class WordsFragment : Fragment() {
                     }
                 }
             }
-            .launchIn(scope)
+            .launchIn(viewLifecycleOwner.lifecycleScope)
         return binding.root
     }
 
@@ -132,7 +132,7 @@ class WordsFragment : Fragment() {
                     id: Long
                 ) {
                     words.clear()
-                    scope.launch {
+                    launchSuspend {
                         choiceViewModel.onGetSets()
                         choiceViewModel.onGetWords(getConfigByPosition(currentSet.id, position))
                     }
@@ -156,6 +156,15 @@ class WordsFragment : Fragment() {
                 } else {
                     choiceViewModel.onWordSelected(it)
                 }
+                words[it] = words[it].copy(isSelected = !words[it].isSelected)
+                binding.wordsList.adapter?.notifyItemChanged(it)
+                if (wordsSelected && choiceViewModel.getSelectedPositions().isEmpty()) {
+                    wordsSelected = false
+                    onSelectionChanged()
+                } else if (!wordsSelected && choiceViewModel.getSelectedPositions().isNotEmpty()) {
+                    wordsSelected = true
+                    onSelectionChanged()
+                }
             },
             onSpell = { button, text ->
                 button.setColorFilter(Color.argb(255, 255, 165, 0))
@@ -169,7 +178,7 @@ class WordsFragment : Fragment() {
                     headerText = "Ready to remove this word?",
                     detailedExplanationText = null
                 ) {
-                    scope.launch {
+                    launchSuspend {
                         choiceViewModel.onDeleteWordAt(it)
                     }
                     words.removeAt(it)
@@ -186,7 +195,7 @@ class WordsFragment : Fragment() {
                     onSuccess = { text, translation ->
                         run {
                             val newWord = words[it].translatedText.copy(text = text, translation = translation)
-                            scope.launch {
+                            launchSuspend {
                                 choiceViewModel.onDeleteWordAt(it)
                                 choiceViewModel.onAddWord(newWord)
                             }
@@ -209,17 +218,15 @@ class WordsFragment : Fragment() {
         }
     }
 
+    private fun onSelectionChanged() {
+        getChoiceNavigator().notifyWordsSelected(wordsSelected)
+        updateHead()
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     private fun setData(wordsState: WordsState) {
-        sets = wordsState.setsList
-            ?.map { it.id to it.name }
-            ?.filter { it.first != currentSet.id.toLong() }
-            ?: emptyList()
-        selected = wordsState.selectedWords ?: emptySet()
-
-        if (words.isEmpty()) {
-            loadWords(wordsState)
-        }
+        loadWords(wordsState)
+        val selected = choiceViewModel.getSelectedPositions()
         words.withIndex().forEach {
             if (it.value.isSelected && it.index !in selected) {
                 words[it.index] = words[it.index].copy(isSelected = false)
@@ -233,13 +240,12 @@ class WordsFragment : Fragment() {
         } else {
             wordsSelected = false
         }
-        getChoiceNavigator().notifyWordsSelected(wordsSelected)
-        binding.sortByWords.visibility = if (wordsSelected) View.INVISIBLE else View.VISIBLE
         binding.wordsList.adapter?.notifyDataSetChanged()
         updateHead()
     }
 
     private fun loadWords(wordsState: WordsState) {
+        words.clear()
         wordsState.words?.let { wordList ->
             for (word in wordList.withIndex()) {
                 words.add(
@@ -260,6 +266,7 @@ class WordsFragment : Fragment() {
     }
 
     private fun updateHead() {
+        binding.sortByWords.visibility = if (wordsSelected) View.INVISIBLE else View.VISIBLE
         binding.startLearn.removeAllViews()
         if (wordsSelected) {
             binding.startLearn.apply {
@@ -274,6 +281,7 @@ class WordsFragment : Fragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initButtons() {
         moveButton = getButton(
             layoutParams = LinearLayout.LayoutParams(
@@ -284,16 +292,21 @@ class WordsFragment : Fragment() {
             text = "Move",
             color = R.color.blue
         ) {
+            val sets =
+                choiceViewModel.setsStateObservable.getCurrentState()?.sets
+                    ?.filter { it.id != currentSet.id }
+                    ?.take(15)
+                    ?.map { it.name to it.id }
+            if (sets.isNullOrEmpty())
+                return@getButton
             MoveDialog(
                 context = requireActivity(),
-                sets = sets.map { it.second }
+                sets = sets.map { it.first }
             ) {
-                scope.launch {
-                    choiceViewModel.onMoveSelectedWords(sets[it].first)
+                launchSuspend {
+                    choiceViewModel.onMoveSelectedWords(sets[it].second)
                 }
-                removeSelected()
             }.showDialog()
-            binding.wordsList.adapter?.notifyItemRangeChanged(0, words.size - 1)
             updateHead()
         }
 
@@ -308,15 +321,17 @@ class WordsFragment : Fragment() {
         ) {
             DeleteDialog(
                 context = requireActivity(),
-                headerText = "Ready to remove ${selected.size} words?",
+                headerText = "Ready to remove ${choiceViewModel.getSelectedPositions().size} words?",
                 detailedExplanationText = null
             ) {
-                scope.launch {
+                choiceViewModel.getSelectedPositions().forEach {
+                    words.removeAt(it)
+                    binding.wordsList.adapter?.notifyItemRemoved(it)
+                }
+                launchSuspend {
                     choiceViewModel.onDeleteSelected()
                 }
-                removeSelected()
             }.showDialog()
-            binding.wordsList.adapter?.notifyItemRangeChanged(0, words.size - 1)
             updateHead()
         }
     }
@@ -337,16 +352,8 @@ class WordsFragment : Fragment() {
         setOnClickListener(onClick)
     }
 
-    private fun removeSelected() {
-        var count = 0
-        selected.forEach {
-            words.removeAt(it - count)
-            count++
-        }
-    }
-
     private fun getSetFromBundle(bundle: Bundle?): WordSet {
-        val setId = bundle?.getInt(SET_ID_EXTRA_NAME) ?: 1
+        val setId = bundle?.getLong(SET_ID_EXTRA_NAME) ?: 1
         val setName = bundle?.getString(SET_NAME_EXTRA_NAME).toString()
         val setDescription = bundle?.getString(SET_DESCRIPTION_EXTRA_NAME).toString()
         val wordsCount = bundle?.getInt(WORD_COUNT_EXTRA_NAME) ?: 1
@@ -359,7 +366,7 @@ class WordsFragment : Fragment() {
         fun getInstance(set: WordSet): WordsFragment {
             val args = Bundle().apply {
                 with(set) {
-                    putInt(SET_ID_EXTRA_NAME, id)
+                    putLong(SET_ID_EXTRA_NAME, id)
                     putString(SET_NAME_EXTRA_NAME, name)
                     putString(SET_DESCRIPTION_EXTRA_NAME, description)
                     putInt(WORD_COUNT_EXTRA_NAME, wordsCount)

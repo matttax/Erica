@@ -42,7 +42,7 @@ class ChoiceViewModel @Inject constructor(
 
     private val setsFlow = MutableStateFlow<List<SetDomainModel>?>(null)
     private val wordsListFlow = MutableStateFlow<List<WordDomainModel>?>(null)
-    private val selectedWordsPositionsListFlow = MutableStateFlow<Set<Int>?>(emptySet())
+    private val selectedWordsPositions = mutableSetOf<Int>()
 
     private var setId: Long = -1
     private var defaultWordGroupConfig = WordGroupConfig()
@@ -62,14 +62,8 @@ class ChoiceViewModel @Inject constructor(
             setsStateFlow.value = SetsState(it)
         }.launchIn(viewModelScope)
 
-        combine(
-            wordsListFlow,
-            selectedWordsPositionsListFlow,
-            setsFlow
-        ) { words, selectedWords, sets ->
-            WordsState(words, selectedWords, sets)
-        }.onEach {
-            wordsStateFlow.value = it
+        wordsListFlow.onEach {
+            wordsStateFlow.value = WordsState(it)
         }.launchIn(viewModelScope)
     }
 
@@ -99,20 +93,20 @@ class ChoiceViewModel @Inject constructor(
     }
 
     override fun onWordSelected(position: Int) {
-        selectedWordsPositionsListFlow.value = selectedWordsPositionsListFlow.value?.plus(position)
+        selectedWordsPositions.add(position)
     }
 
     override fun onWordDeselected(position: Int) {
-        selectedWordsPositionsListFlow.value = selectedWordsPositionsListFlow.value?.minus(position)
+        selectedWordsPositions.remove(position)
     }
 
     override fun onDeselectAll() {
-        selectedWordsPositionsListFlow.value = emptySet()
+        selectedWordsPositions.clear()
     }
 
     override suspend fun onGetWords(wordGroupConfig: WordGroupConfig) {
         if (defaultWordGroupConfig != wordGroupConfig) {
-            selectedWordsPositionsListFlow.value = emptySet()
+            onDeselectAll()
         }
         defaultWordGroupConfig = wordGroupConfig
         this.setId = (wordGroupConfig.setId as? SetId.One)?.id?.toLong() ?: -1L
@@ -122,35 +116,38 @@ class ChoiceViewModel @Inject constructor(
     }
 
     override suspend fun onMoveSelectedWords(toId: Long) {
-        if (selectedWordsPositionsListFlow.value.isNullOrEmpty()) {
+        if (selectedWordsPositions.isEmpty()) {
             return
         }
-        val positions = selectedWordsPositionsListFlow.value ?: emptyList()
         val ids = mutableListOf<Long>()
         wordsListFlow.value?.let { list ->
             for (word in list.withIndex()) {
-                if (word.index in positions) {
+                if (word.index in selectedWordsPositions) {
                     word.value.id?.let { ids.add(it) }
                 }
             }
         }
         moveWordsUseCase.execute(
             MoveWordsRequest(
-                idFrom = setId.toInt(),
+                idFrom = setId,
                 idTo = toId,
                 words = ids
             )
         ) {
             if (it) {
                 onDeselectAll()
+                viewModelScope.launch {
+                    onGetWords(defaultWordGroupConfig)
+                    onGetSets()
+                }
             }
         }
     }
 
-    override suspend fun onDeleteSetById(id: Int) {
-        deleteSetUseCase.execute(id.toLong()) {
+    override suspend fun onDeleteSetById(id: Long) {
+        deleteSetUseCase.execute(id) {
             val list = setsFlow.value?.toMutableList() ?: mutableListOf()
-            list.removeIf { it.id == id.toLong() }
+            list.removeIf { it.id == id }
             setsFlow.value = list.toList()
         }
     }
@@ -159,13 +156,15 @@ class ChoiceViewModel @Inject constructor(
         wordsListFlow.value?.get(position)?.id?.let {
             deleteWordsUseCase.execute(it to setId) {}
             onWordDeselected(position)
+            onGetSets()
         }
     }
 
     override suspend fun onDeleteSelected() {
-        selectedWordsPositionsListFlow.value?.forEach {
+        getSelectedPositions().forEach {
             onDeleteWordAt(it)
         }
+        onGetWords(defaultWordGroupConfig)
     }
 
     override suspend fun onAddWord(translatedText: TranslatedText) {
@@ -182,5 +181,9 @@ class ChoiceViewModel @Inject constructor(
                 onGetWords(defaultWordGroupConfig)
             }
         }
+    }
+
+    fun getSelectedPositions(): Set<Int> {
+        return selectedWordsPositions.toSet()
     }
 }

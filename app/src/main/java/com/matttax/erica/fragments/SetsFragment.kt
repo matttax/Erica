@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.adaptors.SetAdaptor
@@ -23,25 +24,23 @@ import com.matttax.erica.presentation.viewmodels.impl.ChoiceViewModel
 import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_NAME
 import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_POSITION_KEY
 import com.matttax.erica.utils.Utils.getConfigByPosition
+import com.matttax.erica.utils.Utils.launchSuspend
 import com.matttax.erica.utils.getChoiceNavigator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SetsFragment : Fragment() {
 
+    private lateinit var preferences: SharedPreferences
+
     private val choiceViewModel: ChoiceViewModel by activityViewModels()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val binding get() = _binding!!
     private var _binding: FragmentSetsBinding? = null
 
     private var sets: List<WordSet> = emptyList()
-    private lateinit var preferences: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,7 +59,7 @@ class SetsFragment : Fragment() {
                         data?.let { setData(it) }
                     }
                 }
-            }.launchIn(scope)
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
 
         preferences = requireActivity()
             .getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
@@ -73,7 +72,7 @@ class SetsFragment : Fragment() {
                 secondField = "Description" to "",
                 ignoreSecondField = true,
                 onSuccess = { name, description ->
-                    scope.launch {
+                    launchSuspend {
                         choiceViewModel.onAddSetAction(name, description)
                         requireActivity().runOnUiThread {
                             loadSets()
@@ -90,7 +89,7 @@ class SetsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        scope.launch {
+        launchSuspend {
             choiceViewModel.onGetSets()
         }
     }
@@ -103,7 +102,7 @@ class SetsFragment : Fragment() {
     private fun setData(setsState: SetsState) {
         sets = setsState.sets?.map {
             WordSet(
-                id = it.id.toInt(),
+                id = it.id,
                 name = it.name,
                 description = it.description ?: " ",
                 wordsCount = it.wordsCount ?: 0
@@ -118,7 +117,7 @@ class SetsFragment : Fragment() {
             context = requireActivity(),
             sets = sets,
             onClick = {
-                scope.launch {
+                launchSuspend {
                     choiceViewModel.onGetWords(
                         getConfigByPosition(
                             sets[it].id,
@@ -147,7 +146,7 @@ class SetsFragment : Fragment() {
                     headerText = "Sure?",
                     detailedExplanationText = "If you delete the set, all containing words are lost"
                 ) {
-                    scope.launch {
+                    launchSuspend {
                         choiceViewModel.onDeleteSetById(sets[it].id)
                     }
                 }.showDialog()
@@ -161,8 +160,8 @@ class SetsFragment : Fragment() {
                     ignoreSecondField = true,
                     onSuccess = {
                             name, description -> run {
-                        scope.launch {
-                            choiceViewModel.onUpdateSetAction(sets[it].id.toLong(), name, description)
+                        launchSuspend {
+                            choiceViewModel.onUpdateSetAction(sets[it].id, name, description)
                         }
                     }
                     }

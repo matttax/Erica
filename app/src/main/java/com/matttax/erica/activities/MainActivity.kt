@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.text.SpannableStringBuilder
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
@@ -32,6 +31,8 @@ import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModel
 import com.matttax.erica.speechtotext.WordSpeller
 import com.matttax.erica.utils.Utils.getLanguageCode
+import com.matttax.erica.utils.Utils.getScope
+import com.matttax.erica.utils.Utils.launchSuspend
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flowOn
@@ -49,7 +50,6 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var job: Job? = null
     private var lastTranslateState: TranslateState? = null
 
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                     data?.let { setData(it) }
                     updateAdaptor(translateViewModel.lastTranslatedCache == binding.termTextField.text?.toString())
                 }
-            }.launchIn(scope)
+            }.launchIn(getScope())
 
         val preferences = getSharedPreferences(SharedPrefs.NAME, Context.MODE_PRIVATE)
 
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
                 binding.translations.adapter = null
                 translateClicked()
             } else {
-                scope.launch {
+                launchSuspend {
                     translateViewModel.onAddAction()
                 }
                 binding.dismissWord.callOnClick()
@@ -174,13 +174,13 @@ class MainActivity : AppCompatActivity() {
             binding.toSpinner.setSelection(oldPosition)
         }
         binding.startLearn.setOnClickListener {
-            LearnActivity.start(this, currentSet.toInt())
+            LearnActivity.start(this, currentSet)
         }
     }
 
     override fun onStart() {
         super.onStart()
-        scope.launch {
+        launchSuspend {
             translateViewModel.onGetSetsAction()
         }
     }
@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun translateClicked() {
         job?.cancel()
-        job = scope.launch(Dispatchers.Main) {
+        job = getScope().launch(Dispatchers.Main) {
             translateViewModel.onTranslateAction()
         }
     }
