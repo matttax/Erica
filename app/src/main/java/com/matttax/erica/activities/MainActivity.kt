@@ -1,10 +1,8 @@
 package com.matttax.erica.activities
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.text.SpannableStringBuilder
 import android.view.KeyEvent
 import android.view.View
@@ -27,14 +25,17 @@ import com.matttax.erica.domain.model.translate.DictionaryDefinition
 import com.matttax.erica.domain.model.translate.UsageExample
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.DataState
-import com.matttax.erica.presentation.states.TranslateState
+import com.matttax.erica.presentation.states.TextState
+import com.matttax.erica.presentation.model.translate.TranslateState
 import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModel
 import com.matttax.erica.speechtotext.WordSpeller
+import com.matttax.erica.utils.AppSettings
 import com.matttax.erica.utils.Utils.getLanguageCode
 import com.matttax.erica.utils.Utils.getScope
 import com.matttax.erica.utils.Utils.launchSuspend
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -48,12 +49,14 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var wordSpeller: WordSpeller
 
+    @Inject
+    lateinit var appSettings: AppSettings
+
     lateinit var binding: ActivityMainBinding
 
     private var job: Job? = null
     private var lastTranslateState: TranslateState? = null
 
-    private var currentSet = -1L
     private var currentPosition = 0
 
     private val languages = listOf("English", "Russian", "German", "French", "Spanish", "Italian")
@@ -63,16 +66,11 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        translateViewModel.observeState()
-            .flowOn(Dispatchers.Main)
-            .onEach { data ->
-                runOnUiThread {
-                    data?.let { setData(it) }
-                    updateAdaptor(translateViewModel.lastTranslatedCache == binding.termTextField.text?.toString())
-                }
-            }.launchIn(getScope())
+        currentPosition = savedInstanceState?.getInt(SELECTED_SET_KEY) ?: 0
 
-        val preferences = getSharedPreferences(SharedPrefs.NAME, Context.MODE_PRIVATE)
+        observeSets()
+        observeTranslatedState()
+        observeTranslations()
 
         binding.setSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -89,10 +87,7 @@ class MainActivity : AppCompatActivity() {
         binding.termTextField.apply {
             doOnTextChanged { text, _, _, _ ->
                 job?.cancel()
-                with(translateViewModel) {
-                    onInputTextChanged(text.toString())
-                    onClear()
-                }
+                translateViewModel.onInputTextChanged(text.toString())
             }
             setOnKeyListener { _, i, keyEvent ->
                 if ((keyEvent.action == KeyEvent.ACTION_DOWN) && (i == KeyEvent.KEYCODE_ENTER)) {
@@ -107,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.addWord.setOnClickListener {
-            if (binding.addWord.text.toString().lowercase() == Buttons.TRANSLATE_BUTTON_TEXT) {
+            if (binding.addWord.text.toString().lowercase() == TRANSLATE_BUTTON_TEXT) {
                 binding.translations.adapter = null
                 translateClicked()
             } else {
@@ -123,7 +118,6 @@ class MainActivity : AppCompatActivity() {
                 job?.cancel()
                 binding.termTextField.text = SpannableStringBuilder("")
                 binding.defTextField.text = SpannableStringBuilder("")
-                translateViewModel.onClear()
             }
         }
 
@@ -132,36 +126,33 @@ class MainActivity : AppCompatActivity() {
                 object: TabLayout.OnTabSelectedListener {
                     override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
                     override fun onTabReselected(tab: TabLayout.Tab?) = Unit
-                    override fun onTabSelected(tab: TabLayout.Tab?) {
+                    override fun onTabSelected(tab: TabLayout.Tab?) =
                         updateAdaptor(binding.termTextField.text?.toString() == translateViewModel.lastTranslatedCache)
-                    }
                 }
             )
             getTabAt(
-                savedInstanceState?.getInt(SavedState.SELECTED_TAB_KEY) ?: 0
+                savedInstanceState?.getInt(SELECTED_TAB_KEY) ?: 0
             )?.select()
         }
 
         binding.fromSpinner.apply {
             adapter = ArrayAdapter(this@MainActivity, R.layout.sets_spinner_item, languages)
-            setSelection(preferences.getInt(SharedPrefs.FROM_LANGUAGE_KEY, 0))
+            setSelection(appSettings.fromLanguageId)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long)
                 = with(translateViewModel) {
-                    onClear()
                     onInputTextLanguageChanged(getLanguageCode(binding.fromSpinner.selectedItem.toString()))
                 }
             }
         }
         binding.toSpinner.apply {
             adapter = ArrayAdapter(this@MainActivity, R.layout.sets_spinner_item, languages)
-            setSelection(preferences.getInt(SharedPrefs.TO_LANGUAGE_KEY, 1))
+            setSelection(appSettings.toLanguageId)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long)
                 = with(translateViewModel) {
-                    onClear()
                     onOutputLanguageChanged(getLanguageCode(binding.toSpinner.selectedItem.toString()))
                 }
             }
@@ -174,7 +165,7 @@ class MainActivity : AppCompatActivity() {
             binding.toSpinner.setSelection(oldPosition)
         }
         binding.startLearn.setOnClickListener {
-            LearnActivity.start(this, currentSet)
+            translateViewModel.currentSetId?.let { id -> LearnActivity.start(this, id) }
         }
     }
 
@@ -187,38 +178,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        val preferences = getSharedPreferences(SharedPrefs.NAME, Context.MODE_PRIVATE)
-        val editor = preferences.edit()
-        editor.apply {
-            putInt(SharedPrefs.FROM_LANGUAGE_KEY, binding.fromSpinner.selectedItemPosition)
-            putInt(SharedPrefs.TO_LANGUAGE_KEY, binding.toSpinner.selectedItemPosition)
-        }.apply()
+        appSettings.fromLanguageId = binding.fromSpinner.selectedItemPosition
+        appSettings.toLanguageId = binding.toSpinner.selectedItemPosition
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(SavedState.SELECTED_TAB_KEY, binding.tabs.selectedTabPosition)
+        outState.putInt(SELECTED_TAB_KEY, binding.tabs.selectedTabPosition)
+        outState.putInt(SELECTED_SET_KEY, binding.setSpinner.selectedItemPosition)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onRestoreInstanceState(savedInstanceState, persistentState)
-        lastTranslateState?.let { setData(it) }
-    }
-
-    private fun setData(translateState: TranslateState) {
-        currentSet = translateState.currentSetId ?: -1
-        lastTranslateState = translateState
-        binding.setSpinner.adapter = ArrayAdapter(
-            this, R.layout.sets_spinner_item, translateState.sets?.map { it.name } ?: emptyList()
-        ).also {
-            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-        binding.setSpinner.setSelection(currentPosition)
-        if (translateState.isAddable == true) {
-            showAddButtons(translateState.textOut.isNullOrBlank().not())
-        } else {
-            showTranslateButton()
-        }
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        lastTranslateState = TranslateState(
+            translations = translateViewModel.translationsObservable.getCurrentState(),
+            definitions = translateViewModel.definitionsObservable.getCurrentState(),
+            examples = translateViewModel.examplesObservable.getCurrentState()
+        )
+        updateAdaptor(translateViewModel.lastTranslatedCache == binding.termTextField.text?.toString())
     }
 
     private fun translateClicked() {
@@ -231,7 +208,7 @@ class MainActivity : AppCompatActivity() {
     private fun showAddButtons(clickable: Boolean = true) {
         binding.addWord.apply {
             textSize = 15F
-            text = Buttons.ADD_BUTTON_TEXT
+            text = ADD_BUTTON_TEXT
             isClickable = clickable
             background.setTint(
                 ContextCompat.getColor(this@MainActivity, R.color.green)
@@ -244,7 +221,7 @@ class MainActivity : AppCompatActivity() {
     private fun showTranslateButton() {
         binding.addWord.apply {
             textSize = 15F
-            text = Buttons.TRANSLATE_BUTTON_TEXT
+            text = TRANSLATE_BUTTON_TEXT
             background.setTint(ContextCompat.getColor(this@MainActivity, R.color.blue))
             isClickable = true
             alpha = 1F
@@ -252,6 +229,7 @@ class MainActivity : AppCompatActivity() {
         binding.dismissWord.isInvisible = true
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun updateAdaptor(isVisible: Boolean = true) {
         hideImages()
         binding.translations.adapter = null
@@ -349,18 +327,56 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun observeTranslatedState() {
+        translateViewModel.isAddableObservable
+            .flowOn(Dispatchers.Main)
+            .onEach {
+                runOnUiThread {
+                    when(it) {
+                        TextState.ADDABLE -> showAddButtons(clickable = true)
+                        TextState.TRANSLATED -> showAddButtons(clickable = false)
+                        else -> showTranslateButton()
+                    }
+                }
+            }.launchIn(getScope())
+    }
+
+    private fun observeTranslations() {
+        combine(
+            translateViewModel.translationsObservable.observeState(),
+            translateViewModel.definitionsObservable.observeState(),
+            translateViewModel.examplesObservable.observeState()
+        ) {
+                translations, definitions, examples -> TranslateState(translations, definitions, examples)
+        }.onEach {
+            lastTranslateState = it
+            runOnUiThread {
+                updateAdaptor(translateViewModel.lastTranslatedCache == binding.termTextField.text?.toString())
+            }
+        }.launchIn(getScope())
+    }
+
+    private fun observeSets() {
+        translateViewModel.setsObservable.observeState()
+            .flowOn(Dispatchers.Main)
+            .onEach { sets ->
+                runOnUiThread {
+                    binding.setSpinner.adapter = ArrayAdapter(
+                        this,
+                        R.layout.sets_spinner_item,
+                        sets?.map { it.name } ?: emptyList()
+                    ).also {
+                        it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    }
+                    binding.setSpinner.setSelection(currentPosition)
+                }
+            }.launchIn(getScope())
+    }
+
     companion object {
-        object SharedPrefs {
-            const val NAME = "ericaPrefs"
-            const val FROM_LANGUAGE_KEY = "FROM"
-            const val TO_LANGUAGE_KEY = "TO"
-        }
-        object Buttons {
-            const val ADD_BUTTON_TEXT = "add"
-            const val TRANSLATE_BUTTON_TEXT = "translate"
-        }
-        object SavedState {
-            const val SELECTED_TAB_KEY = "SELECTED_TAB"
-        }
+        const val ADD_BUTTON_TEXT = "add"
+        const val TRANSLATE_BUTTON_TEXT = "translate"
+        const val SELECTED_TAB_KEY = "SELECTED_TAB"
+        const val SELECTED_SET_KEY = "SELECTED_SET_POSITION"
     }
 }

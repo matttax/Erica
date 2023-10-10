@@ -1,7 +1,5 @@
 package com.matttax.erica.fragments
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -21,19 +19,20 @@ import com.matttax.erica.domain.config.WordsSorting
 import com.matttax.erica.model.WordSet
 import com.matttax.erica.presentation.states.SetsState
 import com.matttax.erica.presentation.viewmodels.impl.ChoiceViewModel
-import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_NAME
-import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_POSITION_KEY
+import com.matttax.erica.utils.AppSettings
 import com.matttax.erica.utils.Utils.getConfigByPosition
 import com.matttax.erica.utils.Utils.launchSuspend
 import com.matttax.erica.utils.getChoiceNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SetsFragment : Fragment() {
 
-    private lateinit var preferences: SharedPreferences
+    @Inject
+    lateinit var appSettings: AppSettings
 
     private val choiceViewModel: ChoiceViewModel by activityViewModels()
 
@@ -60,9 +59,6 @@ class SetsFragment : Fragment() {
                     }
                 }
             }.launchIn(viewLifecycleOwner.lifecycleScope)
-
-        preferences = requireActivity()
-            .getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
 
         binding.addNewSet.setOnClickListener {
             EditDialog(
@@ -121,10 +117,7 @@ class SetsFragment : Fragment() {
                     choiceViewModel.onGetWords(
                         getConfigByPosition(
                             sets[it].id,
-                            preferences.getInt(
-                                SHARED_PREFS_POSITION_KEY,
-                                0
-                            )
+                            appSettings.wordsOrderId
                         )
                     )
                 }

@@ -1,7 +1,6 @@
 package com.matttax.erica.dialogs.impl
 
 import android.content.Context
-import android.util.Log
 import android.widget.*
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.R
@@ -9,12 +8,15 @@ import com.matttax.erica.activities.LearnActivity.Companion.toAskMode
 import com.matttax.erica.activities.LearnActivity.Companion.toWordSorting
 import com.matttax.erica.dialogs.ActionDialog
 import com.matttax.erica.dialogs.util.SpinnerDialog
+import com.matttax.erica.utils.AppSettings
 
 class StartLearnDialog(
     private val context: Context,
     wordsCount: Int,
     setId: Long
 ): ActionDialog(context, R.layout.start_learn_dialog) {
+
+    private val appSettings = AppSettings(context)
 
     private val studyPriority: Spinner = dialogView.findViewById(R.id.priority)
     private val askWith: Spinner = dialogView.findViewById(R.id.termDef)
@@ -25,13 +27,10 @@ class StartLearnDialog(
     private val numberOfWordsText: TextView = dialogView.findViewById(R.id.number_of_words_text)
     private val wordsInBatchText: TextView = dialogView.findViewById(R.id.words_in_batch_text)
 
-
     private var wordsTotalCount = wordsCount
     private var wordsInBatch = 7
 
     init {
-        val preferences = context.getSharedPreferences("ericaPrefs", Context.MODE_PRIVATE)
-
         numberOfWordsText.text = wordsTotalCount.toString()
         wordsInBatchText.text = wordsInBatch.toString()
 
@@ -60,11 +59,10 @@ class StartLearnDialog(
             listOf("Translation", "Word", "Both")
         )
 
-        studyPriority.setSelection(preferences.getInt("STUDY_POS", 0))
+        studyPriority.setSelection(appSettings.studyPriorityId)
 
         initDismissButton(R.id.noStartLearn)
         initActionButton(R.id.yesStartLearn) {
-            Log.i("viewstate", askWith.selectedItemPosition.toString())
             LearnActivity.start(
                 context = context,
                 setId = setId,
@@ -73,8 +71,7 @@ class StartLearnDialog(
                 wordsSorting = studyPriority.selectedItemPosition.toWordSorting(),
                 askMode = askWith.selectedItemPosition.toAskMode()
             )
-            val editor = preferences.edit()
-            editor.putInt("STUDY_POS", studyPriority.selectedItemPosition).apply()
+            appSettings.studyPriorityId = studyPriority.selectedItemPosition
             dialog.dismiss()
         }
     }

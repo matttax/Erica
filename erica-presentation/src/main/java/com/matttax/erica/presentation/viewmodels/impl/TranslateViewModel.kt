@@ -13,8 +13,8 @@ import com.matttax.erica.domain.usecases.sets.crud.GetSetsUseCase
 import com.matttax.erica.domain.usecases.translate.GetDefinitionsUseCase
 import com.matttax.erica.domain.usecases.translate.GetExamplesUseCase
 import com.matttax.erica.domain.usecases.translate.GetTranslationsUseCase
+import com.matttax.erica.presentation.states.TextState
 import com.matttax.erica.presentation.states.DataState
-import com.matttax.erica.presentation.states.TranslateState
 import com.matttax.erica.presentation.viewmodels.StatefulObservable
 import com.matttax.erica.presentation.viewmodels.TranslateInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,78 +29,73 @@ class TranslateViewModel @Inject constructor(
     private val getExamplesUseCase: GetExamplesUseCase,
     private val getSetsUseCase: GetSetsUseCase,
     private val addWordUseCase: AddWordUseCase
-) : ViewModel(), TranslateInteractor, StatefulObservable<TranslateState?> {
+) : ViewModel(), TranslateInteractor {
 
-    private val translateStateFlow = MutableStateFlow<TranslateState?>(null)
+    private var languageIn: Language? = null
+    private var languageOut: Language? = null
+    private var textIn: String? = null
+    private var textOut: String? = null
 
-    private val languageInFlow = MutableStateFlow<Language?>(null)
-    private val languageOutFlow = MutableStateFlow<Language?>(null)
-    private val textInFlow = MutableStateFlow<String?>(null)
-    private val textOutFlow = MutableStateFlow<String?>(null)
+    private val currentSetsFlow = MutableStateFlow<List<SetDomainModel>?>(null)
     private val translationsDataStateFlow = MutableStateFlow<DataState?>(null)
     private val definitionsDataStateFlow = MutableStateFlow<DataState?>(null)
     private val examplesDataStateFlow = MutableStateFlow<DataState?>(null)
-    private val isAddableFlow = MutableStateFlow<Boolean?>(false)
-
-    private val currentSetIdFlow = MutableStateFlow<Long?>(null)
-    private val currentSetsFlow = MutableStateFlow<List<SetDomainModel>?>(null)
+    private val isAddableFlow = MutableStateFlow<TextState?>(TextState.TRANSLATABLE)
 
     var lastTranslatedCache: String? = null
         private set
 
-    init {
-        combine(
-            languageInFlow,
-            languageOutFlow,
-            textInFlow,
-            textOutFlow,
-            translationsDataStateFlow,
-            definitionsDataStateFlow,
-            examplesDataStateFlow,
-            currentSetsFlow,
-            currentSetIdFlow,
-            isAddableFlow
-        ) {
-            array ->
-            TranslateState(
-                array[0] as Language?,
-                array[1] as Language?,
-                array[2] as String?,
-                array[3] as String?,
-                array[4] as DataState?,
-                array[5] as DataState?,
-                array[6] as DataState?,
-                array[7] as List<SetDomainModel>?,
-                array[8] as Long?,
-                array[9] as Boolean?
-            )
-        }.onEach {
-            translateStateFlow.value = it
-        }.launchIn(viewModelScope)
+    var currentSetId: Long? = null
+        private set
+
+    val setsObservable = object : StatefulObservable<List<SetDomainModel>?> {
+        override fun observeState(): Flow<List<SetDomainModel>?> = currentSetsFlow.asStateFlow()
+        override fun getCurrentState(): List<SetDomainModel>? = currentSetsFlow.value
     }
 
-    override fun observeState(): Flow<TranslateState?> = translateStateFlow.asStateFlow()
+    val translationsObservable = object : StatefulObservable<DataState?> {
+        override fun observeState(): Flow<DataState?> = translationsDataStateFlow.asStateFlow()
+        override fun getCurrentState(): DataState? = translationsDataStateFlow.value
+    }
 
-    override fun getCurrentState(): TranslateState? = translateStateFlow.value
+    val definitionsObservable = object : StatefulObservable<DataState?> {
+        override fun observeState(): Flow<DataState?> = definitionsDataStateFlow.asStateFlow()
+        override fun getCurrentState(): DataState? = definitionsDataStateFlow.value
+    }
+
+    val examplesObservable = object : StatefulObservable<DataState?> {
+        override fun observeState(): Flow<DataState?> = examplesDataStateFlow.asStateFlow()
+        override fun getCurrentState(): DataState? = examplesDataStateFlow.value
+    }
+
+    val isAddableObservable: Flow<TextState?> = isAddableFlow.asStateFlow()
+
+    init {
+        currentSetsFlow.launchIn(viewModelScope)
+        translationsDataStateFlow.launchIn(viewModelScope)
+        definitionsDataStateFlow.launchIn(viewModelScope)
+        examplesDataStateFlow.launchIn(viewModelScope)
+        isAddableFlow.launchIn(viewModelScope)
+    }
 
     override fun onInputTextLanguageChanged(language: String) {
         val newLanguage = Language(language)
-        if (newLanguage == languageInFlow.value)
+        if (newLanguage == languageIn)
             return
-        languageInFlow.value = Language(language)
-        isAddableFlow.value = false
+        languageIn = Language(language)
+        isAddableFlow.value = TextState.TRANSLATABLE
     }
 
     override fun onOutputLanguageChanged(language: String) {
         val newLanguage = Language(language)
-        if (newLanguage == languageOutFlow.value)
+        if (newLanguage == languageOut)
             return
-        languageOutFlow.value = newLanguage
-        isAddableFlow.value = false
+        languageOut = newLanguage
+        isAddableFlow.value = TextState.TRANSLATABLE
     }
 
     override fun onInputTextChanged(text: String) {
-        textInFlow.value = text
+        textIn = text
         if (text == lastTranslatedCache
             && (translationsDataStateFlow.value == DataState.Loading
             || definitionsDataStateFlow.value == DataState.Loading
@@ -110,17 +105,27 @@ class TranslateViewModel @Inject constructor(
                 onTranslateAction()
             }
         }
-        isAddableFlow.value = text == lastTranslatedCache
+        isAddableFlow.value = when {
+            text == lastTranslatedCache && textOut.isNullOrEmpty().not() -> TextState.ADDABLE
+            text == lastTranslatedCache && textOut.isNullOrEmpty() -> TextState.TRANSLATED
+            else -> TextState.TRANSLATABLE
+        }
     }
 
     override fun onOutputTextChanged(text: String) {
-        textOutFlow.value = text
+        textOut = text
+        if (textOut.isNullOrEmpty() && isAddableFlow.value == TextState.ADDABLE) {
+            isAddableFlow.value = TextState.TRANSLATED
+        }
+        if (textOut.isNullOrEmpty().not() && isAddableFlow.value == TextState.TRANSLATED) {
+            isAddableFlow.value = TextState.ADDABLE
+        }
     }
 
     override suspend fun onTranslateAction() {
-        val text = textInFlow.value
-        val languageIn = languageInFlow.value
-        val languageOut = languageOutFlow.value
+        val text = textIn
+        val languageIn = languageIn
+        val languageOut = languageOut
         lastTranslatedCache = text
         if (text.isNullOrBlank() || languageIn == null || languageOut == null) {
             translationsDataStateFlow.value = DataState.NotFound
@@ -143,7 +148,7 @@ class TranslateViewModel @Inject constructor(
                 it.size <= 1 && it.firstOrNull()?.endsWith("Error@") ?: true -> DataState.NotFound
                 else -> DataState.LoadedInfo(it)
             }
-            isAddableFlow.value = true
+            isAddableFlow.value = TextState.TRANSLATED
         }
         getDefinitionsUseCase.execute(request) {
             definitionsDataStateFlow.value = when {
@@ -161,20 +166,14 @@ class TranslateViewModel @Inject constructor(
 
     override fun onTranslationSelected(translation: String) = onOutputTextChanged(translation)
 
-    override fun onClear() {
-//        translationsDataStateFlow.value = null
-//        definitionsDataStateFlow.value = null
-//        examplesDataStateFlow.value = null
-    }
-
     override suspend fun onAddAction() {
         addWordUseCase.execute(
             WordDomainModel(
-                text = textInFlow.value ?: "",
-                translation = textOutFlow.value ?: "",
-                textLanguage = languageInFlow.value ?: Language("en"),
-                translationLanguage = languageOutFlow.value ?: Language("en"),
-                setId = currentSetIdFlow.value ?: 0
+                text = textIn ?: "",
+                translation = textOut ?: "",
+                textLanguage = languageIn ?: Language("en"),
+                translationLanguage = languageOut ?: Language("en"),
+                setId = currentSetId ?: 0
             )
         ) {}
     }
@@ -191,6 +190,6 @@ class TranslateViewModel @Inject constructor(
     }
 
     override fun onSetSelected(position: Int) {
-        currentSetIdFlow.value = currentSetsFlow.value?.getOrNull(position)?.id
+        currentSetId = currentSetsFlow.value?.getOrNull(position)?.id
     }
 }

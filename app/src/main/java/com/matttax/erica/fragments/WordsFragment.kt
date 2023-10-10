@@ -30,11 +30,10 @@ import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.WordsState
 import com.matttax.erica.presentation.viewmodels.impl.ChoiceViewModel
 import com.matttax.erica.speechtotext.WordSpeller
+import com.matttax.erica.utils.AppSettings
 import com.matttax.erica.utils.ChoiceNavigator.Companion.SET_DESCRIPTION_EXTRA_NAME
 import com.matttax.erica.utils.ChoiceNavigator.Companion.SET_ID_EXTRA_NAME
 import com.matttax.erica.utils.ChoiceNavigator.Companion.SET_NAME_EXTRA_NAME
-import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_NAME
-import com.matttax.erica.utils.ChoiceNavigator.Companion.SHARED_PREFS_POSITION_KEY
 import com.matttax.erica.utils.ChoiceNavigator.Companion.WORD_COUNT_EXTRA_NAME
 import com.matttax.erica.utils.Utils.getConfigByPosition
 import com.matttax.erica.utils.Utils.launchSuspend
@@ -42,7 +41,6 @@ import com.matttax.erica.utils.getChoiceNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -51,7 +49,8 @@ class WordsFragment : Fragment() {
     @Inject
     lateinit var wordSpeller: WordSpeller
 
-    private lateinit var preferences: SharedPreferences
+    @Inject
+    lateinit var appSettings: AppSettings
 
     private val choiceViewModel: ChoiceViewModel by activityViewModels()
 
@@ -76,8 +75,6 @@ class WordsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentSet = getSetFromBundle(savedInstanceState ?: arguments)
-        preferences = requireActivity()
-            .getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -123,6 +120,7 @@ class WordsFragment : Fragment() {
                 R.layout.params_spinner_item,
                 orders
             )
+            setSelection(appSettings.wordsOrderId)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
                 override fun onItemSelected(
@@ -136,7 +134,7 @@ class WordsFragment : Fragment() {
                         choiceViewModel.onGetSets()
                         choiceViewModel.onGetWords(getConfigByPosition(currentSet.id, position))
                     }
-                    preferences.edit().putInt(SHARED_PREFS_POSITION_KEY, position).apply()
+                    appSettings.wordsOrderId = position
                 }
             }
         }
