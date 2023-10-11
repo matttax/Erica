@@ -5,10 +5,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.matttax.erica.R
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.adaptors.SetAdaptor
 import com.matttax.erica.databinding.FragmentSetsBinding
@@ -61,6 +63,7 @@ class SetsFragment : Fragment() {
             }.launchIn(viewLifecycleOwner.lifecycleScope)
 
         binding.addNewSet.setOnClickListener {
+            binding.addIcon.startAnimation(AnimationUtils.loadAnimation(context, R.anim.rotate))
             EditDialog(
                 context = requireActivity(),
                 headerText = "Create set",
@@ -104,6 +107,9 @@ class SetsFragment : Fragment() {
                 wordsCount = it.wordsCount ?: 0
             )
         } ?: emptyList()
+        if (setsState.sets != null && sets.isEmpty()) {
+            binding.addIcon.startAnimation(AnimationUtils.loadAnimation(context, R.anim.rotate))
+        }
         loadSets()
     }
 
@@ -162,5 +168,6 @@ class SetsFragment : Fragment() {
             }
         )
         binding.setsListRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.setsListRecyclerView.startAnimation(AnimationUtils.loadAnimation(context, R.anim.light_slide))
     }
 }

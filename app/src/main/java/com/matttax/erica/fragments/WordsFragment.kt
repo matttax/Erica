@@ -1,11 +1,10 @@
 package com.matttax.erica.fragments
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
+import android.view.animation.AnimationUtils
 import androidx.fragment.app.Fragment
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -84,6 +83,7 @@ class WordsFragment : Fragment() {
     ): View {
         _binding = FragmentWordsBinding.inflate(inflater)
         initButtons()
+        binding.startLearn.startAnimation(AnimationUtils.loadAnimation(context, R.anim.forward))
         wordsSelected = choiceViewModel.getSelectedPositions().isNotEmpty()
         getChoiceNavigator().apply {
             notifyWordsSelected(wordsSelected)
@@ -207,6 +207,8 @@ class WordsFragment : Fragment() {
                 ).showDialog()
             }
         )
+        binding.wordsList.startAnimation(AnimationUtils.loadAnimation(context, R.anim.harsh_slide))
+
         binding.startLearn.setOnClickListener {
             StartLearnDialog(
                 requireActivity(),
@@ -239,6 +241,7 @@ class WordsFragment : Fragment() {
             wordsSelected = false
         }
         binding.wordsList.adapter?.notifyDataSetChanged()
+        binding.wordsList.startAnimation(AnimationUtils.loadAnimation(context, R.anim.harsh_slide))
         updateHead()
     }
 
@@ -268,8 +271,20 @@ class WordsFragment : Fragment() {
         binding.startLearn.removeAllViews()
         if (wordsSelected) {
             binding.startLearn.apply {
-                addView(moveButton)
-                addView(deleteButton)
+                addView(
+                    moveButton.also {
+                        it.startAnimation(
+                            AnimationUtils.loadAnimation(context, R.anim.light_slide).apply { duration = 100 }
+                        )
+                    }
+                )
+                addView(
+                    deleteButton.also {
+                        it.startAnimation(
+                            AnimationUtils.loadAnimation(context, R.anim.light_slide).apply { duration = 100 }
+                        )
+                    }
+                )
             }
         } else {
             binding.startLearn.apply {

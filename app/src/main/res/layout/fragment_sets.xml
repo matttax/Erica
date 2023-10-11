@@ -17,6 +17,7 @@
             <ImageView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:id="@+id/addIcon"
                 android:src="@drawable/ic_baseline_add_24"
                 android:layout_weight="1"
                 />

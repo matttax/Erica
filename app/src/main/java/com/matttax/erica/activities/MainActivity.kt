@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.view.KeyEvent
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -81,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.toSetsButton.setOnClickListener {
+            binding.toSetsButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.pulse))
             startActivity(Intent(this@MainActivity, ChoiceActivity::class.java))
         }
 
@@ -214,6 +216,9 @@ class MainActivity : AppCompatActivity() {
                 ContextCompat.getColor(this@MainActivity, R.color.green)
             )
             alpha = if (clickable) 1F else 0.5F
+            if (clickable) {
+                startAnimation(AnimationUtils.loadAnimation(this@MainActivity, R.anim.pulse))
+            }
         }
         binding.dismissWord.isInvisible = false
     }
@@ -279,6 +284,7 @@ class MainActivity : AppCompatActivity() {
             this@MainActivity,
             list ?: emptyList()
         ) { text ->
+            binding.addWord.startAnimation(AnimationUtils.loadAnimation(this@MainActivity, R.anim.pulse))
             binding.defTextField.setText(text)
         }
     }
