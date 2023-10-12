@@ -1,6 +1,7 @@
 package com.matttax.erica.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.matttax.erica.R
 import com.matttax.erica.activities.LearnActivity
 import com.matttax.erica.adaptors.SetAdaptor
+import com.matttax.erica.adaptors.callback.SetCallback
 import com.matttax.erica.databinding.FragmentSetsBinding
 import com.matttax.erica.dialogs.impl.DeleteDialog
 import com.matttax.erica.dialogs.impl.EditDialog
@@ -43,6 +45,65 @@ class SetsFragment : Fragment() {
 
     private var sets: List<WordSet> = emptyList()
 
+    private val setCallback = object : SetCallback {
+        override fun onClick(position: Int) {
+            launchSuspend {
+                choiceViewModel.onGetWords(
+                    getConfigByPosition(
+                        sets[position].id,
+                        appSettings.wordsOrderId
+                    )
+                )
+            }
+            getChoiceNavigator().showWords(sets[position])
+        }
+
+        override fun onLearnClick(position: Int) {
+            LearnActivity.start(
+                context = requireActivity(),
+                setId = sets[position].id,
+                batchSize = 7,
+                wordsCount = sets[position].wordsCount,
+                wordsSorting = WordsSorting.RANDOM,
+                askMode = AskMode.TEXT
+            )
+        }
+
+        override fun onDeleteClick(position: Int) {
+            DeleteDialog(
+                context = requireActivity(),
+                headerText = "Sure?",
+                detailedExplanationText = "If you delete the set, all containing words are lost"
+            ) {
+                launchSuspend {
+                    choiceViewModel.onDeleteSetById(sets[position].id)
+                }
+            }.showDialog()
+        }
+
+        override fun onEditClick(position: Int) {
+            EditDialog(
+                context = requireActivity(),
+                headerText = "Edit set",
+                firstField = "Name" to sets[position].name,
+                secondField = "Description" to sets[position].description,
+                ignoreSecondField = true,
+                onSuccess = { name, description ->
+                    launchSuspend {
+                        choiceViewModel.onUpdateSetAction(sets[position].id, name, description)
+                    }
+                }
+            ).showDialog()
+        }
+    }
+
+    private val setAdaptor by lazy {
+        SetAdaptor(
+            context = requireActivity(),
+            callback = setCallback
+        )
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -52,6 +113,7 @@ class SetsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         choiceViewModel.setsStateObservable.observeState()
             .flowOn(Dispatchers.Main)
             .onEach { data ->
@@ -73,9 +135,6 @@ class SetsFragment : Fragment() {
                 onSuccess = { name, description ->
                     launchSuspend {
                         choiceViewModel.onAddSetAction(name, description)
-                        requireActivity().runOnUiThread {
-                            loadSets()
-                        }
                     }
                 },
                 onFailure = {
@@ -83,7 +142,9 @@ class SetsFragment : Fragment() {
                 }
             ).showDialog()
         }
-        super.onViewCreated(view, savedInstanceState)
+        binding.setsListRecyclerView.adapter = setAdaptor
+        binding.setsListRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.setsListRecyclerView.startAnimation(AnimationUtils.loadAnimation(context, R.anim.light_slide))
     }
 
     override fun onStart() {
@@ -107,67 +168,11 @@ class SetsFragment : Fragment() {
                 wordsCount = it.wordsCount ?: 0
             )
         } ?: emptyList()
+        Log.i("sets", sets.toString())
         if (setsState.sets != null && sets.isEmpty()) {
             binding.addIcon.startAnimation(AnimationUtils.loadAnimation(context, R.anim.rotate))
         }
-        loadSets()
-    }
-
-    private fun loadSets() {
         if (_binding == null) return
-        binding.setsListRecyclerView.adapter = SetAdaptor(
-            context = requireActivity(),
-            sets = sets,
-            onClick = {
-                launchSuspend {
-                    choiceViewModel.onGetWords(
-                        getConfigByPosition(
-                            sets[it].id,
-                            appSettings.wordsOrderId
-                        )
-                    )
-                }
-                getChoiceNavigator().showWords(sets[it])
-            },
-            onLearnClick = {
-                LearnActivity.start(
-                    context = requireActivity(),
-                    setId = sets[it].id,
-                    batchSize = 7,
-                    wordsCount = sets[it].wordsCount,
-                    wordsSorting = WordsSorting.RANDOM,
-                    askMode = AskMode.TEXT
-                )
-            },
-            onDeleteClick = {
-                DeleteDialog(
-                    context = requireActivity(),
-                    headerText = "Sure?",
-                    detailedExplanationText = "If you delete the set, all containing words are lost"
-                ) {
-                    launchSuspend {
-                        choiceViewModel.onDeleteSetById(sets[it].id)
-                    }
-                }.showDialog()
-            },
-            onEditClick = {
-                EditDialog(
-                    context = requireActivity(),
-                    headerText = "Edit set",
-                    firstField = "Name" to sets[it].name,
-                    secondField = "Description" to sets[it].description,
-                    ignoreSecondField = true,
-                    onSuccess = {
-                            name, description -> run {
-                        launchSuspend {
-                            choiceViewModel.onUpdateSetAction(sets[it].id, name, description)
-                        }
-                    }
-                    }
-                ).showDialog()
-            }
-        )
-        binding.setsListRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.setsListRecyclerView.startAnimation(AnimationUtils.loadAnimation(context, R.anim.light_slide))
+        setAdaptor.submitList(sets)
     }
 }

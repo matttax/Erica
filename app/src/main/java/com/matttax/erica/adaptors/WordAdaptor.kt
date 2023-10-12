@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.matttax.erica.R
+import com.matttax.erica.adaptors.callback.WordCallback
 import com.matttax.erica.presentation.model.translate.TextCardState
 import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
@@ -19,10 +20,7 @@ import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 class WordAdaptor constructor(
     private val context: Context,
     private val words: List<TranslatedTextCard>,
-    private val onClick: (Int) -> Unit = {},
-    private val onDelete: (Int) -> Unit = {},
-    private val onEdit: (Int) -> Unit = {},
-    private val onSpell: (ImageView, TranslatedText) -> Unit = { _, _ -> },
+    private val callback: WordCallback,
 ) : RecyclerView.Adapter<WordAdaptor.WordViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
@@ -46,7 +44,7 @@ class WordAdaptor constructor(
             TextCardState.DEFAULT -> ContextCompat.getColor(context, R.color.blue)
         }
         holder.itemView.setOnClickListener {
-            onClick(holder.adapterPosition)
+            callback.onClick(holder.adapterPosition)
         }
         if (!words[position].isEditable) {
             holder.edit.isVisible = false
@@ -62,13 +60,13 @@ class WordAdaptor constructor(
         }
 
         holder.play.setOnClickListener {
-            onSpell(holder.play, words[holder.adapterPosition].translatedText)
+            callback.onSpell(holder.play, words[holder.adapterPosition].translatedText)
         }
         holder.delete.setOnClickListener {
-            onDelete(holder.adapterPosition)
+            callback.onDeleteClick(holder.adapterPosition)
         }
         holder.edit.setOnClickListener {
-            onEdit(holder.adapterPosition)
+            callback.onEditClick(holder.adapterPosition)
         }
     }
 

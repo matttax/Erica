@@ -8,6 +8,7 @@ import android.view.animation.AnimationUtils
 import androidx.fragment.app.Fragment
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.R
 import com.matttax.erica.adaptors.WordAdaptor
+import com.matttax.erica.adaptors.callback.WordCallback
 import com.matttax.erica.databinding.FragmentWordsBinding
 import com.matttax.erica.dialogs.impl.DeleteDialog
 import com.matttax.erica.dialogs.impl.EditDialog
@@ -70,6 +72,70 @@ class WordsFragment : Fragment() {
         "Most accurate first",
         "Least accurate first"
     )
+
+    private val wordCallback = object : WordCallback {
+        override fun onClick(position: Int) {
+            if (words[position].isSelected) {
+                choiceViewModel.onWordDeselected(position)
+            } else {
+                choiceViewModel.onWordSelected(position)
+            }
+            words[position] = words[position].copy(isSelected = !words[position].isSelected)
+            binding.wordsList.adapter?.notifyItemChanged(position)
+            if (wordsSelected && choiceViewModel.getSelectedPositions().isEmpty()) {
+                wordsSelected = false
+                onSelectionChanged()
+            } else if (!wordsSelected && choiceViewModel.getSelectedPositions().isNotEmpty()) {
+                wordsSelected = true
+                onSelectionChanged()
+            }
+        }
+
+        override fun onEditClick(position: Int) {
+            EditDialog(
+                context = requireActivity(),
+                headerText = "Edit word",
+                firstField = "Text" to words[position].translatedText.text,
+                secondField = "Translation" to words[position].translatedText.translation,
+                ignoreSecondField = false,
+                onSuccess = { text, translation ->
+                    run {
+                        val newWord = words[position].translatedText.copy(text = text, translation = translation)
+                        launchSuspend {
+                            choiceViewModel.onDeleteWordAt(position)
+                            choiceViewModel.onAddWord(newWord)
+                        }
+                        val newCard = words[position].copy(translatedText = newWord)
+                        words.removeAt(position)
+                        words.add(0, newCard)
+                        binding.wordsList.adapter?.notifyItemRemoved(position)
+                        binding.wordsList.adapter?.notifyItemInserted(0)
+                    }
+                }
+            ).showDialog()
+        }
+
+        override fun onDeleteClick(position: Int) {
+            DeleteDialog(
+                context = requireActivity(),
+                headerText = "Ready to remove this word?",
+                detailedExplanationText = null
+            ) {
+                launchSuspend {
+                    choiceViewModel.onDeleteWordAt(position)
+                }
+                words.removeAt(position)
+                binding.wordsList.adapter?.notifyItemRemoved(position)
+            }.showDialog()
+        }
+
+        override fun onSpell(icon: ImageView, text: TranslatedText) {
+            icon.setColorFilter(Color.argb(255, 255, 165, 0))
+            wordSpeller.spell(text) {
+                icon.setColorFilter(Color.argb(255, 41, 45, 54))
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,64 +214,7 @@ class WordsFragment : Fragment() {
         binding.wordsList.adapter = WordAdaptor(
             context = requireActivity(),
             words = words,
-            onClick = {
-                if (words[it].isSelected) {
-                    choiceViewModel.onWordDeselected(it)
-                } else {
-                    choiceViewModel.onWordSelected(it)
-                }
-                words[it] = words[it].copy(isSelected = !words[it].isSelected)
-                binding.wordsList.adapter?.notifyItemChanged(it)
-                if (wordsSelected && choiceViewModel.getSelectedPositions().isEmpty()) {
-                    wordsSelected = false
-                    onSelectionChanged()
-                } else if (!wordsSelected && choiceViewModel.getSelectedPositions().isNotEmpty()) {
-                    wordsSelected = true
-                    onSelectionChanged()
-                }
-            },
-            onSpell = { button, text ->
-                button.setColorFilter(Color.argb(255, 255, 165, 0))
-                wordSpeller.spell(text) {
-                    button.setColorFilter(Color.argb(255, 41, 45, 54))
-                }
-            },
-            onDelete = {
-                DeleteDialog(
-                    context = requireActivity(),
-                    headerText = "Ready to remove this word?",
-                    detailedExplanationText = null
-                ) {
-                    launchSuspend {
-                        choiceViewModel.onDeleteWordAt(it)
-                    }
-                    words.removeAt(it)
-                    binding.wordsList.adapter?.notifyItemRemoved(it)
-                }.showDialog()
-            },
-            onEdit = {
-                EditDialog(
-                    context = requireActivity(),
-                    headerText = "Edit word",
-                    firstField = "Text" to words[it].translatedText.text,
-                    secondField = "Translation" to words[it].translatedText.translation,
-                    ignoreSecondField = false,
-                    onSuccess = { text, translation ->
-                        run {
-                            val newWord = words[it].translatedText.copy(text = text, translation = translation)
-                            launchSuspend {
-                                choiceViewModel.onDeleteWordAt(it)
-                                choiceViewModel.onAddWord(newWord)
-                            }
-                            val newCard = words[it].copy(translatedText = newWord)
-                            words.removeAt(it)
-                            words.add(0, newCard)
-                            binding.wordsList.adapter?.notifyItemRemoved(it)
-                            binding.wordsList.adapter?.notifyItemInserted(0)
-                        }
-                    }
-                ).showDialog()
-            }
+            callback = wordCallback
         )
         binding.wordsList.startAnimation(AnimationUtils.loadAnimation(context, R.anim.harsh_slide))
 
@@ -337,13 +346,10 @@ class WordsFragment : Fragment() {
                 headerText = "Ready to remove ${choiceViewModel.getSelectedPositions().size} words?",
                 detailedExplanationText = null
             ) {
-                choiceViewModel.getSelectedPositions().forEach {
-                    words.removeAt(it)
-                    binding.wordsList.adapter?.notifyItemRemoved(it)
-                }
                 launchSuspend {
                     choiceViewModel.onDeleteSelected()
                 }
+                binding.wordsList.adapter?.notifyDataSetChanged()
             }.showDialog()
             updateHead()
         }

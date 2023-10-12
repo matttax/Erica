@@ -5,5 +5,5 @@
         android:interpolator="@android:anim/linear_interpolator"
         android:pivotX="50%"
         android:pivotY="50%"
-        android:toDegrees="120" />
+        android:toDegrees="90" />
 </set>

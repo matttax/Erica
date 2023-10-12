@@ -81,7 +81,9 @@ class ChoiceViewModel @Inject constructor(
     override suspend fun onAddSetAction(name: String, description: String) {
         addSetUseCase.execute(name to description) {
             if (it != -1L) {
-                setsFlow.value = setsFlow.value?.plus(SetDomainModel(it, name, description))
+                val newList = mutableListOf(SetDomainModel(it, name, description))
+                setsFlow.value?.let { oldList -> newList.addAll(oldList) }
+                setsFlow.value = newList
             }
         }
     }
@@ -154,8 +156,9 @@ class ChoiceViewModel @Inject constructor(
 
     override suspend fun onDeleteWordAt(position: Int) {
         wordsListFlow.value?.get(position)?.id?.let {
-            deleteWordsUseCase.execute(it to setId) {}
-            onWordDeselected(position)
+            deleteWordsUseCase.execute(it to setId) {
+                onWordDeselected(position)
+            }
             onGetSets()
         }
     }

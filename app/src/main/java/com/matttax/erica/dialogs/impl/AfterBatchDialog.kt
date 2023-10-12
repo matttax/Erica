@@ -2,15 +2,18 @@ package com.matttax.erica.dialogs.impl
 
 import android.content.Context
 import android.graphics.Color
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.matttax.erica.R
 import com.matttax.erica.adaptors.WordAdaptor
+import com.matttax.erica.adaptors.callback.WordCallback
 import com.matttax.erica.dialogs.Dialog
 import com.matttax.erica.presentation.model.study.StudiedWord
 import com.matttax.erica.presentation.model.study.StudiedWordState
 import com.matttax.erica.presentation.model.translate.TextCardState
+import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.speechtotext.WordSpeller
 
@@ -43,10 +46,12 @@ class AfterBatchDialog(
                     }
                 )
             },
-            onSpell = { button, text ->
-                button.setColorFilter(Color.argb(255, 255, 165, 0))
-                wordSpeller.spell(text) {
-                    button.setColorFilter(Color.argb(255, 41, 45, 54))
+            callback = object : WordCallback {
+                override fun onSpell(icon: ImageView, text: TranslatedText) {
+                    icon.setColorFilter(Color.argb(255, 255, 165, 0))
+                    wordSpeller.spell(text) {
+                        icon.setColorFilter(Color.argb(255, 41, 45, 54))
+                    }
                 }
             }
         )

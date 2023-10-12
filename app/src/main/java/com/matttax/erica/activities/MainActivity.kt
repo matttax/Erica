@@ -21,6 +21,7 @@ import com.matttax.erica.R
 import com.matttax.erica.adaptors.PartOfSpeechAdaptor
 import com.matttax.erica.adaptors.TranslationAdaptor
 import com.matttax.erica.adaptors.WordAdaptor
+import com.matttax.erica.adaptors.callback.WordCallback
 import com.matttax.erica.databinding.ActivityMainBinding
 import com.matttax.erica.domain.model.translate.DictionaryDefinition
 import com.matttax.erica.domain.model.translate.UsageExample
@@ -28,6 +29,7 @@ import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TextState
 import com.matttax.erica.presentation.model.translate.TranslateState
+import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModel
 import com.matttax.erica.speechtotext.WordSpeller
 import com.matttax.erica.utils.AppSettings
@@ -120,6 +122,7 @@ class MainActivity : AppCompatActivity() {
                 job?.cancel()
                 binding.termTextField.text = SpannableStringBuilder("")
                 binding.defTextField.text = SpannableStringBuilder("")
+                binding.translations.adapter = null
             }
         }
 
@@ -304,10 +307,12 @@ class MainActivity : AppCompatActivity() {
             words = list?.map {
                 example -> TranslatedTextCard.fromUsageExample(example)
             } ?: emptyList(),
-            onSpell = { button, text ->
-                button.setColorFilter(Color.argb(255, 255, 165, 0))
-                wordSpeller.spell(text) {
-                    button.setColorFilter(Color.argb(255, 41, 45, 54))
+            callback = object : WordCallback {
+                override fun onSpell(icon: ImageView, text: TranslatedText) {
+                    icon.setColorFilter(Color.argb(255, 255, 165, 0))
+                    wordSpeller.spell(text) {
+                        icon.setColorFilter(Color.argb(255, 41, 45, 54))
+                    }
                 }
             }
         )
