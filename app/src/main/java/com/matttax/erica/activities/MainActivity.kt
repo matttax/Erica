@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.view.KeyEvent
-import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.activity.viewModels
@@ -26,11 +25,11 @@ import com.matttax.erica.adaptors.listeners.OnItemClickedListener
 import com.matttax.erica.databinding.ActivityMainBinding
 import com.matttax.erica.domain.model.translate.DictionaryDefinition
 import com.matttax.erica.domain.model.translate.UsageExample
+import com.matttax.erica.presentation.model.translate.TranslateState
+import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.model.translate.TranslatedTextCard
 import com.matttax.erica.presentation.states.DataState
 import com.matttax.erica.presentation.states.TextState
-import com.matttax.erica.presentation.model.translate.TranslateState
-import com.matttax.erica.presentation.model.translate.TranslatedText
 import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModel
 import com.matttax.erica.speechtotext.WordSpeller
 import com.matttax.erica.utils.AppSettings
@@ -158,8 +157,9 @@ class MainActivity : AppCompatActivity() {
         translateViewModel.onOutputLanguageChanged(getLanguageCode(binding.toSpinner.selectedItem.toString()))
         binding.swapButton.setOnClickListener {
             val oldPosition = binding.fromSpinner.selectedItemPosition
-            binding.fromSpinner.setSelection(binding.toSpinner.selectedItemPosition)
-            binding.toSpinner.setSelection(oldPosition)
+            binding.fromSpinner.animateSelection(binding.toSpinner.selectedItemPosition)
+            binding.toSpinner.animateSelection(oldPosition)
+            it.animate().rotationBy(360f).setDuration(400).start()
         }
         binding.startLearn.setOnClickListener {
             translateViewModel.currentSetId?.let { id -> LearnActivity.start(this, id) }
@@ -381,5 +381,18 @@ class MainActivity : AppCompatActivity() {
         const val TRANSLATE_BUTTON_TEXT = "translate"
         const val SELECTED_TAB_KEY = "SELECTED_TAB"
         const val SELECTED_SET_KEY = "SELECTED_SET_POSITION"
+
+        private const val ANIMATION_SCALE_OUT = 0.4f
+        private const val ANIMATION_SCALE_IN = 1f
+
+        private fun Spinner.animateSelection(position: Int) {
+            animate().scaleX(ANIMATION_SCALE_OUT).scaleY(ANIMATION_SCALE_OUT)
+                .setDuration(200)
+                .withEndAction {
+                    setSelection(position)
+                    animate().scaleX(ANIMATION_SCALE_IN).scaleY(ANIMATION_SCALE_IN)
+                        .setDuration(200).start()
+                }.start()
+        }
     }
 }
