@@ -28,7 +28,7 @@ class StartLearnDialog(
     private val wordsInBatchText: TextView = dialogView.findViewById(R.id.words_in_batch_text)
 
     private var wordsTotalCount = wordsCount
-    private var wordsInBatch = 7
+    private var wordsInBatch = minOf(7, wordsCount)
 
     init {
         numberOfWordsText.text = wordsTotalCount.toString()

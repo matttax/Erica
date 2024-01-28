@@ -29,14 +29,17 @@ class WordsRepositoryImpl @Inject constructor(
 
     override fun addWord(wordDomainModel: WordDomainModel): Boolean {
         val contentValues = ContentValues()
-        contentValues.put(WORDS_COLUMN_TEXT_LANGUAGE, wordDomainModel.textLanguage.code)
-        contentValues.put(WORDS_COLUMN_TRANSLATION_LANGUAGE, wordDomainModel.translationLanguage.code)
-        contentValues.put(WORDS_COLUMN_TEXT, wordDomainModel.text)
-        contentValues.put(WORDS_COLUMN_TRANSLATION, wordDomainModel.translation)
-        contentValues.put(WORDS_COLUMN_TIMES_ASKED, 0)
-        contentValues.put(WORDS_COLUMN_TIMES_CORRECT, 0)
-        contentValues.put(WORDS_COLUMN_LAST_ASKED_TIMESTAMP, 0)
-        contentValues.put(WORDS_COLUMN_SET_ID, wordDomainModel.setId)
+        contentValues.apply {
+            put(WORDS_COLUMN_TEXT_LANGUAGE, wordDomainModel.textLanguage.code)
+            put(WORDS_COLUMN_TRANSLATION_LANGUAGE, wordDomainModel.translationLanguage.code)
+            put(WORDS_COLUMN_TEXT, wordDomainModel.text)
+            put(WORDS_COLUMN_TRANSLATION, wordDomainModel.translation)
+            put(WORDS_COLUMN_TIMES_ASKED, 0)
+            put(WORDS_COLUMN_TIMES_CORRECT, 0)
+            put(WORDS_COLUMN_LAST_ASKED_TIMESTAMP, 0)
+            put(WORDS_COLUMN_SET_ID, wordDomainModel.setId)
+        }
+        touchSet(wordDomainModel.setId)
         return sqliteDatabaseManager.writableDatabase.insert(WORDS_TABLE_NAME, null, contentValues) != -1L
     }
 
@@ -45,7 +48,6 @@ class WordsRepositoryImpl @Inject constructor(
                 "WHERE ${setIdToQuery(wordGroupConfig.setId)} " +
                 "ORDER BY ${sortingToQuery(wordGroupConfig.sorting)} " +
                 "LIMIT ${wordGroupConfig.limit ?: Int.MAX_VALUE}"
-
         val currentWords = mutableListOf<WordDomainModel>()
         val cursor = sqliteDatabaseManager.writableDatabase.rawQuery(query, null)
         if (cursor.count != 0) {
@@ -69,6 +71,7 @@ class WordsRepositoryImpl @Inject constructor(
 
     override fun remove(wordId: Long, setId: Long) {
         sqliteDatabaseManager.writableDatabase.execSQL("DELETE FROM $WORDS_TABLE_NAME WHERE id=$wordId")
+        touchSet(setId)
     }
 
     override fun moveToSet(fromSetId: Long, toSetId: Long, vararg wordIds: Long) {
@@ -76,12 +79,19 @@ class WordsRepositoryImpl @Inject constructor(
                 "WHERE $WORDS_COLUMN_ID IN " +
                 wordIds.asList().toQuery()
         )
+        touchSet(toSetId)
     }
 
     override fun onWordAnswered(wordId: Long, isCorrect: Boolean) {
         sqliteDatabaseManager.writableDatabase.execSQL("UPDATE $WORDS_TABLE_NAME " +
                 "SET $WORDS_COLUMN_TIMES_CORRECT=$WORDS_COLUMN_TIMES_CORRECT+1 " +
-                "WHERE id=$wordId")
+                "WHERE id=$wordId"
+        )
+        sqliteDatabaseManager.writableDatabase.execSQL("UPDATE $SETS_TABLE_NAME " +
+                "SET $SETS_COLUMN_LAST_MODIFIED_TIMESTAMP=${System.currentTimeMillis()} " +
+                "WHERE $SETS_COLUMN_ID IN " +
+                "(SELECT $WORDS_COLUMN_SET_ID FROM $WORDS_TABLE_NAME WHERE $WORDS_COLUMN_ID=$wordId)"
+        )
         if (isCorrect) {
             sqliteDatabaseManager.writableDatabase.execSQL(
                 "UPDATE $WORDS_TABLE_NAME SET $WORDS_COLUMN_TIMES_ASKED=$WORDS_COLUMN_TIMES_ASKED+1, " +
@@ -120,5 +130,12 @@ class WordsRepositoryImpl @Inject constructor(
 
     private fun <T> List<T>.toQuery(): String {
         return toString().replace('[', '(').replace(']', ')')
+    }
+
+    private fun touchSet(id: Long) {
+        val query = "UPDATE $SETS_TABLE_NAME " +
+                "SET $SETS_COLUMN_LAST_MODIFIED_TIMESTAMP=${System.currentTimeMillis()} " +
+                "WHERE $SETS_COLUMN_ID=$id"
+        sqliteDatabaseManager.writableDatabase.execSQL(query)
     }
 }

@@ -108,8 +108,6 @@ class WordsFragment : Fragment() {
                         val newCard = words[position].copy(translatedText = newWord)
                         words.removeAt(position)
                         words.add(0, newCard)
-                        binding.wordsList.adapter?.notifyItemRemoved(position)
-                        binding.wordsList.adapter?.notifyItemInserted(0)
                     }
                 }
             ).showDialog()

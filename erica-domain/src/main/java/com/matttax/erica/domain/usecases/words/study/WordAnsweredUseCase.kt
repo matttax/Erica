@@ -13,7 +13,6 @@ class WordAnsweredUseCase(
     override suspend fun execute(input: Pair<WordDomainModel, String>, onResult: (Boolean) -> Unit) {
         input.first.id?.let {
             wordsRepository.onWordAnswered(it, input.first.translation == input.second)
-            setsRepository.touchSet(input.first.setId)
         }
         onResult(input.first.translation == input.second)
     }
