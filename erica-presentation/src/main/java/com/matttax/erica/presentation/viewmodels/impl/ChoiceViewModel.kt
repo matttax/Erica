@@ -34,8 +34,7 @@ class ChoiceViewModel @Inject constructor(
     private val moveWordsUseCase: MoveWordsUseCase,
     private val deleteWordsUseCase: DeleteWordsUseCase,
     private val addWordUseCase: AddWordUseCase
-)
-    : ViewModel(), SetsInteractor, WordsInteractor {
+) : ViewModel(), SetsInteractor, WordsInteractor {
 
     private val setsStateFlow = MutableStateFlow<SetsState?>(null)
     private val wordsStateFlow = MutableStateFlow<WordsState?>(null)
@@ -46,6 +45,8 @@ class ChoiceViewModel @Inject constructor(
 
     private var setId: Long = -1
     private var defaultWordGroupConfig = WordGroupConfig()
+    private var filteredWordList = emptyList<WordDomainModel>()
+    private var fullWordList = emptyList<WordDomainModel>()
 
     val wordsStateObservable = object : StatefulObservable<WordsState?> {
         override fun observeState(): Flow<WordsState?> = wordsStateFlow.asStateFlow()
@@ -106,14 +107,31 @@ class ChoiceViewModel @Inject constructor(
         selectedWordsPositions.clear()
     }
 
+    override fun filterWordsByQuery(query: String) {
+        filteredWordList = fullWordList.filter { word ->
+            if (query.isNotEmpty()) {
+                word.text.indifferent().contains(query.indifferent())
+                        || word.translation.indifferent().contains(query.indifferent())
+            } else true
+        }
+        wordsListFlow.value = filteredWordList
+    }
+
+    override fun filterSetsByQuery(query: String) {
+        setsStateFlow.update {
+            it?.copy(filter = query.indifferent())
+        }
+    }
+
     override suspend fun onGetWords(wordGroupConfig: WordGroupConfig) {
         if (defaultWordGroupConfig != wordGroupConfig) {
             onDeselectAll()
         }
         defaultWordGroupConfig = wordGroupConfig
-        this.setId = (wordGroupConfig.setId as? SetId.One)?.id?.toLong() ?: -1L
+        this.setId = (wordGroupConfig.setId as? SetId.One)?.id ?: -1L
         getWordsUseCase.execute(wordGroupConfig) {
             wordsListFlow.value = it
+            fullWordList = it
         }
     }
 
@@ -189,4 +207,6 @@ class ChoiceViewModel @Inject constructor(
     fun getSelectedPositions(): Set<Int> {
         return selectedWordsPositions.toSet()
     }
+
+    private fun String.indifferent() = lowercase().trim()
 }

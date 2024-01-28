@@ -22,6 +22,7 @@ import com.matttax.erica.adaptors.PartOfSpeechAdaptor
 import com.matttax.erica.adaptors.TranslationAdaptor
 import com.matttax.erica.adaptors.WordAdaptor
 import com.matttax.erica.adaptors.callback.WordCallback
+import com.matttax.erica.adaptors.listeners.OnItemClickedListener
 import com.matttax.erica.databinding.ActivityMainBinding
 import com.matttax.erica.domain.model.translate.DictionaryDefinition
 import com.matttax.erica.domain.model.translate.UsageExample
@@ -75,12 +76,9 @@ class MainActivity : AppCompatActivity() {
         observeTranslatedState()
         observeTranslations()
 
-        binding.setSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                currentPosition = position
-                translateViewModel.onSetSelected(position)
-            }
+        binding.setSpinner.onItemSelectedListener = OnItemClickedListener { position ->
+            currentPosition = position
+            translateViewModel.onSetSelected(position)
         }
 
         binding.toSetsButton.setOnClickListener {
@@ -143,23 +141,17 @@ class MainActivity : AppCompatActivity() {
         binding.fromSpinner.apply {
             adapter = ArrayAdapter(this@MainActivity, R.layout.sets_spinner_item, languages)
             setSelection(appSettings.fromLanguageId)
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long)
-                = with(translateViewModel) {
-                    onInputTextLanguageChanged(getLanguageCode(binding.fromSpinner.selectedItem.toString()))
-                }
+            onItemSelectedListener = OnItemClickedListener {
+                translateViewModel.onInputTextLanguageChanged(
+                    getLanguageCode(binding.fromSpinner.selectedItem.toString())
+                )
             }
         }
         binding.toSpinner.apply {
             adapter = ArrayAdapter(this@MainActivity, R.layout.sets_spinner_item, languages)
             setSelection(appSettings.toLanguageId)
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long)
-                = with(translateViewModel) {
-                    onOutputLanguageChanged(getLanguageCode(binding.toSpinner.selectedItem.toString()))
-                }
+            onItemSelectedListener = OnItemClickedListener {
+                translateViewModel.onOutputLanguageChanged(getLanguageCode(binding.toSpinner.selectedItem.toString()))
             }
         }
         translateViewModel.onInputTextLanguageChanged(getLanguageCode(binding.fromSpinner.selectedItem.toString()))

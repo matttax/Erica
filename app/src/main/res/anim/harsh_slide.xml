@@ -3,7 +3,7 @@
     <alpha
         android:fromAlpha="0"
         android:toAlpha="1.0"
-        android:duration="300" />
+        android:duration="150" />
     <scale
         android:fromYScale="0.5"
         android:fromXScale="0.5"

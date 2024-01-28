@@ -7,6 +7,7 @@ interface WordsInteractor {
     fun onWordSelected(position: Int)
     fun onWordDeselected(position: Int)
     fun onDeselectAll()
+    fun filterWordsByQuery(query: String)
     suspend fun onGetWords(wordGroupConfig: WordGroupConfig)
     suspend fun onMoveSelectedWords(toId: Long)
     suspend fun onDeleteWordAt(position: Int)

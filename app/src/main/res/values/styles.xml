@@ -100,4 +100,11 @@
         <item name="android:textColorHint">@color/black_shade_1</item>
     </style>
 
+    <style name="searchTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:fontFamily">@font/nunito_regular</item>
+        <item name="colorControlActivated">@color/blue</item>
+        <item name="iconifiedByDefault">false</item>
+        <item name="queryHint">Search</item>
+    </style>
+
 </resources>
