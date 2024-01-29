@@ -13,8 +13,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.matttax.erica.R
 import com.matttax.erica.databinding.ActivityLearnBinding
-import com.matttax.erica.dialogs.impl.AfterBatchDialog
-import com.matttax.erica.dialogs.impl.WordAnsweredDialog
+import com.matttax.erica.dialogs.results.AnsweredState
+import com.matttax.erica.dialogs.results.WordAnsweredCallback
+import com.matttax.erica.dialogs.results.AfterBatchDialog
+import com.matttax.erica.dialogs.results.WordAnsweredDialog
 import com.matttax.erica.domain.config.*
 import com.matttax.erica.presentation.states.StudyState
 import com.matttax.erica.presentation.viewmodels.impl.StudyViewModel
@@ -139,29 +141,16 @@ class LearnActivity : AppCompatActivity() {
                 }
                 WordAnsweredDialog(
                     context = this,
-                    correctAnswer = currentWord.translation,
-                    isCorrect = studyState.isLastCorrect ?: false,
-                    showNotIncorrect = studyState.isLastCorrect == false && !doNotKnowFlag,
-                    onOk = {
-                        dialogOnScreen = false
-                        doNotKnowFlag = false
-                        if (studyState.currentAskedPosition?.plus(1) != studyState.currentBatch?.size) {
-                            studyViewModel.onGetNextWordAction()
-                        } else {
-                            AfterBatchDialog(
-                                context = this,
-                                results = studyState.batchResult ?: emptyList(),
-                                wordSpeller = wordSpeller,
-                                remainingCount = studyState.remainingWords,
-                            ) {
-                                studyViewModel.onGetNewBatchAction()
-                            }.showDialog()
-                        }
-                    },
-                    onNotIncorrect = {
-                        launchSuspend {
-                            studyViewModel.onWordForceCorrectAnswer()
-                        }
+                    answeredState = AnsweredState(
+                        correctAnswer = currentWord.translation,
+                        isCorrect = studyState.isLastCorrect ?: false,
+                        showNotIncorrect = studyState.isLastCorrect == false && !doNotKnowFlag,
+                    ),
+                    hintState = studyViewModel.hintFlow,
+                    wordAnsweredCallback = object : WordAnsweredCallback {
+                        override fun onOk() = nextStep(studyState)
+                        override fun onNotIncorrect() { launchSuspend { studyViewModel.onWordForceCorrectAnswer() } }
+                        override fun onShowHint() { launchSuspend { studyViewModel.onGetHint() } }
                     }
                 ).showDialog()
             }
@@ -176,6 +165,23 @@ class LearnActivity : AppCompatActivity() {
                     )
                 }
             }
+        }
+    }
+
+    private fun nextStep(studyState: StudyState) {
+        dialogOnScreen = false
+        doNotKnowFlag = false
+        if (studyState.currentAskedPosition?.plus(1) != studyState.currentBatch?.size) {
+            studyViewModel.onGetNextWordAction()
+        } else {
+            AfterBatchDialog(
+                context = this@LearnActivity,
+                results = studyState.batchResult ?: emptyList(),
+                wordSpeller = wordSpeller,
+                remainingCount = studyState.remainingWords,
+            ) {
+                studyViewModel.onGetNewBatchAction()
+            }.showDialog()
         }
     }
 

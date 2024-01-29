@@ -1,7 +1,6 @@
 package com.matttax.erica.fragments
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -17,8 +16,8 @@ import com.matttax.erica.adaptors.SetAdaptor
 import com.matttax.erica.adaptors.callback.SetCallback
 import com.matttax.erica.adaptors.listeners.SearchFieldListener.Companion.setSearchListener
 import com.matttax.erica.databinding.FragmentSetsBinding
-import com.matttax.erica.dialogs.impl.DeleteDialog
-import com.matttax.erica.dialogs.impl.EditDialog
+import com.matttax.erica.dialogs.selection.DeleteDialog
+import com.matttax.erica.dialogs.selection.EditDialog
 import com.matttax.erica.domain.config.AskMode
 import com.matttax.erica.domain.config.WordsSorting
 import com.matttax.erica.model.WordSet

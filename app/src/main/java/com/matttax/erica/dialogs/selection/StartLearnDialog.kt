@@ -1,4 +1,4 @@
-package com.matttax.erica.dialogs.impl
+package com.matttax.erica.dialogs.selection
 
 import android.content.Context
 import android.widget.*

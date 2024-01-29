@@ -53,7 +53,8 @@ class PythonTranslator @Inject constructor(
             DictionaryDefinition(
                 partOfSpeech = definition.key.toString(),
                 description = definition.value.asList()[0].toString(),
-                definitions = definition.value.asList().drop(1).map { it.toString() })
+                definitions = definition.value.asList().drop(1).map { it.toString() }
+            )
         }
     }
 

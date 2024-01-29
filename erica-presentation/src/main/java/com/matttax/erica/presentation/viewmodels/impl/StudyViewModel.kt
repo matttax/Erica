@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.matttax.erica.domain.config.AskMode.*
 import com.matttax.erica.domain.config.StudyConfig
 import com.matttax.erica.domain.model.WordDomainModel
+import com.matttax.erica.domain.model.translate.TranslationRequest
+import com.matttax.erica.domain.usecases.translate.GetDefinitionsUseCase
 import com.matttax.erica.domain.usecases.words.crud.GetWordsUseCase
 import com.matttax.erica.domain.usecases.words.study.WordAnsweredUseCase
 import com.matttax.erica.presentation.model.study.StudiedWord
 import com.matttax.erica.presentation.model.study.StudiedWordState
 import com.matttax.erica.presentation.model.translate.TranslatedText
+import com.matttax.erica.presentation.states.HintState
 import com.matttax.erica.presentation.states.StudyState
 import com.matttax.erica.presentation.viewmodels.StatefulObservable
 import com.matttax.erica.presentation.viewmodels.StudyInteractor
@@ -21,6 +24,7 @@ import javax.inject.Inject
 class StudyViewModel @Inject constructor(
     private val getWordsUseCase: GetWordsUseCase,
     private val wordAnsweredUseCase: WordAnsweredUseCase,
+    private val getDefinitionsUseCase: GetDefinitionsUseCase
 ): ViewModel(), StudyInteractor, StatefulObservable<StudyState?> {
 
     private var batchSize = 0
@@ -35,6 +39,9 @@ class StudyViewModel @Inject constructor(
     private val currentAskedPosition = MutableStateFlow<Int?>(null)
     private val isFinishedFlow = MutableStateFlow<Boolean?>(false)
     private val isCorrectFlow = MutableStateFlow<Boolean?>(null)
+
+    private val _hintFlow = MutableStateFlow<HintState>(HintState.NotRequested)
+    val hintFlow = _hintFlow.asStateFlow()
 
     init {
         combine(
@@ -117,8 +124,27 @@ class StudyViewModel @Inject constructor(
     }
 
     override fun onGetNextWordAction() {
+        _hintFlow.value = HintState.NotRequested
         isCorrectFlow.value = null
         currentAskedPosition.value = currentAskedPosition.value?.plus(1)
+    }
+
+    override suspend fun onGetHint() {
+        currentAskedPosition.value?.let {
+            batchFlow.value?.get(it)?.let { word ->
+                println(word)
+                _hintFlow.value = HintState.Loading
+                getDefinitionsUseCase.execute(
+                    input = TranslationRequest(
+                        word.text, word.textLanguage, word.translationLanguage
+                    )
+                ) { list ->
+                    if (list.isEmpty())
+                        _hintFlow.value = HintState.NotFound
+                    else _hintFlow.value = HintState.Hint(list)
+                }
+            } ?: run { _hintFlow.value = HintState.NotFound }
+        }
     }
 
     companion object {

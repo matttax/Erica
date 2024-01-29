@@ -34,6 +34,8 @@
         <TextView
             android:layout_marginTop="15dp"
             android:layout_marginBottom="15dp"
+            android:layout_marginEnd="15dp"
+            android:background="?android:attr/selectableItemBackground"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Word"
@@ -44,6 +46,38 @@
             android:layout_marginStart="30dp"
             android:fontFamily="@font/nunito_regular"
             />
+        <FrameLayout
+            android:id="@+id/hintContainer"
+            android:padding="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/hint"
+                android:layout_width="300dp"
+                android:layout_height="300dp"
+                android:visibility="gone"
+                android:layout_gravity="center"
+                />
+            <ProgressBar
+                android:id="@+id/hintProgressBar"
+                style="@style/notificationSign"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/blue"
+                android:layout_gravity="center"
+                />
+            <TextView
+                android:id="@+id/hintErrorText"
+                style="@style/dialogText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No hint found"
+                android:gravity="center"
+                android:visibility="gone"
+                />
+        </FrameLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -7,6 +7,7 @@ interface StudyInteractor {
     suspend fun onGetWords(studyConfig: StudyConfig)
     suspend fun onWordAnswered(answer: String)
     suspend fun onWordForceCorrectAnswer()
+    suspend fun onGetHint()
     fun onGetNextWordAction()
     fun onGetNewBatchAction()
 }

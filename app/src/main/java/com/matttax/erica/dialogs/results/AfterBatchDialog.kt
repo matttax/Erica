@@ -1,4 +1,4 @@
-package com.matttax.erica.dialogs.impl
+package com.matttax.erica.dialogs.results
 
 import android.content.Context
 import android.graphics.Color

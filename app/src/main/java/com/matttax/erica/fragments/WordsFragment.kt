@@ -19,10 +19,10 @@ import com.matttax.erica.adaptors.callback.WordCallback
 import com.matttax.erica.adaptors.listeners.OnItemClickedListener
 import com.matttax.erica.adaptors.listeners.SearchFieldListener.Companion.setSearchListener
 import com.matttax.erica.databinding.FragmentWordsBinding
-import com.matttax.erica.dialogs.impl.DeleteDialog
-import com.matttax.erica.dialogs.impl.EditDialog
-import com.matttax.erica.dialogs.impl.MoveDialog
-import com.matttax.erica.dialogs.impl.StartLearnDialog
+import com.matttax.erica.dialogs.selection.DeleteDialog
+import com.matttax.erica.dialogs.selection.EditDialog
+import com.matttax.erica.dialogs.selection.MoveDialog
+import com.matttax.erica.dialogs.selection.StartLearnDialog
 import com.matttax.erica.model.WordSet
 import com.matttax.erica.presentation.model.translate.TextCardState
 import com.matttax.erica.presentation.model.translate.TranslatedText

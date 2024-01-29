@@ -1,6 +1,7 @@
 package com.matttax.erica.adaptors
 
-import android.app.Activity
+import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -10,14 +11,15 @@ import com.matttax.erica.R
 import com.matttax.erica.domain.model.translate.DictionaryDefinition
 
 class PartOfSpeechAdaptor(
-    private val context: Activity,
+    private val context: Context,
     private val definitions: List<DictionaryDefinition>
 ) : RecyclerView.Adapter<PartOfSpeechAdaptor.PartOfSpeechViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PartOfSpeechViewHolder {
-        val inflater = context.layoutInflater
-        val view = inflater.inflate(R.layout.definition_item, parent, false)
-        return PartOfSpeechViewHolder(view)
+        val inflater = LayoutInflater
+            .from(context)
+            .inflate(R.layout.definition_item, parent, false)
+        return PartOfSpeechViewHolder(inflater)
     }
 
     override fun onBindViewHolder(holder: PartOfSpeechViewHolder, position: Int) {
