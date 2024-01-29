@@ -11,6 +11,7 @@ import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.matttax.erica.R
 import com.matttax.erica.databinding.ActivityLearnBinding
 import com.matttax.erica.dialogs.results.AnsweredState
@@ -21,13 +22,11 @@ import com.matttax.erica.domain.config.*
 import com.matttax.erica.presentation.states.StudyState
 import com.matttax.erica.presentation.viewmodels.impl.StudyViewModel
 import com.matttax.erica.speechtotext.WordSpeller
-import com.matttax.erica.utils.Utils.getScope
-import com.matttax.erica.utils.Utils.launchSuspend
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -59,15 +58,11 @@ class LearnActivity : AppCompatActivity() {
         }
 
         studyViewModel.observeState()
-            .flowOn(Dispatchers.Main)
             .onEach {
-                runOnUiThread {
-                    it?.let { data -> setData(data) }
-                }
-            }
-            .launchIn(getScope())
+                it?.let { data -> setData(data) }
+            }.launchIn(lifecycleScope)
 
-        launchSuspend {
+        lifecycleScope.launch(Dispatchers.IO) {
             studyViewModel.onGetWords(
                 StudyConfig(
                     wordGroupConfig = WordGroupConfig(
@@ -87,7 +82,7 @@ class LearnActivity : AppCompatActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.definitionInputField.setOnKeyListener(View.OnKeyListener { _, i, keyEvent ->
             if ((keyEvent.action == KeyEvent.ACTION_DOWN) && (i == KeyEvent.KEYCODE_ENTER)) {
-                launchSuspend {
+                lifecycleScope.launch {
                     val text = binding.definitionInputField.text.toString()
                     if (text.isBlank()) {
                         doNotKnowFlag = true
@@ -103,9 +98,7 @@ class LearnActivity : AppCompatActivity() {
         }
         binding.doNotKnow.setOnClickListener {
             doNotKnowFlag = true
-            launchSuspend {
-                studyViewModel.onWordAnswered("")
-            }
+            lifecycleScope.launch { studyViewModel.onWordAnswered("") }
         }
         binding.answeredProgressBar.progressDrawable.setColorFilter(
             ContextCompat.getColor(this@LearnActivity, R.color.blue),
@@ -149,8 +142,8 @@ class LearnActivity : AppCompatActivity() {
                     hintState = studyViewModel.hintFlow,
                     wordAnsweredCallback = object : WordAnsweredCallback {
                         override fun onOk() = nextStep(studyState)
-                        override fun onNotIncorrect() { launchSuspend { studyViewModel.onWordForceCorrectAnswer() } }
-                        override fun onShowHint() { launchSuspend { studyViewModel.onGetHint() } }
+                        override fun onNotIncorrect() { lifecycleScope.launch { studyViewModel.onWordForceCorrectAnswer() } }
+                        override fun onShowHint() { lifecycleScope.launch { studyViewModel.onGetHint() } }
                     }
                 ).showDialog()
             }

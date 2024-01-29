@@ -36,11 +36,11 @@ import com.matttax.erica.utils.ChoiceNavigator.Companion.SET_ID_EXTRA_NAME
 import com.matttax.erica.utils.ChoiceNavigator.Companion.SET_NAME_EXTRA_NAME
 import com.matttax.erica.utils.ChoiceNavigator.Companion.WORD_COUNT_EXTRA_NAME
 import com.matttax.erica.utils.Utils.getConfigByPosition
-import com.matttax.erica.utils.Utils.launchSuspend
 import com.matttax.erica.utils.getChoiceNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -104,7 +104,7 @@ class WordsFragment : Fragment() {
                                 text = text,
                                 translation = translation
                             )
-                            launchSuspend {
+                            lifecycleScope.launch {
                                 choiceViewModel.onDeleteWordAt(position)
                                 choiceViewModel.onAddWord(newWord)
                             }
@@ -122,7 +122,7 @@ class WordsFragment : Fragment() {
                     headerText = "Ready to remove this word?",
                     detailedExplanationText = null
                 ) {
-                    launchSuspend {
+                    lifecycleScope.launch {
                         choiceViewModel.onDeleteWordAt(position)
                     }
                     words.removeAt(position)
@@ -194,7 +194,7 @@ class WordsFragment : Fragment() {
             setSelection(appSettings.wordsOrderId)
             onItemSelectedListener = OnItemClickedListener { position ->
                 words.clear()
-                launchSuspend {
+                lifecycleScope.launch {
                     choiceViewModel.onGetSets()
                     choiceViewModel.onGetWords(getConfigByPosition(currentSet.id, position))
                 }
@@ -339,7 +339,7 @@ class WordsFragment : Fragment() {
                 context = requireActivity(),
                 sets = sets.map { it.first }
             ) {
-                launchSuspend {
+                lifecycleScope.launch {
                     choiceViewModel.onMoveSelectedWords(sets[it].second)
                 }
             }.showDialog()
@@ -360,7 +360,7 @@ class WordsFragment : Fragment() {
                 headerText = "Ready to remove ${choiceViewModel.getSelectedPositions().size} words?",
                 detailedExplanationText = null
             ) {
-                launchSuspend {
+                lifecycleScope.launch {
                     choiceViewModel.onDeleteSelected()
                 }
                 binding.wordsList.adapter?.notifyDataSetChanged()

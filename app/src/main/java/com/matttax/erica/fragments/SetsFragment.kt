@@ -25,11 +25,11 @@ import com.matttax.erica.presentation.states.SetsState
 import com.matttax.erica.presentation.viewmodels.impl.ChoiceViewModel
 import com.matttax.erica.utils.AppSettings
 import com.matttax.erica.utils.Utils.getConfigByPosition
-import com.matttax.erica.utils.Utils.launchSuspend
 import com.matttax.erica.utils.getChoiceNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -48,7 +48,7 @@ class SetsFragment : Fragment() {
     private val setCallback by lazy {
         object : SetCallback {
             override fun onClick(position: Int) {
-                launchSuspend {
+                lifecycleScope.launch {
                     choiceViewModel.onGetWords(
                         getConfigByPosition(
                             sets[position].id,
@@ -76,7 +76,7 @@ class SetsFragment : Fragment() {
                     headerText = "Sure?",
                     detailedExplanationText = "If you delete the set, all containing words are lost"
                 ) {
-                    launchSuspend {
+                    lifecycleScope.launch {
                         choiceViewModel.onDeleteSetById(sets[position].id)
                     }
                 }.showDialog()
@@ -90,7 +90,7 @@ class SetsFragment : Fragment() {
                     secondField = "Description" to sets[position].description,
                     ignoreSecondField = true,
                     onSuccess = { name, description ->
-                        launchSuspend {
+                        lifecycleScope.launch {
                             choiceViewModel.onUpdateSetAction(sets[position].id, name, description)
                         }
                     }
@@ -139,7 +139,7 @@ class SetsFragment : Fragment() {
                 secondField = "Description" to "",
                 ignoreSecondField = true,
                 onSuccess = { name, description ->
-                    launchSuspend {
+                    lifecycleScope.launch {
                         choiceViewModel.onAddSetAction(name, description)
                     }
                 },
@@ -155,7 +155,7 @@ class SetsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        launchSuspend {
+        lifecycleScope.launch {
             choiceViewModel.onGetSets()
         }
     }

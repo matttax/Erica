@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.tabs.TabLayout
@@ -34,12 +35,9 @@ import com.matttax.erica.presentation.viewmodels.impl.TranslateViewModel
 import com.matttax.erica.speechtotext.WordSpeller
 import com.matttax.erica.utils.AppSettings
 import com.matttax.erica.utils.Utils.getLanguageCode
-import com.matttax.erica.utils.Utils.getScope
-import com.matttax.erica.utils.Utils.launchSuspend
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
@@ -107,9 +105,7 @@ class MainActivity : AppCompatActivity() {
                 binding.translations.adapter = null
                 translateClicked()
             } else {
-                launchSuspend {
-                    translateViewModel.onAddAction()
-                }
+                lifecycleScope.launch { translateViewModel.onAddAction() }
                 binding.dismissWord.callOnClick()
             }
         }
@@ -168,9 +164,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        launchSuspend {
-            translateViewModel.onGetSetsAction()
-        }
+        lifecycleScope.launch(Dispatchers.IO) { translateViewModel.onGetSetsAction() }
     }
 
     override fun onStop() {
@@ -197,7 +191,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun translateClicked() {
         job?.cancel()
-        job = getScope().launch(Dispatchers.Main) {
+        job = lifecycleScope.launch(Dispatchers.IO) {
             translateViewModel.onTranslateAction()
         }
     }
@@ -332,7 +326,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeTranslatedState() {
         translateViewModel.isAddableObservable
-            .flowOn(Dispatchers.Main)
             .onEach {
                 runOnUiThread {
                     when(it) {
@@ -341,7 +334,7 @@ class MainActivity : AppCompatActivity() {
                         else -> showTranslateButton()
                     }
                 }
-            }.launchIn(getScope())
+            }.launchIn(lifecycleScope)
     }
 
     private fun observeTranslations() {
@@ -349,31 +342,25 @@ class MainActivity : AppCompatActivity() {
             translateViewModel.translationsObservable.observeState(),
             translateViewModel.definitionsObservable.observeState(),
             translateViewModel.examplesObservable.observeState()
-        ) {
-                translations, definitions, examples -> TranslateState(translations, definitions, examples)
-        }.onEach {
-            lastTranslateState = it
-            runOnUiThread {
+        ) { translations, definitions, examples -> TranslateState(translations, definitions, examples) }
+            .onEach {
+                lastTranslateState = it
                 updateAdaptor(translateViewModel.lastTranslatedCache == binding.termTextField.text?.toString())
-            }
-        }.launchIn(getScope())
+            }.launchIn(lifecycleScope)
     }
 
     private fun observeSets() {
         translateViewModel.setsObservable.observeState()
-            .flowOn(Dispatchers.Main)
             .onEach { sets ->
-                runOnUiThread {
-                    binding.setSpinner.adapter = ArrayAdapter(
-                        this,
-                        R.layout.sets_spinner_item,
-                        sets?.map { it.name } ?: emptyList()
-                    ).also {
-                        it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    }
-                    binding.setSpinner.setSelection(currentPosition)
+                binding.setSpinner.adapter = ArrayAdapter(
+                    this,
+                    R.layout.sets_spinner_item,
+                    sets?.map { it.name } ?: emptyList()
+                ).also {
+                    it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 }
-            }.launchIn(getScope())
+                binding.setSpinner.setSelection(currentPosition)
+            }.launchIn(lifecycleScope)
     }
 
     companion object {
