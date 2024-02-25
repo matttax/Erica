@@ -1,34 +1,27 @@
 package com.matttax.erica.dialogs
 
-import android.app.Activity
-import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
-import com.google.android.material.button.MaterialButton
+import android.widget.Button
+import androidx.viewbinding.ViewBinding
 
-abstract class Dialog(context: Context, resource: Int) {
+abstract class Dialog<VB: ViewBinding>(
+    protected val binding: VB
+) {
 
-    protected val dialog: AlertDialog
-    protected val dialogView: View
+    protected val dialogView: View = binding.root
+    protected val dialog: AlertDialog = AlertDialog.Builder(binding.root.context).setView(dialogView).create()
+        .also { it.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) }
 
-    lateinit var dismissButton: MaterialButton
+    lateinit var dismissButton: Button
 
-    init {
-        val dialogBuilder = AlertDialog.Builder(context)
-        dialogView = (context as Activity).layoutInflater.inflate(resource, null)
-        dialogBuilder.setView(dialogView)
-        dialog = dialogBuilder.create()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-    }
-
-    fun initDismissButton(buttonResource: Int) {
-        dismissButton = dialogView.findViewById(buttonResource)
+    protected fun initDismissButton(button: Button) {
+        dismissButton = button
         dismissButton.setOnClickListener {
             dialog.dismiss()
         }
-
     }
 
     fun showDialog() {

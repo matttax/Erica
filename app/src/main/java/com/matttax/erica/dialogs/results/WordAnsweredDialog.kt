@@ -1,20 +1,16 @@
 package com.matttax.erica.dialogs.results
 
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.FrameLayout
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.card.MaterialCardView
 import com.matttax.erica.R
-import com.matttax.erica.adaptors.PartOfSpeechAdaptor
+import com.matttax.erica.adapters.PartOfSpeechAdapter
+import com.matttax.erica.databinding.WordAnsweredBinding
 import com.matttax.erica.dialogs.Dialog
 import com.matttax.erica.presentation.states.HintState
 import kotlinx.coroutines.CoroutineScope
@@ -28,67 +24,76 @@ class WordAnsweredDialog(
     hintState: Flow<HintState>,
     answeredState: AnsweredState,
     wordAnsweredCallback: WordAnsweredCallback,
-    lifecycle: Lifecycle? = (context as? AppCompatActivity)?.lifecycle
-): Dialog(context, R.layout.word_answered) {
-
-    private val answeredHeader: TextView = dialogView.findViewById(R.id.answeredHeader)
-    private val answeredCorrectWord: TextView = dialogView.findViewById(R.id.answeredCorrectWord)
-    private val notIncorrectButton: TextView = dialogView.findViewById(R.id.notIncorrect)
-    private val dialogCard: MaterialCardView = dialogView.findViewById(R.id.notification_main_column_container)
-
-    private val hintContainer: FrameLayout = dialogView.findViewById(R.id.hintContainer)
-    private val hint: RecyclerView = dialogView.findViewById(R.id.hint)
-    private val hintLoading: ProgressBar = dialogView.findViewById(R.id.hintProgressBar)
-    private val hintError: TextView = dialogView.findViewById(R.id.hintErrorText)
-
+): Dialog<WordAnsweredBinding>(
+    WordAnsweredBinding.inflate(LayoutInflater.from(context))
+) {
     private var hintShown = false
+    private val lifecycleScope =
+        (context as? AppCompatActivity)?.lifecycle?.coroutineScope ?: CoroutineScope(Dispatchers.Main)
+
+    private val incorrectColor = ContextCompat.getColor(context, R.color.crimson)
+    private val correctColor = ContextCompat.getColor(context, R.color.green)
 
     init {
-        initDismissButton(R.id.answerNext)
-        answeredCorrectWord.text = answeredState.correctAnswer
+        binding.hint.layoutManager = LinearLayoutManager(context)
+        initDismissButton(binding.answerNext)
+        showAnsweredState(answeredState)
+        initListeners(wordAnsweredCallback)
+        hintState
+            .onEach {
+                showHintState(it)
+            }.launchIn(lifecycleScope)
+    }
+
+    private fun showHintState(hintState: HintState) {
+        when(hintState) {
+            HintState.NotRequested -> {
+                binding.hintContainer.isVisible = false
+            }
+            HintState.Loading -> {
+                binding.hintContainer.isVisible = true
+                binding.hintProgressBar.isVisible = true
+            }
+            HintState.NotFound -> {
+                binding.hintProgressBar.isVisible = false
+                binding.hintErrorText.isVisible = true
+            }
+            is HintState.Hint -> {
+                hintShown = true
+                binding.hint.isVisible = true
+                binding.hintErrorText.isVisible = false
+                binding.hintProgressBar.isVisible = false
+                binding.hint.adapter = PartOfSpeechAdapter(hintState.definitions)
+            }
+        }
+    }
+
+    private fun showAnsweredState(answeredState: AnsweredState) {
+        binding.answeredCorrectWord.text = answeredState.correctAnswer
         if (!answeredState.isCorrect) {
-            answeredHeader.setBackgroundColor(ContextCompat.getColor(context, R.color.crimson))
-            answeredHeader.text = "Incorrect"
-            dialogCard.strokeColor = ContextCompat.getColor(context, R.color.crimson)
+            binding.answeredHeader.text = "Incorrect"
+            binding.dialogCard.strokeColor = incorrectColor
+            binding.answeredHeader.setBackgroundColor(incorrectColor)
         } else {
-            dialogCard.strokeColor = ContextCompat.getColor(context, R.color.green)
+            binding.dialogCard.strokeColor = correctColor
         }
         if (!answeredState.showNotIncorrect) {
-            notIncorrectButton.visibility = View.INVISIBLE
+            binding.notIncorrect.visibility = View.INVISIBLE
         }
+    }
+
+    private fun initListeners(wordAnsweredCallback: WordAnsweredCallback) {
         dialog.setOnDismissListener {
             wordAnsweredCallback.onOk()
         }
-        notIncorrectButton.setOnClickListener {
+        binding.notIncorrect.setOnClickListener {
             wordAnsweredCallback.onNotIncorrect()
             dialog.dismiss()
         }
-        answeredCorrectWord.setOnClickListener {
-            if (!hintShown) wordAnsweredCallback.onShowHint()
-        }
-        hintState.onEach {
-            when(it) {
-                HintState.NotRequested -> hintContainer.isVisible = false
-                HintState.Loading -> {
-                    hintContainer.isVisible = true
-                    hintLoading.isVisible = true
-                }
-                HintState.NotFound -> {
-                    hintLoading.isVisible = false
-                    hintError.isVisible = true
-                }
-                is HintState.Hint -> {
-                    hintShown = true
-                    hint.isVisible = true
-                    hintError.isVisible = false
-                    hintLoading.isVisible = false
-                    hint.layoutManager = LinearLayoutManager(context)
-                    hint.adapter = PartOfSpeechAdaptor(
-                        context,
-                        it.definitions
-                    )
-                }
+        binding.answeredCorrectWord.setOnClickListener {
+            if (!hintShown) {
+                wordAnsweredCallback.onShowHint()
             }
-        }.launchIn(lifecycle?.coroutineScope ?: CoroutineScope(Dispatchers.Main))
+        }
     }
 }

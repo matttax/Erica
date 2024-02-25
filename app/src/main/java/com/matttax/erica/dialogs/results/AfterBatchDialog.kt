@@ -2,13 +2,14 @@ package com.matttax.erica.dialogs.results
 
 import android.content.Context
 import android.graphics.Color
+import android.view.LayoutInflater
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.matttax.erica.R
-import com.matttax.erica.adaptors.WordAdaptor
-import com.matttax.erica.adaptors.callback.WordCallback
+import com.matttax.erica.adapters.WordAdapter
+import com.matttax.erica.adapters.callback.WordCallback
+import com.matttax.erica.databinding.AfterBatchBinding
 import com.matttax.erica.dialogs.Dialog
 import com.matttax.erica.presentation.model.study.StudiedWord
 import com.matttax.erica.presentation.model.study.StudiedWordState
@@ -23,17 +24,16 @@ class AfterBatchDialog(
     remainingCount: Int,
     wordSpeller: WordSpeller,
     onNext: () -> Unit
-) : Dialog(context, R.layout.after_batch) {
-
-    private val remainingTextView: TextView = dialogView.findViewById(R.id.remainingText)
+) : Dialog<AfterBatchBinding>(
+    AfterBatchBinding.inflate(LayoutInflater.from(context))
+) {
 
     init {
-        remainingTextView.text = "Remaining: $remainingCount"
-        initDismissButton(R.id.toNextBatch)
+        binding.remainingText.text = "Remaining: $remainingCount"
+        initDismissButton(binding.toNextBatch)
 
         val incorrectRecyclerViewer: RecyclerView = dialogView.findViewById(R.id.answered)
-        incorrectRecyclerViewer.adapter = WordAdaptor(
-            context = context,
+        incorrectRecyclerViewer.adapter = WordAdapter(
             words = results.map {
                 TranslatedTextCard(
                     translatedText = it.translatedText,

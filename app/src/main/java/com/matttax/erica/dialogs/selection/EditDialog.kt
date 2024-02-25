@@ -1,10 +1,8 @@
 package com.matttax.erica.dialogs.selection
 
 import android.content.Context
-import android.widget.TextView
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import com.matttax.erica.R
+import android.view.LayoutInflater
+import com.matttax.erica.databinding.EditDialogBinding
 import com.matttax.erica.dialogs.ActionDialog
 
 class EditDialog(
@@ -15,29 +13,24 @@ class EditDialog(
     ignoreSecondField: Boolean,
     onSuccess: (String, String) -> Unit,
     onFailure: () -> Unit = {}
-): ActionDialog(context, R.layout.edit_dialog) {
-
-    private val dialogHeaderText: TextView = dialogView.findViewById(R.id.editDialogHeader)
-
-    private val firstFieldLayout: TextInputLayout = dialogView.findViewById(R.id.firstFieldLayout)
-    private val firstFieldInputTextView: TextInputEditText = dialogView.findViewById(R.id.firstFieldText)
-
-    private val secondFieldLayout: TextInputLayout = dialogView.findViewById(R.id.secondFieldLayout)
-    private val secondFieldInputTextView: TextInputEditText = dialogView.findViewById(R.id.secondFieldText)
+): ActionDialog<EditDialogBinding>(
+    EditDialogBinding.inflate(LayoutInflater.from(context))
+) {
 
     init {
-        dialogHeaderText.text = headerText
-        firstFieldLayout.hint = firstField.first
-        firstFieldInputTextView.setText(firstField.second)
-        secondFieldLayout.hint = secondField.first
-        secondFieldInputTextView.setText(secondField.second)
-
-        initDismissButton(R.id.dismissSet)
-        initActionButton(R.id.addSet) {
-            if ((!firstFieldInputTextView.text.isNullOrBlank() && ignoreSecondField) ||
-                (!firstFieldInputTextView.text.isNullOrBlank() && !secondFieldInputTextView.text.isNullOrBlank() && !ignoreSecondField)
+        binding.apply {
+            editDialogHeader.text = headerText
+            firstFieldLayout.hint = firstField.first
+            firstFieldText.setText(firstField.second)
+            secondFieldLayout.hint = secondField.first
+            secondFieldText.setText(secondField.second)
+        }
+        initDismissButton(binding.dismissSet)
+        initActionButton(binding.addSet) {
+            if ((!binding.firstFieldText.text.isNullOrBlank() && ignoreSecondField) ||
+                (!binding.firstFieldText.text.isNullOrBlank() && !binding.secondFieldText.text.isNullOrBlank() && !ignoreSecondField)
             ) {
-                onSuccess(firstFieldInputTextView.text.toString(), secondFieldInputTextView.text.toString())
+                onSuccess(binding.firstFieldText.text.toString(), binding.secondFieldText.text.toString())
                 dialog.dismiss()
             } else {
                 onFailure()

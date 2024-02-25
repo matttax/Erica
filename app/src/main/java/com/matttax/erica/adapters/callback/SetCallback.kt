@@ -1,4 +1,4 @@
-package com.matttax.erica.adaptors.callback
+package com.matttax.erica.adapters.callback
 
 interface SetCallback {
     fun onClick(position: Int) {}

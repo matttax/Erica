@@ -1,17 +1,18 @@
 package com.matttax.erica.dialogs
 
-import android.content.Context
 import android.view.View
-import com.google.android.material.button.MaterialButton
+import android.widget.Button
+import androidx.viewbinding.ViewBinding
 
-abstract class ActionDialog(
-    context: Context, resource: Int
-): Dialog(context, resource) {
+abstract class ActionDialog<VB: ViewBinding>(
+    binding: VB
+): Dialog<VB>(binding) {
 
-    lateinit var actionButton: MaterialButton
+    private lateinit var actionButton: Button
 
-    fun initActionButton(buttonResource: Int, onClick: View.OnClickListener) {
-        actionButton = dialogView.findViewById(buttonResource)
-        actionButton.setOnClickListener(onClick)
+    fun initActionButton(button: Button, onClick: View.OnClickListener) {
+        actionButton = button.apply {
+            setOnClickListener(onClick)
+        }
     }
 }

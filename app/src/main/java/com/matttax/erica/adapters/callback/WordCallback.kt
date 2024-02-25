@@ -1,4 +1,4 @@
-package com.matttax.erica.adaptors.callback
+package com.matttax.erica.adapters.callback
 
 import android.widget.ImageView
 import com.matttax.erica.presentation.model.translate.TranslatedText

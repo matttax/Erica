@@ -12,9 +12,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.matttax.erica.R
 import com.matttax.erica.activities.LearnActivity
-import com.matttax.erica.adaptors.SetAdaptor
-import com.matttax.erica.adaptors.callback.SetCallback
-import com.matttax.erica.adaptors.listeners.SearchFieldListener.Companion.setSearchListener
+import com.matttax.erica.adapters.SetAdapter
+import com.matttax.erica.adapters.callback.SetCallback
+import com.matttax.erica.adapters.listeners.SearchFieldListener.Companion.setSearchListener
 import com.matttax.erica.databinding.FragmentSetsBinding
 import com.matttax.erica.dialogs.selection.DeleteDialog
 import com.matttax.erica.dialogs.selection.EditDialog
@@ -100,12 +100,7 @@ class SetsFragment : Fragment() {
     }
 
 
-    private val setAdaptor by lazy {
-        SetAdaptor(
-            context = requireActivity(),
-            callback = setCallback
-        )
-    }
+    private val setAdapter by lazy { SetAdapter(setCallback) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -148,7 +143,7 @@ class SetsFragment : Fragment() {
                 }
             ).showDialog()
         }
-        binding.setsListRecyclerView.adapter = setAdaptor
+        binding.setsListRecyclerView.adapter = setAdapter
         binding.setsListRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.setsListRecyclerView.startAnimation(AnimationUtils.loadAnimation(context, R.anim.light_slide))
     }
@@ -182,6 +177,6 @@ class SetsFragment : Fragment() {
             binding.addIcon.startAnimation(AnimationUtils.loadAnimation(context, R.anim.rotate))
         }
         if (_binding == null) return
-        setAdaptor.submitList(sets)
+        setAdapter.submitList(sets)
     }
 }

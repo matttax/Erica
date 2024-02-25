@@ -14,10 +14,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.matttax.erica.R
-import com.matttax.erica.adaptors.WordAdaptor
-import com.matttax.erica.adaptors.callback.WordCallback
-import com.matttax.erica.adaptors.listeners.OnItemClickedListener
-import com.matttax.erica.adaptors.listeners.SearchFieldListener.Companion.setSearchListener
+import com.matttax.erica.adapters.WordAdapter
+import com.matttax.erica.adapters.callback.WordCallback
+import com.matttax.erica.adapters.listeners.OnItemClickedListener
+import com.matttax.erica.adapters.listeners.SearchFieldListener.Companion.setSearchListener
 import com.matttax.erica.databinding.FragmentWordsBinding
 import com.matttax.erica.dialogs.selection.DeleteDialog
 import com.matttax.erica.dialogs.selection.EditDialog
@@ -208,8 +208,7 @@ class WordsFragment : Fragment() {
             binding.setDescr?.isVisible = false
         }
         binding.wordsList.layoutManager = LinearLayoutManager(requireActivity())
-        binding.wordsList.adapter = WordAdaptor(
-            context = requireActivity(),
+        binding.wordsList.adapter = WordAdapter(
             words = words,
             callback = wordCallback
         )

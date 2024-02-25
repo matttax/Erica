@@ -1,4 +1,4 @@
-package com.matttax.erica.adaptors.listeners
+package com.matttax.erica.adapters.listeners
 
 import androidx.appcompat.widget.SearchView
 

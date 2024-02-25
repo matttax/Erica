@@ -18,11 +18,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.matttax.erica.R
-import com.matttax.erica.adaptors.PartOfSpeechAdaptor
-import com.matttax.erica.adaptors.TranslationAdaptor
-import com.matttax.erica.adaptors.WordAdaptor
-import com.matttax.erica.adaptors.callback.WordCallback
-import com.matttax.erica.adaptors.listeners.OnItemClickedListener
+import com.matttax.erica.adapters.PartOfSpeechAdapter
+import com.matttax.erica.adapters.TranslationAdapter
+import com.matttax.erica.adapters.WordAdapter
+import com.matttax.erica.adapters.callback.WordCallback
+import com.matttax.erica.adapters.listeners.OnItemClickedListener
 import com.matttax.erica.databinding.ActivityMainBinding
 import com.matttax.erica.domain.model.translate.DictionaryDefinition
 import com.matttax.erica.domain.model.translate.UsageExample
@@ -269,9 +269,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setTranslations(list: List<String>?) {
         binding.translations.layoutManager = FlexboxLayoutManager(this@MainActivity)
-        binding.translations.adapter = TranslationAdaptor(
-            this@MainActivity,
-            list ?: emptyList()
+        binding.translations.adapter = TranslationAdapter(
+            translations = list ?: emptyList()
         ) { text ->
             binding.addWord.startAnimation(AnimationUtils.loadAnimation(this@MainActivity, R.anim.pulse))
             binding.defTextField.setText(text)
@@ -280,16 +279,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun setDefinitions(list: List<DictionaryDefinition>?) {
         binding.translations.layoutManager = LinearLayoutManager(this@MainActivity)
-        binding.translations.adapter = PartOfSpeechAdaptor(
-            this@MainActivity,
-            list ?: emptyList()
-        )
+        binding.translations.adapter = PartOfSpeechAdapter(list ?: emptyList())
     }
 
     private fun setExamples(list: List<UsageExample>?) {
         binding.translations.layoutManager = LinearLayoutManager(this@MainActivity)
-        binding.translations.adapter = WordAdaptor(
-            context = this@MainActivity,
+        binding.translations.adapter = WordAdapter(
             words = list?.map {
                 example -> TranslatedTextCard.fromUsageExample(example)
             } ?: emptyList(),

@@ -25,7 +25,7 @@
             android:layout_marginBottom="10dp"
             android:text="Part of speech"
             android:fontFamily="@font/nunito_light"
-            android:id="@+id/partOdSpeech"
+            android:id="@+id/partOfSpeech"
             android:layout_gravity="center"
             android:textSize="20sp"
             />

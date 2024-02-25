@@ -1,9 +1,9 @@
 package com.matttax.erica.dialogs.selection
 
 import android.content.Context
-import android.widget.TextView
+import android.view.LayoutInflater
 import androidx.core.view.isVisible
-import com.matttax.erica.R
+import com.matttax.erica.databinding.DeleteDialogBinding
 import com.matttax.erica.dialogs.ActionDialog
 
 class DeleteDialog(
@@ -11,21 +11,19 @@ class DeleteDialog(
     headerText: String,
     detailedExplanationText: String?,
     action: () -> Unit,
-): ActionDialog(context, R.layout.delete_dialog) {
-
-    private val dialogHeader: TextView = dialogView.findViewById(R.id.dialogHeader)
-    private val explanationText: TextView = dialogView.findViewById(R.id.explanationText)
-
+): ActionDialog<DeleteDialogBinding>(
+    DeleteDialogBinding.inflate(LayoutInflater.from(context))
+) {
     init {
-        dialogHeader.text = headerText
+        binding.dialogHeader.text = headerText
         if (detailedExplanationText.isNullOrBlank()) {
-            explanationText.isVisible = false
+            binding.explanationText.isVisible = false
         } else {
-            explanationText.text = detailedExplanationText
+            binding.explanationText.text = detailedExplanationText
         }
 
-        initDismissButton(R.id.noDeleteSet)
-        initActionButton(R.id.yesDeleteSet) {
+        initDismissButton(binding.noDeleteSet)
+        initActionButton(binding.yesDeleteSet) {
             action()
             dialog.dismiss()
         }
